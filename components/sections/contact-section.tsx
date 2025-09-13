@@ -1,16 +1,19 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Phone, Mail, MapPin, Clock } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Phone, Mail, MapPin, Clock } from "lucide-react";
 
 export function ContactSection() {
   return (
     <section className="py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-balance">Ready to Start Your Driving Journey?</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-balance">
+            Ready to Start Your Driving Journey?
+          </h2>
           <p className="text-xl text-muted-foreground text-pretty max-w-3xl mx-auto">
-            Get in touch with us today to book your first lesson or ask any questions about our courses.
+            Get in touch with us today to book your first lesson or ask any
+            questions about our courses.
           </p>
         </div>
 
@@ -37,7 +40,9 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Email Us</h3>
-                    <p className="text-muted-foreground">info@actcapitaldriving.com.au</p>
+                    <p className="text-muted-foreground">
+                      info@actcapitaldriving.com.au
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -49,7 +54,9 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Visit Us</h3>
-                    <p className="text-muted-foreground">Lort Place, Chisholm, ACT</p>
+                    <p className="text-muted-foreground">
+                      Lort Place, Chisholm, ACT
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -71,7 +78,9 @@ export function ContactSection() {
               <Button size="lg" className="text-lg px-8" asChild>
                 <Link href="/booking">Book Your Lesson Now</Link>
               </Button>
-              <p className="text-sm text-muted-foreground">Or call us directly for immediate assistance</p>
+              <p className="text-sm text-muted-foreground">
+                Or call us directly for immediate assistance
+              </p>
             </div>
           </div>
 
@@ -88,14 +97,21 @@ export function ContactSection() {
               <Card className="bg-card/95 backdrop-blur-sm border shadow-lg">
                 <CardContent className="p-4 text-center">
                   <MapPin className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <div className="font-semibold">ACT Capital Driving School</div>
-                  <div className="text-sm text-muted-foreground">Lort Place, Chisholm, ACT</div>
+                  <div className="font-semibold">
+                    ACT Capital Driving School
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Lort Place, Chisholm, ACT
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </div>
         </div>
       </div>
+      <div>
+        <Button>Get in touch</Button>
+      </div>
     </section>
-  )
+  );
 }
