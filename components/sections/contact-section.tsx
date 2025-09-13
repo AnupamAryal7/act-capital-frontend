@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Navigation } from "@/components/navigation";
 
 export function ContactSection() {
   return (
@@ -81,6 +82,17 @@ export function ContactSection() {
                 </Button>
                 <Button size="lg" className="text-lg px-8" asChild>
                   <Link href="/contact">Get In Touch</Link>
+                </Button>
+                <Button size="lg" asChild>
+                  <a
+                    href={`https://maps.google.com/?q=${encodeURIComponent(
+                      "Lort Place, Chisholm, ACT 2905"
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Get Directions
+                  </a>
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
