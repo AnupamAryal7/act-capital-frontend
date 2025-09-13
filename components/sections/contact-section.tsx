@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
-import { Navigation } from "@/components/navigation";
 
 export function ContactSection() {
   return (
@@ -126,7 +125,6 @@ export function ContactSection() {
           </div>
         </div>
       </div>
-      <div>{/* <Button >Get in touch</Button> */}</div>
     </section>
   );
 }
