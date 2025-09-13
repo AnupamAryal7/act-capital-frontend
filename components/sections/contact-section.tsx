@@ -75,9 +75,14 @@ export function ContactSection() {
             </div>
 
             <div className="text-center space-y-4">
-              <Button size="lg" className="text-lg px-8" asChild>
-                <Link href="/booking">Book Your Lesson Now</Link>
-              </Button>
+              <div className="flex justify-center gap-4">
+                <Button size="lg" className="text-lg px-8" asChild>
+                  <Link href="/booking">Book Your Lesson Now</Link>
+                </Button>
+                <Button size="lg" className="text-lg px-8" asChild>
+                  <Link href="/contact">Get In Touch</Link>
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground">
                 Or call us directly for immediate assistance
               </p>
@@ -109,9 +114,7 @@ export function ContactSection() {
           </div>
         </div>
       </div>
-      <div>
-        <Button>Get in touch</Button>
-      </div>
+      <div>{/* <Button >Get in touch</Button> */}</div>
     </section>
   );
 }
