@@ -2,14 +2,14 @@ import type React from "react";
 import { ProtectedRoute } from "@/components/protected-route";
 import Link from "next/link";
 
-export default function AdminLayout({
+export default function InstructorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <ProtectedRoute
-      requiredRole="admin"
+      requiredRole="instructor"
       fallbacke={
         <div className="flex flex-col items-center justify-center min-h-screen text-center">
           <p className="text-lg font-semibold mb-4">

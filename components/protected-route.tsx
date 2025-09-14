@@ -1,25 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useAuth } from "./auth-provider"
-import { useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { useAuth } from "./auth-provider";
+import { useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface ProtectedRouteProps {
-  children: React.ReactNode
-  requiredRole?: "admin" | "instructor" | "student"
+  children: React.ReactNode;
+  requiredRole?: "admin" | "instructor" | "student";
+  fallbacke?: React.ReactNode;
 }
 
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth()
+export function ProtectedRoute({
+  children,
+  requiredRole,
+}: ProtectedRouteProps) {
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      window.location.href = "/login"
+      window.location.href = "/login";
     }
-  }, [user, isLoading])
+  }, [user, isLoading]);
 
   if (isLoading) {
     return (
@@ -31,25 +36,33 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!user) {
-    return null // Will redirect to login
+    return null; // Will redirect to login
   }
 
   if (requiredRole && user.role !== requiredRole) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center">
         <Card>
           <CardContent className="p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-            <p className="text-muted-foreground">You don't have permission to access this page.</p>
+            <p className="text-muted-foreground mb-4">
+              Please Login with correct credentials to access this page.
+            </p>
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+            >
+              Go to Login
+            </Link>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }
