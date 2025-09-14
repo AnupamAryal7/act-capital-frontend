@@ -77,7 +77,7 @@ export default function LoginPage() {
         } else if (data.user.role === "instructor") {
           window.location.href = "/instructor";
         } else {
-          window.location.href = "/";
+          window.location.href = "/dashboard";
         }
       } else {
         const errorData = await response.json();
@@ -110,6 +110,7 @@ export default function LoginPage() {
           accept: "application/json",
         },
         body: JSON.stringify({
+          full_name: formData.name,
           email: formData.email,
           password: formData.password,
           role: formData.role,
