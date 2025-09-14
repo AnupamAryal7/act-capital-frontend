@@ -1,51 +1,148 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
+import { useState } from "react";
+import { useAuth } from "@/components/auth-provider";
+import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Eye, EyeOff, Lock, Mail, User, Loader2 } from "lucide-react";
+import Link from "next/link";
 
-import { useState } from "react"
-import { useAuth } from "@/components/auth-provider"
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Eye, EyeOff, Lock, Mail, User, Loader2 } from "lucide-react"
-import Link from "next/link"
+// API endpoints from your documentation
+const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+const CREATE_USER_URL = `${API_BASE_URL}/`;
+const LOGIN_URL = `${API_BASE_URL}/users/login`;
 
 export default function LoginPage() {
-  const { login, isLoading } = useAuth()
-  const [isLogin, setIsLogin] = useState(true)
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     name: "",
     confirmPassword: "",
-  })
+    role: "student",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-    if (isLogin) {
-      const success = await login(formData.email, formData.password)
-      if (success) {
-        window.location.href = "/admin"
+    try {
+      if (isLogin) {
+        await handleLogin();
       } else {
-        setError("Invalid email or password")
+        await handleSignup();
       }
-    } else {
-      // Handle signup logic here
-      console.log("Signup form submitted:", formData)
+    } catch (error) {
+      console.error("Auth error:", error);
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch(LOGIN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Store authentication data
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // Redirect based on role
+        if (data.user.role === "admin") {
+          window.location.href = "/admin";
+        } else if (data.user.role === "instructor") {
+          window.location.href = "/instructor";
+        } else {
+          window.location.href = "/";
+        }
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || "Invalid email or password");
+      }
+    } catch (error) {
+      setError("Network error. Please try again.");
+      console.error("Login error:", error);
+    }
+  };
+
+  const handleSignup = async () => {
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Validate password length
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      const response = await fetch(CREATE_USER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setError("");
+        // Switch to login mode after successful signup
+        setIsLogin(true);
+        // Pre-fill email for login
+        setFormData((prev) => ({ ...prev, confirmPassword: "" }));
+
+        // Show success message
+        alert(
+          "Account created successfully! Please login with your credentials."
+        );
+      } else {
+        const errorData = await response.json();
+        setError(
+          errorData.detail || "Failed to create account. Please try again."
+        );
+      }
+    } catch (error) {
+      setError("Network error. Please try again.");
+      console.error("Signup error:", error);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -55,22 +152,32 @@ export default function LoginPage() {
           <div className="max-w-md mx-auto">
             <div className="text-center mb-8">
               <Badge variant="secondary" className="mb-4">
-                {isLogin ? "Admin Login" : "Create Account"}
+                {isLogin ? "Login" : "Create Account"}
               </Badge>
-              <h1 className="text-3xl font-bold text-balance">{isLogin ? "Welcome Back" : "Join Our Team"}</h1>
+              <h1 className="text-3xl font-bold text-balance">
+                {isLogin
+                  ? "Welcome to ACT Capital Driving School"
+                  : "Join Our Driving School"}
+              </h1>
               <p className="text-muted-foreground mt-2">
-                {isLogin ? "Sign in to access the admin dashboard" : "Create an account to get started"}
+                {isLogin
+                  ? "Sign in to access your account"
+                  : "Create an account to start your driving journey"}
               </p>
             </div>
 
             <Card className="border-0 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-center">{isLogin ? "Sign In" : "Sign Up"}</CardTitle>
+                <CardTitle className="text-center">
+                  {isLogin ? "Sign In" : "Sign Up"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">{error}</div>
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+                      {error}
+                    </div>
                   )}
 
                   {!isLogin && (
@@ -82,24 +189,27 @@ export default function LoginPage() {
                           id="name"
                           type="text"
                           value={formData.name}
-                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                          }
                           placeholder="Enter your full name"
                           className="pl-10"
-                          required={!isLogin}
                         />
                       </div>
                     </div>
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email">Email Address *</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="email"
                         type="email"
                         value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         placeholder="Enter your email"
                         className="pl-10"
                         required
@@ -108,59 +218,86 @@ export default function LoginPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">Password *</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
                         value={formData.password}
-                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("password", e.target.value)
+                        }
                         placeholder="Enter your password"
                         className="pl-10 pr-10"
                         required
+                        minLength={6}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </div>
 
                   {!isLogin && (
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="confirmPassword"
-                          type="password"
-                          value={formData.confirmPassword}
-                          onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                          placeholder="Confirm your password"
-                          className="pl-10"
-                          required={!isLogin}
-                        />
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">
+                          Confirm Password *
+                        </Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="confirmPassword"
+                            type="password"
+                            value={formData.confirmPassword}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "confirmPassword",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Confirm your password"
+                            className="pl-10"
+                            required
+                            minLength={6}
+                          />
+                        </div>
                       </div>
-                    </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="role">Account Type *</Label>
+                        <select
+                          id="role"
+                          value={formData.role}
+                          onChange={(e) =>
+                            handleInputChange("role", e.target.value)
+                          }
+                          className="w-full p-3 border border-gray-300 rounded-md bg-background"
+                          required
+                        >
+                          <option value="student">Student</option>
+                          <option value="instructor">Instructor</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    </>
                   )}
 
-                  {isLogin && (
-                    <div className="flex items-center justify-between text-sm">
-                      <label className="flex items-center space-x-2">
-                        <input type="checkbox" className="rounded" />
-                        <span>Remember me</span>
-                      </label>
-                      <Link href="/forgot-password" className="text-primary hover:underline">
-                        Forgot password?
-                      </Link>
-                    </div>
-                  )}
-
-                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={isLoading}
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -176,10 +313,15 @@ export default function LoginPage() {
 
                 <div className="mt-6 text-center">
                   <p className="text-sm text-muted-foreground">
-                    {isLogin ? "Don't have an account?" : "Already have an account?"}
+                    {isLogin
+                      ? "Don't have an account?"
+                      : "Already have an account?"}
                     <button
                       type="button"
-                      onClick={() => setIsLogin(!isLogin)}
+                      onClick={() => {
+                        setIsLogin(!isLogin);
+                        setError("");
+                      }}
                       className="ml-1 text-primary hover:underline font-medium"
                     >
                       {isLogin ? "Sign up" : "Sign in"}
@@ -189,7 +331,9 @@ export default function LoginPage() {
 
                 {isLogin && (
                   <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">Demo Credentials</h4>
+                    <h4 className="font-medium text-blue-900 mb-2">
+                      Demo Credentials
+                    </h4>
                     <div className="text-sm text-blue-800 space-y-1">
                       <p>
                         <strong>Admin:</strong> admin@actcapital.com.au
@@ -198,10 +342,17 @@ export default function LoginPage() {
                         <strong>Password:</strong> admin123
                       </p>
                       <p>
-                        <strong>Instructor:</strong> instructor@actcapital.com.au
+                        <strong>Instructor:</strong>{" "}
+                        instructor@actcapital.com.au
                       </p>
                       <p>
                         <strong>Password:</strong> instructor123
+                      </p>
+                      <p>
+                        <strong>Student:</strong> student@actcapital.com.au
+                      </p>
+                      <p>
+                        <strong>Password:</strong> student123
                       </p>
                     </div>
                   </div>
@@ -213,5 +364,5 @@ export default function LoginPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
