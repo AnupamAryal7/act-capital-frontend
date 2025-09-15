@@ -107,7 +107,7 @@ export function Navigation() {
                 )}
 
                 {isStudent && (
-                  <Link href="/student">
+                  <Link href="/dashboard">
                     <Button variant="ghost" size="sm" className="gap-2">
                       <BookOpen className="h-4 w-4" />
                       Student
@@ -205,7 +205,7 @@ export function Navigation() {
 
                     {isStudent && (
                       <Link
-                        href="/student"
+                        href="/dashboard"
                         className="text-lg font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2"
                         onClick={() => setIsOpen(false)}
                       >
