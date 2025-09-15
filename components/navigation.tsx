@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -10,16 +11,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Menu,
   Car,
   User,
   LogOut,
-  Settings,
   Shield,
   GraduationCap,
   BookOpen,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 
@@ -34,13 +36,29 @@ const navigation = [
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const { user, logout, isLoading } = useAuth();
 
   // Check user roles
   const isAdmin = user?.role === "admin";
   const isInstructor = user?.role === "instructor";
   const isStudent = user?.role === "student";
-  const isLoggedIn = !!user; // Check if any user is active
+  const isLoggedIn = !!user;
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  const handleDashboard = () => {
+    if (isAdmin) {
+      router.push("/admin");
+    } else if (isInstructor) {
+      router.push("/instructor");
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -85,7 +103,7 @@ export function Navigation() {
               </Link>
             ))}
 
-            {/* Role-specific navigation items - Only show if user is logged in */}
+            {/* Role-specific navigation items */}
             {isLoggedIn && (
               <>
                 {isAdmin && (
@@ -107,7 +125,7 @@ export function Navigation() {
                 )}
 
                 {isStudent && (
-                  <Link href="/student">
+                  <Link href="/dashboard">
                     <Button variant="ghost" size="sm" className="gap-2">
                       <BookOpen className="h-4 w-4" />
                       Student
@@ -121,29 +139,21 @@ export function Navigation() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
             {isLoggedIn ? (
-              // User is logged in - show user dropdown
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <span className="max-w-[120px] truncate">{user.name}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={logout}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex">
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span className="max-w-[120px] truncate">{user.name}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2  bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="max-w-[120px] truncate">{user.name}</span>
+                </Button>
+              </div>
             ) : (
-              // No user is active - show login button
               <Button variant="outline" size="sm" asChild>
                 <Link href="/login">
                   <User className="h-4 w-4 mr-2" />
@@ -178,7 +188,6 @@ export function Navigation() {
                   </Link>
                 ))}
 
-                {/* Mobile role-specific navigation - Only show if user is logged in */}
                 {isLoggedIn && (
                   <>
                     {isAdmin && (
@@ -205,7 +214,7 @@ export function Navigation() {
 
                     {isStudent && (
                       <Link
-                        href="/student"
+                        href="/dashboard"
                         className="text-lg font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2"
                         onClick={() => setIsOpen(false)}
                       >
@@ -218,26 +227,28 @@ export function Navigation() {
 
                 <div className="pt-4 space-y-2">
                   {isLoggedIn ? (
-                    // User is logged in - show user options
                     <>
                       <div className="px-2 py-1 text-sm text-muted-foreground">
                         Signed in as {user.name} ({user.role})
                       </div>
+
                       <Button
                         variant="outline"
                         className="w-full bg-transparent"
-                        asChild
+                        onClick={() => {
+                          handleDashboard();
+                          setIsOpen(false);
+                        }}
                       >
-                        <Link href="/profile" onClick={() => setIsOpen(false)}>
-                          <Settings className="h-4 w-4 mr-2" />
-                          Profile
-                        </Link>
+                        <LayoutDashboard className="h-4 w-4 mr-2" />
+                        User Dashboard
                       </Button>
+
                       <Button
                         variant="outline"
                         className="w-full bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => {
-                          logout();
+                          handleLogout();
                           setIsOpen(false);
                         }}
                       >
@@ -246,7 +257,6 @@ export function Navigation() {
                       </Button>
                     </>
                   ) : (
-                    // No user is active - show login button
                     <Button
                       variant="outline"
                       className="w-full bg-transparent"
