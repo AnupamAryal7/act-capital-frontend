@@ -1,10 +1,18 @@
+// components/navigation.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Car, Phone, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, Car, Phone, User, LogOut, Settings } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -17,6 +25,24 @@ const navigation = [
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Loading skeleton */}
+            <div className="flex items-center space-x-2">
+              <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="h-6 w-40 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="h-9 w-20 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -47,12 +73,35 @@ export function Navigation() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/login">
-                <User className="h-4 w-4 mr-2" />
-                Login
-              </Link>
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="max-w-[120px] truncate">{user.name}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/login">
+                  <User className="h-4 w-4 mr-2" />
+                  Login
+                </Link>
+              </Button>
+            )}
             <Button size="sm" asChild>
               <Link href="/booking">Book Lesson</Link>
             </Button>
@@ -79,18 +128,49 @@ export function Navigation() {
                   </Link>
                 ))}
                 <div className="pt-4 space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full bg-transparent"
-                    asChild
-                  >
-                    <Link href="/login">
-                      <User className="h-4 w-4 mr-2" />
-                      Login
-                    </Link>
-                  </Button>
+                  {user ? (
+                    <>
+                      <div className="px-2 py-1 text-sm text-muted-foreground">
+                        Signed in as {user.name}
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full bg-transparent"
+                        asChild
+                      >
+                        <Link href="/profile" onClick={() => setIsOpen(false)}>
+                          <Settings className="h-4 w-4 mr-2" />
+                          Profile
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => {
+                          logout();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full bg-transparent"
+                      asChild
+                    >
+                      <Link href="/login" onClick={() => setIsOpen(false)}>
+                        <User className="h-4 w-4 mr-2" />
+                        Login
+                      </Link>
+                    </Button>
+                  )}
                   <Button className="w-full" asChild>
-                    <Link href="/booking">Book Lesson</Link>
+                    <Link href="/booking" onClick={() => setIsOpen(false)}>
+                      Book Lesson
+                    </Link>
                   </Button>
                 </div>
               </nav>
