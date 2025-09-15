@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu, Car, Phone, User, LogOut, Settings } from "lucide-react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/components/auth-provider";
 
 const navigation = [
   { name: "Home", href: "/" },
