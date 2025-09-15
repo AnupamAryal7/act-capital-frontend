@@ -1,8 +1,9 @@
+// app/login/page.tsx
 "use client";
 
 import type React from "react";
 import { useState } from "react";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/contexts/auth-context";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,13 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Lock, Mail, User, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-// API endpoints from your documentation
+// API endpoints
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 const CREATE_USER_URL = `${API_BASE_URL}/`;
 const LOGIN_URL = `${API_BASE_URL}/users/login`;
 
 export default function LoginPage() {
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,52 +53,18 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
-    try {
-      const response = await fetch(LOGIN_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // Store authentication data
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        // Redirect based on role
-        if (data.user.role === "admin") {
-          window.location.href = "/admin";
-        } else if (data.user.role === "instructor") {
-          window.location.href = "/instructor";
-        } else {
-          window.location.href = "/dashboard";
-        }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || "Invalid email or password");
-      }
-    } catch (error) {
-      setError("Network error. Please try again.");
-      console.error("Login error:", error);
+    const success = await login(formData.email, formData.password);
+    if (!success) {
+      setError("Invalid email or password");
     }
   };
 
   const handleSignup = async () => {
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    // Validate password length
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
@@ -118,14 +86,9 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
         setError("");
-        // Switch to login mode after successful signup
         setIsLogin(true);
-        // Pre-fill email for login
         setFormData((prev) => ({ ...prev, confirmPassword: "" }));
-
-        // Show success message
         alert(
           "Account created successfully! Please login with your credentials."
         );
