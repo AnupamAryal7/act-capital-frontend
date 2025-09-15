@@ -11,7 +11,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Car, Phone, User, LogOut, Settings } from "lucide-react";
+import {
+  Menu,
+  Car,
+  User,
+  LogOut,
+  Settings,
+  Shield,
+  GraduationCap,
+  BookOpen,
+} from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 
 const navigation = [
@@ -26,6 +35,12 @@ const navigation = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout, isLoading } = useAuth();
+
+  // Check user roles
+  const isAdmin = user?.role === "admin";
+  const isInstructor = user?.role === "instructor";
+  const isStudent = user?.role === "student";
+  const isLoggedIn = !!user; // Check if any user is active
 
   if (isLoading) {
     return (
@@ -59,7 +74,7 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -69,11 +84,44 @@ export function Navigation() {
                 {item.name}
               </Link>
             ))}
+
+            {/* Role-specific navigation items - Only show if user is logged in */}
+            {isLoggedIn && (
+              <>
+                {isAdmin && (
+                  <Link href="/admin">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <Shield className="h-4 w-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+
+                {isInstructor && (
+                  <Link href="/instructor">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      Instructor
+                    </Button>
+                  </Link>
+                )}
+
+                {isStudent && (
+                  <Link href="/student">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      Student
+                    </Button>
+                  </Link>
+                )}
+              </>
+            )}
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+          <div className="hidden md:flex items-center space-x-3">
+            {isLoggedIn ? (
+              // User is logged in - show user dropdown
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2">
@@ -95,6 +143,7 @@ export function Navigation() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
+              // No user is active - show login button
               <Button variant="outline" size="sm" asChild>
                 <Link href="/login">
                   <User className="h-4 w-4 mr-2" />
@@ -102,6 +151,7 @@ export function Navigation() {
                 </Link>
               </Button>
             )}
+
             <Button size="sm" asChild>
               <Link href="/booking">Book Lesson</Link>
             </Button>
@@ -127,11 +177,51 @@ export function Navigation() {
                     {item.name}
                   </Link>
                 ))}
+
+                {/* Mobile role-specific navigation - Only show if user is logged in */}
+                {isLoggedIn && (
+                  <>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Shield className="h-4 w-4" />
+                        Admin Dashboard
+                      </Link>
+                    )}
+
+                    {isInstructor && (
+                      <Link
+                        href="/instructor"
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <GraduationCap className="h-4 w-4" />
+                        Instructor Portal
+                      </Link>
+                    )}
+
+                    {isStudent && (
+                      <Link
+                        href="/student"
+                        className="text-lg font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        Student Portal
+                      </Link>
+                    )}
+                  </>
+                )}
+
                 <div className="pt-4 space-y-2">
-                  {user ? (
+                  {isLoggedIn ? (
+                    // User is logged in - show user options
                     <>
                       <div className="px-2 py-1 text-sm text-muted-foreground">
-                        Signed in as {user.name}
+                        Signed in as {user.name} ({user.role})
                       </div>
                       <Button
                         variant="outline"
@@ -156,6 +246,7 @@ export function Navigation() {
                       </Button>
                     </>
                   ) : (
+                    // No user is active - show login button
                     <Button
                       variant="outline"
                       className="w-full bg-transparent"
@@ -167,6 +258,7 @@ export function Navigation() {
                       </Link>
                     </Button>
                   )}
+
                   <Button className="w-full" asChild>
                     <Link href="/booking" onClick={() => setIsOpen(false)}>
                       Book Lesson
