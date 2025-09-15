@@ -47,8 +47,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.access_token);
+
+        if (data.user.role === "admin") {
+          window.location.href = "/admin";
+        } else if (data.user.role === "instructor") {
+          window.location.href = "/instructor";
+        } else {
+          window.location.href = "/dashboard";
+        }
+
         return true;
       }
+
       return false;
     } catch (error) {
       console.error("Login error:", error);
