@@ -3,7 +3,7 @@
 
 import type React from "react";
 import { useState } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/components/auth-provider";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
