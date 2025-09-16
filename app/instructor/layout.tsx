@@ -10,7 +10,7 @@ export default function InstructorLayout({
   return (
     <ProtectedRoute
       requiredRole="instructor"
-      fallbacke={
+      fallback={
         <div className="flex flex-col items-center justify-center min-h-screen text-center">
           <p className="text-lg font-semibold mb-4">
             Access denied to this page
