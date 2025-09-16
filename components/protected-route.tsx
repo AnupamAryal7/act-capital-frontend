@@ -11,7 +11,7 @@ import Link from "next/link";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: "admin" | "instructor" | "student";
-  fallbacke?: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
 export function ProtectedRoute({
