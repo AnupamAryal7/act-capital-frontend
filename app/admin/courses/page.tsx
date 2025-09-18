@@ -704,7 +704,7 @@ export default function Courses() {
                       </span>
                     </div>
 
-                    {/* Action Buttons for Customers */}
+                    {/* Action Buttons for Customers
                     <div className="space-y-2">
                       <Button
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -725,7 +725,7 @@ export default function Courses() {
                       >
                         Inquiry
                       </Button>
-                    </div>
+                    </div> */}
 
                     {/* Admin Actions - Separator */}
                     <hr className="my-4 border-gray-200" />
