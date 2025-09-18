@@ -454,12 +454,8 @@ export default function CoursesPage() {
                       >
                         Book Now
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-transparent"
-                        onClick={() => handleLearnMore(course.id)}
-                      >
-                        Learn More
+                      <Button variant="outline" className="w-full">
+                        Inquiry
                       </Button>
                     </CardFooter>
                   </Card>
