@@ -315,7 +315,7 @@ export default function AdminFAQPage() {
     setIsCategoryModalOpen(true);
   };
 
-  const openFAQModal = (faq?: FAQ) => {
+  const openFAQModal = (faq?: FAQ, preSelectedCategoryId?: number) => {
     if (faq) {
       setEditingFAQ(faq);
       setFaqForm({
@@ -325,6 +325,13 @@ export default function AdminFAQPage() {
       });
     } else {
       resetFAQForm();
+      // Pre-select category if provided
+      if (preSelectedCategoryId) {
+        setFaqForm((prev) => ({
+          ...prev,
+          category_id: preSelectedCategoryId,
+        }));
+      }
     }
     setIsFAQModalOpen(true);
   };
@@ -600,7 +607,9 @@ export default function AdminFAQPage() {
                         size="sm"
                         variant="outline"
                         className="mt-2"
-                        onClick={() => openFAQModal()}
+                        onClick={() =>
+                          openFAQModal(undefined, categoryData.category.id)
+                        }
                       >
                         Add First FAQ
                       </Button>
