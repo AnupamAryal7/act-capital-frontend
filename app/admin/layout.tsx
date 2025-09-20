@@ -33,6 +33,7 @@ function AdminDashboard({ children }: { children: ReactNode }) {
     { label: "Students", path: "/admin/students" },
     { label: "Reports", path: "/admin/reports" },
     { label: "Courses", path: "/admin/courses" },
+    { label: "FAQs", path: "/admin/coourses" },
   ];
 
   return (
