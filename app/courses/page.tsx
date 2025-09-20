@@ -452,14 +452,10 @@ export default function CoursesPage() {
                         className="w-full"
                         onClick={() => handleBookCourse(course.id)}
                       >
-                        Book This Course
+                        Book Now
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-transparent"
-                        onClick={() => handleLearnMore(course.id)}
-                      >
-                        Learn More
+                      <Button variant="outline" className="w-full">
+                        Inquiry
                       </Button>
                     </CardFooter>
                   </Card>

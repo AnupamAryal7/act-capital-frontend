@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { label: "Instructors", path: "/admin/instructors" },
     { label: "Students", path: "/admin/students" },
     { label: "Reports", path: "/admin/reports" },
-    { label: "Courses", path: "/admin/courses" },
+    { label: "FAQs", path: "/admin/faqs" },
   ];
 
   return (
