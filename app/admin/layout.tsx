@@ -68,7 +68,7 @@ function AdminDashboard({ children }: { children: ReactNode }) {
 
       {/* Navigation Tabs */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid w-full grid-cols-6 bg-muted p-1 rounded-lg mb-6">
+        <div className="grid w-full grid-cols-7 bg-muted p-1 rounded-lg mb-7">
           {navItems.map((item) => (
             <Link
               key={item.path}
