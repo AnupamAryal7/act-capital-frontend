@@ -1,15 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { InteractiveMap } from "@/components/interactive-map";
 import {
   Calendar,
   Clock,
@@ -24,6 +20,7 @@ import {
   ChevronRight,
   GraduationCap,
   Users,
+  RefreshCw,
 } from "lucide-react";
 
 interface Student {
@@ -89,10 +86,10 @@ export default function StudentDashboard() {
   const [user, setUser] = useState<Student | null>(null);
   const [message, setMessage] = useState("");
   const [feedback, setFeedback] = useState("");
-  // const [availableCourses, setAvailableCourses] = useState<APICourse[]>([]);
-  // const [coursesLoading, setCoursesLoading] = useState(true);
+  const [availableCourses, setAvailableCourses] = useState<APICourse[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
 
-  // Mock data
+  // Mock data (keeping existing for bookings, enrolled courses, reviews)
   const recentBookings: Booking[] = [
     {
       id: 1,
@@ -135,33 +132,6 @@ export default function StudentDashboard() {
     },
   ];
 
-  const suggestedCourses = [
-    {
-      id: 3,
-      name: "Advanced Parking Techniques",
-      description: "Master parallel, reverse, and angle parking",
-      duration: "8 sessions",
-      price: "$320",
-      image: "/parking-lesson.jpg",
-    },
-    {
-      id: 4,
-      name: "Night Driving Course",
-      description: "Learn safe driving techniques for night conditions",
-      duration: "6 sessions",
-      price: "$240",
-      image: "/night-driving.jpg",
-    },
-    {
-      id: 5,
-      name: "Defensive Driving",
-      description: "Advanced safety and hazard awareness training",
-      duration: "12 sessions",
-      price: "$480",
-      image: "/defensive-driving.jpg",
-    },
-  ];
-
   const studentReviews: Review[] = [
     {
       id: 1,
@@ -192,16 +162,44 @@ export default function StudentDashboard() {
     },
   ];
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
+  // Fetch active courses from API
+  const fetchActiveCourses = async () => {
+    try {
+      setCoursesLoading(true);
+      const response = await fetch(`${API_BASE_URL}/courses/active`);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableCourses(Array.isArray(data) ? data : []);
+      } else {
+        console.error("Failed to fetch courses");
+        setAvailableCourses([]);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setAvailableCourses([]);
+    } finally {
+      setCoursesLoading(false);
     }
+  };
+
+  useEffect(() => {
+    // Mock user data for demonstration
+    const mockUser: Student = {
+      id: "1",
+      full_name: "John Doe",
+      email: "john.doe@email.com",
+      role: "student",
+      phone: "+61 234 567 890",
+      license_number: "L123456",
+    };
+    setUser(mockUser);
+
+    // Fetch courses when component mounts
+    fetchActiveCourses();
   }, []);
 
   const handleSendMessage = () => {
     if (message.trim()) {
-      // Handle message sending logic here
       console.log("Message sent:", message);
       setMessage("");
       alert("Message sent to instructor!");
@@ -210,11 +208,16 @@ export default function StudentDashboard() {
 
   const handleFeedbackSubmit = () => {
     if (feedback.trim()) {
-      // Handle feedback submission logic here
       console.log("Feedback submitted:", feedback);
       setFeedback("");
       alert("Thank you for your feedback!");
     }
+  };
+
+  const handleEnrollCourse = (courseId: number) => {
+    console.log("Enrolling in course:", courseId);
+    // Implement enrollment logic here
+    alert("Enrollment functionality coming soon!");
   };
 
   if (!user) {
@@ -233,8 +236,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navigation />
-
       {/* Greeting Section */}
       <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -392,7 +393,12 @@ export default function StudentDashboard() {
                               <span>Progress</span>
                               <span>{course.progress}%</span>
                             </div>
-                            <Progress value={course.progress} className="h-2" />
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-primary h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${course.progress}%` }}
+                              ></div>
+                            </div>
                           </div>
                           <p className="text-sm text-gray-600 mb-2">
                             Instructor: {course.instructor}
@@ -432,51 +438,111 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* Courses You Might Like */}
+            {/* Available Courses from API */}
             <Card className="mb-12">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-primary" />
-                    Courses You Might Like
+                    Available Courses
                   </CardTitle>
-                  <Button variant="outline">
-                    View All Courses
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={fetchActiveCourses}
+                      disabled={coursesLoading}
+                    >
+                      <RefreshCw
+                        className={`h-4 w-4 ${
+                          coursesLoading ? "animate-spin" : ""
+                        }`}
+                      />
+                    </Button>
+                    <Button variant="outline">
+                      View All Courses
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {suggestedCourses.map((course) => (
-                    <Card key={course.id} className="overflow-hidden">
-                      <div className="aspect-video bg-gray-100">
-                        <img
-                          src={course.image || "/placeholder.svg"}
-                          alt={course.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold mb-2">{course.name}</h3>
-                        <p className="text-sm text-gray-600 mb-3">
-                          {course.description}
-                        </p>
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-sm text-gray-500">
-                            {course.duration}
-                          </span>
-                          <span className="font-bold text-primary">
-                            {course.price}
-                          </span>
+                {coursesLoading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                    <span>Loading courses...</span>
+                  </div>
+                ) : availableCourses.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      No courses available at the moment.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {availableCourses.slice(0, 6).map((course) => (
+                      <Card key={course.id} className="overflow-hidden">
+                        <div className="aspect-video bg-gray-100">
+                          {course.image_url ? (
+                            <img
+                              src={course.image_url}
+                              alt={course.course_title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <BookOpen className="h-12 w-12 text-gray-400" />
+                            </div>
+                          )}
                         </div>
-                        <Button className="w-full" size="sm">
-                          Enroll Now
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <h3 className="font-semibold line-clamp-2">
+                              {course.course_title}
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className="text-xs capitalize ml-2 flex-shrink-0"
+                            >
+                              {course.package_type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                            {course.description}
+                          </p>
+                          <div className="space-y-1 mb-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-500">Duration:</span>
+                              <span>{course.duration}</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="flex items-center space-x-1">
+                              <span className="font-bold text-primary">
+                                ${course.discounted_price || course.total_price}
+                              </span>
+                              {course.discounted_price &&
+                                course.discounted_price <
+                                  course.total_price && (
+                                  <span className="text-sm line-through text-gray-500">
+                                    ${course.total_price}
+                                  </span>
+                                )}
+                            </div>
+                          </div>
+                          <Button
+                            className="w-full"
+                            size="sm"
+                            onClick={() => handleEnrollCourse(course.id)}
+                          >
+                            Enroll Now
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -592,11 +658,14 @@ export default function StudentDashboard() {
                   </div>
                 </div>
 
-                {/* Google Map */}
+                {/* Map Placeholder */}
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold mb-4">Find Us</h3>
-                  <div className="h-64 bg-gray-100 rounded-lg overflow-hidden">
-                    <InteractiveMap />
+                  <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <MapPin className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500">Interactive Map</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -604,8 +673,6 @@ export default function StudentDashboard() {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }
