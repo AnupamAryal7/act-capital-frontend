@@ -183,16 +183,44 @@ export default function StudentDashboard() {
   };
 
   useEffect(() => {
-    // Mock user data for demonstration
-    const mockUser: Student = {
-      id: "1",
-      full_name: "John Doe",
-      email: "john.doe@email.com",
-      role: "student",
-      phone: "+61 234 567 890",
-      license_number: "L123456",
-    };
-    setUser(mockUser);
+    // Get real user data from localStorage (set by your login system)
+    const userData = localStorage.getItem("user");
+
+    // Your auth system stores user data but doesn't set isLoggedIn flag
+    // So we'll just check if userData exists and has valid structure
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        console.log("Parsed user data:", parsedUser);
+
+        // Check if user object has required fields
+        if (parsedUser.id && parsedUser.email && parsedUser.role) {
+          // Map API user data to dashboard interface
+          const dashboardUser: Student = {
+            id: parsedUser.id?.toString() || "1",
+            full_name:
+              parsedUser.full_name || parsedUser.email.split("@")[0] || "User", // Use email username as fallback
+            email: parsedUser.email || "",
+            role: parsedUser.role || "student",
+            phone: parsedUser.phone || undefined,
+            address: parsedUser.address || undefined,
+            license_number: parsedUser.license_number || undefined,
+          };
+          setUser(dashboardUser);
+          console.log("Dashboard user set:", dashboardUser);
+        } else {
+          console.log("Invalid user data structure");
+          window.location.href = "/login";
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        alert("Error loading user data. Please login again.");
+        window.location.href = "/login";
+      }
+    } else {
+      console.log("No user data found in localStorage");
+      window.location.href = "/login";
+    }
 
     // Fetch courses when component mounts
     fetchActiveCourses();
