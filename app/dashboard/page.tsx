@@ -65,10 +65,14 @@ interface Review {
   date: string;
 }
 
+const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+
 export default function StudentDashboard() {
   const [user, setUser] = useState<Student | null>(null);
   const [message, setMessage] = useState("");
   const [feedback, setFeedback] = useState("");
+  // const [availableCourses, setAvailableCourses] = useState<APICourse[]>([]);
+  // const [coursesLoading, setCoursesLoading] = useState(true);
 
   // Mock data
   const recentBookings: Booking[] = [
