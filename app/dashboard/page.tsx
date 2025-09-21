@@ -56,6 +56,24 @@ interface Course {
   completed_sessions: number;
 }
 
+interface APICourse {
+  id: number;
+  course_title: string;
+  description: string;
+  bullet_pt1: string;
+  bullet_pt2: string;
+  bullet_pt3: string;
+  duration: string;
+  package_type: string;
+  total_price: number;
+  discounted_price: number;
+  is_active: boolean;
+  image_url?: string;
+  image_public_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface Review {
   id: number;
   student_name: string;
