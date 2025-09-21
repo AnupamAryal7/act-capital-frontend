@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Lock, Mail, User, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, Loader2, Phone } from "lucide-react";
 import Link from "next/link";
 
 // API endpoints
@@ -29,6 +29,7 @@ export default function LoginPage() {
     email: "",
     password: "",
     name: "",
+    phone: "",
     confirmPassword: "",
     role: "student",
   });
@@ -70,25 +71,41 @@ export default function LoginPage() {
       return;
     }
 
+    // Basic phone number validation (optional field)
+    if (
+      formData.phone &&
+      !/^\+?[\d\s\-\(\)]{10,15}$/.test(formData.phone.replace(/\s/g, ""))
+    ) {
+      setError("Please enter a valid phone number");
+      return;
+    }
+
     try {
+      const requestBody: any = {
+        full_name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      };
+
+      // Add phone number if provided
+      if (formData.phone.trim()) {
+        requestBody.phone = formData.phone.trim();
+      }
+
       const response = await fetch(CREATE_USER_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
         },
-        body: JSON.stringify({
-          full_name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
         setError("");
         setIsLogin(true);
-        setFormData((prev) => ({ ...prev, confirmPassword: "" }));
+        setFormData((prev) => ({ ...prev, confirmPassword: "", phone: "" }));
         alert(
           "Account created successfully! Please login with your credentials."
         );
@@ -145,22 +162,45 @@ export default function LoginPage() {
                   )}
 
                   {!isLogin && (
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="name"
-                          type="text"
-                          value={formData.name}
-                          onChange={(e) =>
-                            handleInputChange("name", e.target.value)
-                          }
-                          placeholder="Enter your full name"
-                          className="pl-10"
-                        />
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name *</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="name"
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) =>
+                              handleInputChange("name", e.target.value)
+                            }
+                            placeholder="Enter your full name"
+                            className="pl-10"
+                            required
+                          />
+                        </div>
                       </div>
-                    </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="phone"
+                            type="tel"
+                            value={formData.phone}
+                            onChange={(e) =>
+                              handleInputChange("phone", e.target.value)
+                            }
+                            placeholder="Enter your phone number (optional)"
+                            className="pl-10"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Optional - helps us contact you about lessons
+                        </p>
+                      </div>
+                    </>
                   )}
 
                   <div className="space-y-2">
