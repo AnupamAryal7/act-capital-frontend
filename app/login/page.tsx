@@ -12,12 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Lock, Mail, User, Loader2, Phone } from "lucide-react";
-import Link from "next/link";
 
 // API endpoints
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 const CREATE_USER_URL = `${API_BASE_URL}/`;
-const LOGIN_URL = `${API_BASE_URL}/users/login`;
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -54,6 +52,11 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     const success = await login(formData.email, formData.password);
     if (!success) {
       setError("Invalid email or password");
@@ -61,6 +64,11 @@ export default function LoginPage() {
   };
 
   const handleSignup = async () => {
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -90,7 +98,7 @@ export default function LoginPage() {
 
       // Add phone number if provided
       if (formData.phone.trim()) {
-        requestBody.phone = formData.phone.trim();
+        requestBody.phone_number = formData.phone.trim();
       }
 
       const response = await fetch(CREATE_USER_URL, {
@@ -103,16 +111,27 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
+        const userData = await response.json();
+        console.log("User created successfully:", userData);
         setError("");
         setIsLogin(true);
-        setFormData((prev) => ({ ...prev, confirmPassword: "", phone: "" }));
+        setFormData((prev) => ({
+          ...prev,
+          confirmPassword: "",
+          phone: "",
+          name: "",
+          password: "",
+        }));
         alert(
           "Account created successfully! Please login with your credentials."
         );
       } else {
         const errorData = await response.json();
+        console.error("Signup error response:", errorData);
         setError(
-          errorData.detail || "Failed to create account. Please try again."
+          errorData.detail?.[0]?.msg ||
+            errorData.detail ||
+            "Failed to create account. Please try again."
         );
       }
     } catch (error) {
@@ -154,7 +173,7 @@ export default function LoginPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-4">
                   {error && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
                       {error}
@@ -297,7 +316,7 @@ export default function LoginPage() {
                   )}
 
                   <Button
-                    type="submit"
+                    onClick={handleSubmit}
                     className="w-full"
                     size="lg"
                     disabled={isLoading}
@@ -313,7 +332,7 @@ export default function LoginPage() {
                       "Create Account"
                     )}
                   </Button>
-                </form>
+                </div>
 
                 <div className="mt-6 text-center">
                   <p className="text-sm text-muted-foreground">
@@ -340,23 +359,13 @@ export default function LoginPage() {
                     </h4>
                     <div className="text-sm text-blue-800 space-y-1">
                       <p>
-                        <strong>Admin:</strong> admin@actcapital.com.au
-                      </p>
-                      <p>
-                        <strong>Password:</strong> admin123
-                      </p>
-                      <p>
-                        <strong>Instructor:</strong>{" "}
-                        instructor@actcapital.com.au
-                      </p>
-                      <p>
-                        <strong>Password:</strong> instructor123
-                      </p>
-                      <p>
-                        <strong>Student:</strong> student@actcapital.com.au
+                        <strong>Student:</strong> student@gmail.com
                       </p>
                       <p>
                         <strong>Password:</strong> student123
+                      </p>
+                      <p className="text-xs text-blue-600 mt-2">
+                        Use these credentials to test the login functionality
                       </p>
                     </div>
                   </div>
