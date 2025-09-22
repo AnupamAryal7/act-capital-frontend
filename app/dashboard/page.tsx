@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -183,31 +185,32 @@ export default function StudentDashboard() {
   };
 
   useEffect(() => {
-    // Get real user data from localStorage (set by your login system)
+    // Get user data from localStorage (set by your auth provider)
     const userData = localStorage.getItem("user");
 
-    // Your auth system stores user data but doesn't set isLoggedIn flag
-    // So we'll just check if userData exists and has valid structure
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
-        console.log("Parsed user data:", parsedUser);
+        console.log("Parsed user data from localStorage:", parsedUser);
 
-        // Check if user object has required fields
-        if (parsedUser.id && parsedUser.email && parsedUser.role) {
-          // Map API user data to dashboard interface
+        // Check if user object has required fields (from your auth provider)
+        if (parsedUser.id && parsedUser.email) {
+          // Map auth provider user data to dashboard interface
           const dashboardUser: Student = {
             id: parsedUser.id?.toString() || "1",
             full_name:
-              parsedUser.full_name || parsedUser.email.split("@")[0] || "User", // Use email username as fallback
+              parsedUser.full_name ||
+              parsedUser.name ||
+              parsedUser.email.split("@")[0] ||
+              "User",
             email: parsedUser.email || "",
             role: parsedUser.role || "student",
-            phone: parsedUser.phone || undefined,
+            phone: parsedUser.phone_number || parsedUser.phone || undefined, // Handle both formats
             address: parsedUser.address || undefined,
             license_number: parsedUser.license_number || undefined,
           };
           setUser(dashboardUser);
-          console.log("Dashboard user set:", dashboardUser);
+          console.log("Final dashboard user set:", dashboardUser);
         } else {
           console.log("Invalid user data structure");
           window.location.href = "/login";
@@ -264,6 +267,8 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <Navigation />
+
       {/* Greeting Section */}
       <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -701,6 +706,8 @@ export default function StudentDashboard() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }
