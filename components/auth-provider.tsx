@@ -4,8 +4,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface User {
   id: number;
-  name: string;
+  full_name: string;
   email: string;
+  phone_number?: string;
   role: string;
 }
 
@@ -26,17 +27,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
 
-    if (savedUser && token) {
-      setUser(JSON.parse(savedUser));
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Error parsing saved user:", error);
+        localStorage.removeItem("user");
+      }
     }
     setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/users/login", {
+      // Fixed endpoint URL (removed "/users")
+      const response = await fetch("http://127.0.0.1:8000/api/v1/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -44,10 +51,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Login response:", data);
+
+        // Store the user data from the response
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("token", data.access_token);
 
+        // Redirect based on role
         if (data.user.role === "admin") {
           window.location.href = "/admin";
         } else if (data.user.role === "instructor") {
@@ -57,9 +67,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         return true;
+      } else {
+        console.error("Login failed:", response.status, response.statusText);
+        return false;
       }
-
-      return false;
     } catch (error) {
       console.error("Login error:", error);
       return false;
@@ -69,7 +80,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("token");
     window.location.href = "/";
   };
 
