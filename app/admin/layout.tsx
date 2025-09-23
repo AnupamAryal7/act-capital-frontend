@@ -47,7 +47,7 @@ function AdminDashboard({ children }: { children: ReactNode }) {
               <Badge variant="secondary">Dashboard</Badge>
               {user && (
                 <span className="text-sm text-muted-foreground">
-                  Welcome, {user.name}
+                  Welcome, {user.full_name}
                 </span>
               )}
             </div>
