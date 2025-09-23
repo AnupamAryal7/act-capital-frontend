@@ -23,6 +23,7 @@ import {
   GraduationCap,
   Users,
   RefreshCw,
+  CheckCircle,
 } from "lucide-react";
 
 interface Student {
@@ -563,6 +564,25 @@ export default function StudentDashboard() {
                                   </span>
                                 )}
                             </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="text-sm font-medium">
+                              What's Included:
+                            </div>
+                            <ul className="text-sm text-muted-foreground space-y-1">
+                              <li className="flex items-center space-x-2">
+                                <CheckCircle className="h-3 w-3 text-secondary" />
+                                <span>{course.bullet_pt1}</span>
+                              </li>
+                              <li className="flex items-center space-x-2">
+                                <CheckCircle className="h-3 w-3 text-secondary" />
+                                <span>{course.bullet_pt2}</span>
+                              </li>
+                              <li className="flex items-center space-x-2">
+                                <CheckCircle className="h-3 w-3 text-secondary" />
+                                <span>{course.bullet_pt3}</span>
+                              </li>
+                            </ul>
                           </div>
                           <Button
                             className="w-full"
