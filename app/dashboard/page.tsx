@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -340,14 +341,16 @@ export default function StudentDashboard() {
                         <Calendar className="h-4 w-4 mr-2" />
                         Book a Lesson
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-transparent"
-                        size="lg"
-                      >
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        View Courses
-                      </Button>
+                      <Link href={"/courses"}>
+                        <Button
+                          variant="outline"
+                          className="w-full bg-transparent"
+                          size="lg"
+                        >
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          View Courses
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
