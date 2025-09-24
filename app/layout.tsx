@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import { AuthProvider } from "@/components/auth-provider";
 import { WhatsAppChatBubble } from "@/components/whatsAppChatBubble";
 import "./globals.css";
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "./theme.ts";
 
 export const metadata: Metadata = {
   title:
@@ -33,11 +35,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <AuthProvider>
-          <Suspense fallback={null}>{children}</Suspense>
-          <WhatsAppChatBubble />
-        </AuthProvider>
-        <Analytics />
+        <ThemeProvider theme={theme}>
+          <AuthProvider>
+            <Suspense fallback={null}>{children}</Suspense>
+            <WhatsAppChatBubble />
+          </AuthProvider>
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );
