@@ -83,9 +83,7 @@ export function Navigation() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-              <Car className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary"></div>
             <span className="text-xl font-bold text-foreground">
               ACT Capital Driving School
             </span>
@@ -142,7 +140,9 @@ export function Navigation() {
               <div className="flex">
                 <Button variant="ghost" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  <span className="max-w-[120px] truncate">{user.name}</span>
+                  <span className="max-w-[120px] truncate">
+                    {user.full_name}
+                  </span>
                 </Button>
                 <Button
                   variant="ghost"
@@ -150,7 +150,9 @@ export function Navigation() {
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4" />
-                  <span className="max-w-[120px] truncate">{user.name}</span>
+                  <span className="max-w-[120px] truncate">
+                    {user.full_name}
+                  </span>
                 </Button>
               </div>
             ) : (
@@ -229,7 +231,7 @@ export function Navigation() {
                   {isLoggedIn ? (
                     <>
                       <div className="px-2 py-1 text-sm text-muted-foreground">
-                        Signed in as {user.name} ({user.role})
+                        Signed in as {user.full_name} ({user.role})
                       </div>
 
                       <Button
