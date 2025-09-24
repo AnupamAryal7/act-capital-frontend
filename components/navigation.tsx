@@ -158,9 +158,7 @@ export function Navigation() {
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4" />
-                  <span className="max-w-[120px] truncate">
-                    {user.full_name}
-                  </span>
+                  <span className="max-w-[120px] truncate">Log Out</span>
                 </Button>
               </div>
             ) : (
