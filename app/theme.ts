@@ -1,45 +1,61 @@
-export const theme = {
-  colors: {
-    primary: "#0066CC",
-    secondary: "#FF9E1B",
-    success: "#22A06B",
-    error: "#D72C0D",
-    neutral: {
-      100: "#FFFFFF",
-      200: "#F5F5F5",
-      700: "#4A4A4A",
-      900: "#1A1A1A",
+import { createTheme } from "@mui/material/styles";
+
+export const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#0066CC", // Your brand blue
+      light: "#4d94ff",
+      dark: "#004799",
+    },
+    secondary: {
+      main: "#FF9E1B", // Your brand orange
+      light: "#ffb14d",
+      dark: "#b36e00",
+    },
+    background: {
+      default: "#F5F5F5",
+      paper: "#FFFFFF",
+    },
+    text: {
+      primary: "#1A1A1A",
+      secondary: "#4A4A4A",
     },
   },
   typography: {
-    fontFamily: {
-      heading: '"Inter", sans-serif',
-      body: '"Inter", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontSize: "2.5rem",
+      fontWeight: 600,
     },
-    fontSize: {
-      h1: "2.5rem",
-      h2: "2rem",
-      h3: "1.5rem",
-      body: "1rem",
-      small: "0.875rem",
+    h2: {
+      fontSize: "2rem",
+      fontWeight: 600,
     },
-    fontWeight: {
-      regular: "400",
-      medium: "500",
-      semibold: "600",
-      bold: "700",
+    h3: {
+      fontSize: "1.5rem",
+      fontWeight: 600,
+    },
+    body1: {
+      fontSize: "1rem",
     },
   },
-  spacing: {
-    xs: "0.5rem",
-    sm: "1rem",
-    md: "1.5rem",
-    lg: "2rem",
-    xl: "3rem",
+  spacing: 8, // This makes theme.spacing(2) = 16px, etc.
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: "none", // Disables uppercase transformation
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        },
+      },
+    },
   },
-  borderRadius: {
-    small: "4px",
-    medium: "8px",
-    large: "12px",
-  },
-};
+});

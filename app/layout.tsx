@@ -8,7 +8,7 @@ import { AuthProvider } from "@/components/auth-provider";
 import { WhatsAppChatBubble } from "@/components/whatsAppChatBubble";
 import "./globals.css";
 import { ThemeProvider } from "@mui/material/styles";
-import theme from "./theme.ts";
+import { theme } from "./theme";
 
 export const metadata: Metadata = {
   title:
