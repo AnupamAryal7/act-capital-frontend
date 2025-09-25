@@ -1,6 +1,7 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -72,7 +73,7 @@ const timeSlots = [
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 
 const Booking = () => {
-  const location = useLocation();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -102,8 +103,7 @@ const Booking = () => {
           setCourses(Array.isArray(coursesData) ? coursesData : []);
 
           // Pre-select course from URL parameter
-          const urlParams = new URLSearchParams(location.search);
-          const courseIdParam = urlParams.get("course");
+          const courseIdParam = searchParams.get("course");
           if (courseIdParam && coursesData.length > 0) {
             const preSelectedCourse = coursesData.find(
               (c: Course) => c.id === parseInt(courseIdParam)
@@ -147,7 +147,7 @@ const Booking = () => {
     };
 
     fetchData();
-  }, [location.search, toast]);
+  }, [searchParams, toast]);
 
   const handleNext = () => {
     if (currentStep < 5) {
@@ -210,7 +210,7 @@ const Booking = () => {
         },
         body: JSON.stringify({
           class_session_id: sessionData.id,
-          student_id: 1, // This should come from auth context
+          student_id: 1, // TODO: Replace with authenticated user ID
         }),
       });
 
@@ -223,7 +223,7 @@ const Booking = () => {
         description: "Your driving lesson has been successfully booked.",
       });
 
-      // Redirect to dashboard or confirmation page
+      // Redirect if needed
       // window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error creating booking:", error);
@@ -247,7 +247,7 @@ const Booking = () => {
       case 3:
         return bookingData.date && bookingData.time;
       case 4:
-        return true; // Message is optional
+        return true; // Message optional
       case 5:
         return true;
       default:
@@ -411,7 +411,7 @@ const Booking = () => {
                   mode="single"
                   selected={bookingData.date}
                   onSelect={handleDateSelect}
-                  disabled={(date) => date < new Date() || date.getDay() === 0} // Disable past dates and Sundays
+                  disabled={(date) => date < new Date() || date.getDay() === 0}
                   className="rounded-md border"
                 />
               </div>
@@ -451,7 +451,7 @@ const Booking = () => {
               <Label htmlFor="message">Message (Optional)</Label>
               <Textarea
                 id="message"
-                placeholder="Tell us about any specific areas you'd like to focus on, accessibility needs, or other special requirements..."
+                placeholder="Tell us about any specific areas you'd like to focus on..."
                 value={bookingData.message}
                 onChange={(e) =>
                   setBookingData((prev) => ({
@@ -590,46 +590,39 @@ const Booking = () => {
                     getStepIcon(step)
                   )}
                 </div>
-                <span className="text-sm font-medium hidden sm:block">
-                  {step === 1 && "Course"}
-                  {step === 2 && "Instructor"}
-                  {step === 3 && "Date & Time"}
-                  {step === 4 && "Message"}
-                  {step === 5 && "Confirm"}
-                </span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Step Content */}
-        <Card className="mb-8">
-          <CardContent className="p-6">{renderStepContent()}</CardContent>
-        </Card>
+        <div className="mb-8">{renderStepContent()}</div>
 
-        {/* Navigation Buttons */}
+        {/* Navigation */}
         <div className="flex justify-between">
           <Button
-            variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 1}
+            variant="outline"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            <ChevronLeft className="mr-2 h-4 w-4" /> Previous
           </Button>
 
           {currentStep < 5 ? (
-            <Button onClick={handleNext} disabled={!canProceed()}>
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
+            <Button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className="ml-auto"
+            >
+              Next <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
             <Button
               onClick={handleBookingSubmit}
-              disabled={loading || !canProceed()}
-              className="bg-primary hover:bg-primary/90"
+              disabled={loading}
+              className="ml-auto"
             >
-              {loading ? "Processing..." : "Confirm Booking"}
+              {loading ? "Booking..." : "Confirm Booking"}
             </Button>
           )}
         </div>
