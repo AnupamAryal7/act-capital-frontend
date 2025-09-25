@@ -1,5 +1,6 @@
+"use client";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +72,7 @@ const timeSlots = [
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 
 const Booking = () => {
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -101,7 +102,8 @@ const Booking = () => {
           setCourses(Array.isArray(coursesData) ? coursesData : []);
 
           // Pre-select course from URL parameter
-          const courseIdParam = searchParams.get("course");
+          const urlParams = new URLSearchParams(location.search);
+          const courseIdParam = urlParams.get("course");
           if (courseIdParam && coursesData.length > 0) {
             const preSelectedCourse = coursesData.find(
               (c: Course) => c.id === parseInt(courseIdParam)
@@ -145,7 +147,7 @@ const Booking = () => {
     };
 
     fetchData();
-  }, [searchParams, toast]);
+  }, [location.search, toast]);
 
   const handleNext = () => {
     if (currentStep < 5) {
