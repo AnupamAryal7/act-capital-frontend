@@ -208,7 +208,7 @@ export default function CoursesPage() {
   const handleBookCourse = (courseId: number) => {
     // Redirect to booking page
     console.log("Book course:", courseId);
-    // window.location.href = `/booking?course=${courseId}`;
+    window.location.href = `/booking?course=${courseId}`;
   };
 
   const handleLearnMore = (courseId: number) => {

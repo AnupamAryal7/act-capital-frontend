@@ -1,662 +1,639 @@
-"use client"
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  BookOpen,
+  User,
+  Calendar as CalendarIcon,
+  MessageSquare,
+  CreditCard,
+  CheckCircle,
+} from "lucide-react";
 
-import { useState } from "react"
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarDays, Clock, User, Car, MapPin, CheckCircle, CreditCard, Lock, Loader2 } from "lucide-react"
-
-interface BookingData {
-  course: string
-  instructor: string
-  date: Date | undefined
-  time: string
-  duration: string
-  studentName: string
-  email: string
-  phone: string
-  address: string
-  experience: string
-  notes: string
-  paymentMethod: string
-  cardNumber: string
-  expiryDate: string
-  cvv: string
-  cardName: string
+interface Course {
+  id: number;
+  course_title: string;
+  description: string;
+  bullet_pt1: string;
+  bullet_pt2: string;
+  bullet_pt3: string;
+  duration: string;
+  package_type: string;
+  total_price: number;
+  discounted_price: number;
 }
 
-export default function BookingPage() {
-  const [step, setStep] = useState(1)
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+interface Instructor {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface BookingData {
+  courseId: number;
+  instructorId: number;
+  date: Date | undefined;
+  time: string;
+  message: string;
+}
+
+const timeSlots = [
+  "9:00 AM",
+  "10:00 AM",
+  "11:00 AM",
+  "1:00 PM",
+  "2:00 PM",
+  "3:00 PM",
+  "4:00 PM",
+];
+
+const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+
+const Booking = () => {
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(false);
+
   const [bookingData, setBookingData] = useState<BookingData>({
-    course: "",
-    instructor: "",
+    courseId: 0,
+    instructorId: 0,
     date: undefined,
     time: "",
-    duration: "",
-    studentName: "",
-    email: "",
-    phone: "",
-    address: "",
-    experience: "",
-    notes: "",
-    paymentMethod: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardName: "",
-  })
+    message: "",
+  });
 
-  const courses = [
-    { id: "beginner", name: "Beginner Lessons", price: 80 },
-    { id: "refresher", name: "Refresher Course", price: 75 },
-    { id: "test-prep", name: "Test Preparation", price: 90 },
-    { id: "defensive", name: "Defensive Driving", price: 85 },
-  ]
+  // Fetch courses and instructors
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
 
-  const instructors = [
-    { id: "sarah", name: "Sarah Johnson", rating: 4.9, experience: "8 years" },
-    { id: "mike", name: "Mike Chen", rating: 4.8, experience: "6 years" },
-    { id: "emma", name: "Emma Wilson", rating: 4.9, experience: "10 years" },
-  ]
+        // Fetch courses
+        const coursesResponse = await fetch(`${API_BASE_URL}/courses/active`);
+        if (coursesResponse.ok) {
+          const coursesData = await coursesResponse.json();
+          setCourses(Array.isArray(coursesData) ? coursesData : []);
 
-  const timeSlots = [
-    "7:00 AM",
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-  ]
+          // Pre-select course from URL parameter
+          const courseIdParam = searchParams.get("course_id");
+          if (courseIdParam && coursesData.length > 0) {
+            const preSelectedCourse = coursesData.find(
+              (c: Course) => c.id === parseInt(courseIdParam)
+            );
+            if (preSelectedCourse) {
+              setSelectedCourse(preSelectedCourse);
+              setBookingData((prev) => ({
+                ...prev,
+                courseId: preSelectedCourse.id,
+              }));
+            }
+          }
+        }
 
-  const handleInputChange = (field: keyof BookingData, value: any) => {
-    setBookingData((prev) => ({ ...prev, [field]: value }))
-  }
+        // Fetch instructors
+        const instructorsResponse = await fetch(
+          `${API_BASE_URL}/users/instructors`
+        );
+        if (instructorsResponse.ok) {
+          const instructorsData = await instructorsResponse.json();
+          setInstructors(Array.isArray(instructorsData) ? instructorsData : []);
+
+          // Pre-select first instructor
+          if (instructorsData.length > 0) {
+            setBookingData((prev) => ({
+              ...prev,
+              instructorId: instructorsData[0].id,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load booking data. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [searchParams, toast]);
 
   const handleNext = () => {
-    if (step < 5) setStep(step + 1)
-  }
+    if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
 
   const handlePrevious = () => {
-    if (step > 1) setStep(step - 1)
-  }
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
-  const handleSubmit = async () => {
-    setIsProcessingPayment(true)
+  const handleCourseChange = (courseId: string) => {
+    const course = courses.find((c) => c.id === parseInt(courseId));
+    if (course) {
+      setSelectedCourse(course);
+      setBookingData((prev) => ({ ...prev, courseId: course.id }));
+    }
+  };
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 3000))
+  const handleTimeSelect = (time: string) => {
+    setBookingData((prev) => ({ ...prev, time }));
+  };
 
-    console.log("Booking and payment submitted:", bookingData)
-    setIsProcessingPayment(false)
-    setStep(6) // Success step
-  }
+  const handleDateSelect = (date: Date | undefined) => {
+    setBookingData((prev) => ({ ...prev, date }));
+  };
 
-  const selectedCourse = courses.find((c) => c.id === bookingData.course)
-  const selectedInstructor = instructors.find((i) => i.id === bookingData.instructor)
-  const totalCost = selectedCourse ? selectedCourse.price * Number.parseFloat(bookingData.duration || "1") : 0
+  const handleBookingSubmit = async () => {
+    try {
+      setLoading(true);
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-background to-muted/20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto text-center space-y-6">
-              <Badge variant="secondary" className="mb-4">
-                Book Your Lesson
-              </Badge>
-              <h1 className="text-4xl lg:text-5xl font-bold text-balance">Schedule Your Driving Lesson</h1>
-              <p className="text-xl text-muted-foreground text-pretty">
-                Choose your course, instructor, and preferred time. Get started on your driving journey today.
+      // Create class session
+      const sessionResponse = await fetch(`${API_BASE_URL}/class-sessions/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          course_id: bookingData.courseId,
+          instructor_id: bookingData.instructorId,
+          date: bookingData.date?.toISOString().split("T")[0],
+          time: bookingData.time,
+          notes: bookingData.message,
+        }),
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error("Failed to create class session");
+      }
+
+      const sessionData = await sessionResponse.json();
+
+      // Create booking
+      const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          class_session_id: sessionData.id,
+          student_id: 1, // This should come from auth context
+        }),
+      });
+
+      if (!bookingResponse.ok) {
+        throw new Error("Failed to create booking");
+      }
+
+      toast({
+        title: "Booking Confirmed!",
+        description: "Your driving lesson has been successfully booked.",
+      });
+
+      // Redirect to dashboard or confirmation page
+      // window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      toast({
+        title: "Booking Failed",
+        description:
+          "There was an error processing your booking. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const canProceed = () => {
+    switch (currentStep) {
+      case 1:
+        return bookingData.courseId > 0;
+      case 2:
+        return bookingData.instructorId > 0;
+      case 3:
+        return bookingData.date && bookingData.time;
+      case 4:
+        return true; // Message is optional
+      case 5:
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const getStepIcon = (step: number) => {
+    switch (step) {
+      case 1:
+        return <BookOpen className="h-5 w-5" />;
+      case 2:
+        return <User className="h-5 w-5" />;
+      case 3:
+        return <CalendarIcon className="h-5 w-5" />;
+      case 4:
+        return <MessageSquare className="h-5 w-5" />;
+      case 5:
+        return <CreditCard className="h-5 w-5" />;
+      default:
+        return null;
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Choose Your Course</h2>
+              <p className="text-muted-foreground">
+                Select the driving course that best fits your needs
               </p>
             </div>
-          </div>
-        </section>
 
-        {/* Booking Form */}
-        <section className="py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-              {/* Progress Steps */}
-              <div className="mb-12">
-                <div className="flex items-center justify-between">
-                  {[1, 2, 3, 4, 5].map((stepNumber) => (
-                    <div key={stepNumber} className="flex items-center">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                          step >= stepNumber ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {step > stepNumber ? <CheckCircle className="h-5 w-5" /> : stepNumber}
-                      </div>
-                      {stepNumber < 5 && (
-                        <div className={`h-1 w-16 mx-2 ${step > stepNumber ? "bg-primary" : "bg-muted"}`} />
-                      )}
-                    </div>
+            <div className="space-y-4">
+              <Label htmlFor="course-select">Select Course</Label>
+              <Select
+                value={bookingData.courseId.toString()}
+                onValueChange={handleCourseChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id.toString()}>
+                      {course.course_title} - {course.package_type}
+                    </SelectItem>
                   ))}
-                </div>
-                <div className="flex justify-between mt-4 text-sm">
-                  <span className={step >= 1 ? "text-primary font-medium" : "text-muted-foreground"}>
-                    Course & Instructor
-                  </span>
-                  <span className={step >= 2 ? "text-primary font-medium" : "text-muted-foreground"}>Date & Time</span>
-                  <span className={step >= 3 ? "text-primary font-medium" : "text-muted-foreground"}>Your Details</span>
-                  <span className={step >= 4 ? "text-primary font-medium" : "text-muted-foreground"}>
-                    Review & Confirm
-                  </span>
-                  <span className={step >= 5 ? "text-primary font-medium" : "text-muted-foreground"}>Payment</span>
-                </div>
-              </div>
+                </SelectContent>
+              </Select>
 
-              {step === 6 ? (
-                // Success Step
-                <Card className="border-0 shadow-lg text-center">
-                  <CardContent className="p-12 space-y-6">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                      <CheckCircle className="h-8 w-8 text-green-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold">Payment Successful!</h2>
-                    <p className="text-muted-foreground">
-                      Your driving lesson has been successfully booked and paid for. You'll receive a confirmation email
-                      shortly.
-                    </p>
-                    <div className="bg-muted/50 rounded-lg p-6 space-y-2">
-                      <div className="font-medium">Booking Details:</div>
-                      <div className="text-sm text-muted-foreground">
-                        {selectedCourse?.name} with {selectedInstructor?.name}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {bookingData.date?.toDateString()} at {bookingData.time}
-                      </div>
-                      <div className="text-sm font-medium text-primary">Total Paid: ${totalCost}</div>
-                    </div>
-                    <Button asChild>
-                      <a href="/">Return to Homepage</a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="border-0 shadow-lg">
+              {selectedCourse && (
+                <Card className="mt-4">
                   <CardHeader>
-                    <CardTitle className="text-2xl">
-                      {step === 1 && "Select Course & Instructor"}
-                      {step === 2 && "Choose Date & Time"}
-                      {step === 3 && "Your Information"}
-                      {step === 4 && "Review & Confirm"}
-                      {step === 5 && "Payment Details"}
-                    </CardTitle>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {selectedCourse.course_title}
+                        </CardTitle>
+                        <Badge variant="outline" className="mt-1 capitalize">
+                          {selectedCourse.package_type} Package
+                        </Badge>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4 mr-1" />
+                          {selectedCourse.duration}
+                        </div>
+                        <div className="flex items-center text-lg font-bold">
+                          <DollarSign className="h-4 w-4" />
+                          {selectedCourse.discounted_price ||
+                            selectedCourse.total_price}
+                        </div>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Step 1: Course & Instructor Selection */}
-                    {step === 1 && (
-                      <div className="space-y-6">
-                        <div className="space-y-4">
-                          <Label className="text-base font-medium">Select a Course</Label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {courses.map((course) => (
-                              <Card
-                                key={course.id}
-                                className={`cursor-pointer transition-all ${
-                                  bookingData.course === course.id
-                                    ? "ring-2 ring-primary bg-primary/5"
-                                    : "hover:shadow-md"
-                                }`}
-                                onClick={() => handleInputChange("course", course.id)}
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex justify-between items-start">
-                                    <div>
-                                      <h3 className="font-medium">{course.name}</h3>
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        Professional instruction tailored to your needs
-                                      </p>
-                                    </div>
-                                    <Badge variant="secondary">${course.price}/hr</Badge>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <Label className="text-base font-medium">Choose Your Instructor</Label>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {instructors.map((instructor) => (
-                              <Card
-                                key={instructor.id}
-                                className={`cursor-pointer transition-all ${
-                                  bookingData.instructor === instructor.id
-                                    ? "ring-2 ring-primary bg-primary/5"
-                                    : "hover:shadow-md"
-                                }`}
-                                onClick={() => handleInputChange("instructor", instructor.id)}
-                              >
-                                <CardContent className="p-4 text-center">
-                                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <User className="h-6 w-6" />
-                                  </div>
-                                  <h3 className="font-medium">{instructor.name}</h3>
-                                  <p className="text-sm text-muted-foreground">{instructor.experience}</p>
-                                  <div className="flex items-center justify-center mt-2">
-                                    <span className="text-sm">⭐ {instructor.rating}</span>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 2: Date & Time Selection */}
-                    {step === 2 && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                          <Label className="text-base font-medium">Select Date</Label>
-                          <Calendar
-                            mode="single"
-                            selected={bookingData.date}
-                            onSelect={(date) => handleInputChange("date", date)}
-                            disabled={(date) => date < new Date() || date.getDay() === 0}
-                            className="rounded-md border"
-                          />
-                        </div>
-
-                        <div className="space-y-6">
-                          <div className="space-y-4">
-                            <Label className="text-base font-medium">Select Time</Label>
-                            <div className="grid grid-cols-2 gap-2">
-                              {timeSlots.map((time) => (
-                                <Button
-                                  key={time}
-                                  variant={bookingData.time === time ? "default" : "outline"}
-                                  size="sm"
-                                  onClick={() => handleInputChange("time", time)}
-                                  className="justify-start"
-                                >
-                                  <Clock className="h-4 w-4 mr-2" />
-                                  {time}
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="duration">Lesson Duration</Label>
-                            <Select onValueChange={(value) => handleInputChange("duration", value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select duration" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">1 Hour</SelectItem>
-                                <SelectItem value="1.5">1.5 Hours</SelectItem>
-                                <SelectItem value="2">2 Hours</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 3: Student Information */}
-                    {step === 3 && (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="studentName">Full Name *</Label>
-                            <Input
-                              id="studentName"
-                              value={bookingData.studentName}
-                              onChange={(e) => handleInputChange("studentName", e.target.value)}
-                              placeholder="Enter your full name"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="phone">Phone Number *</Label>
-                            <Input
-                              id="phone"
-                              type="tel"
-                              value={bookingData.phone}
-                              onChange={(e) => handleInputChange("phone", e.target.value)}
-                              placeholder="Enter your phone number"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email Address *</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={bookingData.email}
-                            onChange={(e) => handleInputChange("email", e.target.value)}
-                            placeholder="Enter your email address"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="address">Pickup Address *</Label>
-                          <Input
-                            id="address"
-                            value={bookingData.address}
-                            onChange={(e) => handleInputChange("address", e.target.value)}
-                            placeholder="Enter your pickup address"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="experience">Driving Experience</Label>
-                          <Select onValueChange={(value) => handleInputChange("experience", value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select your experience level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="complete-beginner">Complete Beginner</SelectItem>
-                              <SelectItem value="some-experience">Some Experience</SelectItem>
-                              <SelectItem value="returning-driver">Returning Driver</SelectItem>
-                              <SelectItem value="test-preparation">Test Preparation</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="notes">Additional Notes</Label>
-                          <Textarea
-                            id="notes"
-                            value={bookingData.notes}
-                            onChange={(e) => handleInputChange("notes", e.target.value)}
-                            placeholder="Any specific requirements or notes for your instructor..."
-                            rows={3}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 4: Review & Confirm */}
-                    {step === 4 && (
-                      <div className="space-y-6">
-                        <div className="bg-muted/50 rounded-lg p-6 space-y-4">
-                          <h3 className="font-semibold text-lg">Booking Summary</h3>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                              <div className="flex items-center space-x-3">
-                                <Car className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                  <div className="font-medium">Course</div>
-                                  <div className="text-sm text-muted-foreground">{selectedCourse?.name}</div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center space-x-3">
-                                <User className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                  <div className="font-medium">Instructor</div>
-                                  <div className="text-sm text-muted-foreground">{selectedInstructor?.name}</div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center space-x-3">
-                                <CalendarDays className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                  <div className="font-medium">Date & Time</div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {bookingData.date?.toDateString()} at {bookingData.time}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-3">
-                              <div className="flex items-center space-x-3">
-                                <Clock className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                  <div className="font-medium">Duration</div>
-                                  <div className="text-sm text-muted-foreground">{bookingData.duration} Hour(s)</div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center space-x-3">
-                                <MapPin className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                  <div className="font-medium">Pickup Location</div>
-                                  <div className="text-sm text-muted-foreground">{bookingData.address}</div>
-                                </div>
-                              </div>
-
-                              <div className="pt-3 border-t">
-                                <div className="flex justify-between items-center">
-                                  <span className="font-medium">Total Cost</span>
-                                  <span className="text-lg font-bold text-primary">${totalCost}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <h4 className="font-medium text-blue-900 mb-2">Important Information</h4>
-                          <ul className="text-sm text-blue-800 space-y-1">
-                            <li>• Please have your learner's permit ready for the lesson</li>
-                            <li>• Cancellations must be made at least 24 hours in advance</li>
-                            <li>• Our instructor will contact you 30 minutes before pickup</li>
-                            <li>• Payment will be processed securely in the next step</li>
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-
-                    {step === 5 && (
-                      <div className="space-y-6">
-                        {/* Order Summary */}
-                        <div className="bg-muted/50 rounded-lg p-6">
-                          <h3 className="font-semibold text-lg mb-4">Order Summary</h3>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span>{selectedCourse?.name}</span>
-                              <span>${selectedCourse?.price}/hr</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Duration</span>
-                              <span>{bookingData.duration} hour(s)</span>
-                            </div>
-                            <div className="border-t pt-2 mt-2">
-                              <div className="flex justify-between font-semibold text-lg">
-                                <span>Total</span>
-                                <span className="text-primary">${totalCost}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Payment Method Selection */}
-                        <div className="space-y-4">
-                          <Label className="text-base font-medium">Payment Method</Label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Card
-                              className={`cursor-pointer transition-all ${
-                                bookingData.paymentMethod === "card"
-                                  ? "ring-2 ring-primary bg-primary/5"
-                                  : "hover:shadow-md"
-                              }`}
-                              onClick={() => handleInputChange("paymentMethod", "card")}
-                            >
-                              <CardContent className="p-4 flex items-center space-x-3">
-                                <CreditCard className="h-6 w-6" />
-                                <div>
-                                  <div className="font-medium">Credit/Debit Card</div>
-                                  <div className="text-sm text-muted-foreground">Pay securely with your card</div>
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            <Card
-                              className={`cursor-pointer transition-all ${
-                                bookingData.paymentMethod === "paypal"
-                                  ? "ring-2 ring-primary bg-primary/5"
-                                  : "hover:shadow-md"
-                              }`}
-                              onClick={() => handleInputChange("paymentMethod", "paypal")}
-                            >
-                              <CardContent className="p-4 flex items-center space-x-3">
-                                <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                                  P
-                                </div>
-                                <div>
-                                  <div className="font-medium">PayPal</div>
-                                  <div className="text-sm text-muted-foreground">Pay with your PayPal account</div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-
-                        {/* Card Details Form */}
-                        {bookingData.paymentMethod === "card" && (
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="cardName">Cardholder Name *</Label>
-                              <Input
-                                id="cardName"
-                                value={bookingData.cardName}
-                                onChange={(e) => handleInputChange("cardName", e.target.value)}
-                                placeholder="Enter cardholder name"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="cardNumber">Card Number *</Label>
-                              <div className="relative">
-                                <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  id="cardNumber"
-                                  value={bookingData.cardNumber}
-                                  onChange={(e) => handleInputChange("cardNumber", e.target.value)}
-                                  placeholder="1234 5678 9012 3456"
-                                  className="pl-10"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="expiryDate">Expiry Date *</Label>
-                                <Input
-                                  id="expiryDate"
-                                  value={bookingData.expiryDate}
-                                  onChange={(e) => handleInputChange("expiryDate", e.target.value)}
-                                  placeholder="MM/YY"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="cvv">CVV *</Label>
-                                <Input
-                                  id="cvv"
-                                  value={bookingData.cvv}
-                                  onChange={(e) => handleInputChange("cvv", e.target.value)}
-                                  placeholder="123"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* PayPal Message */}
-                        {bookingData.paymentMethod === "paypal" && (
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                                P
-                              </div>
-                              <span className="font-medium text-blue-900">PayPal Payment</span>
-                            </div>
-                            <p className="text-sm text-blue-800 mt-2">
-                              You will be redirected to PayPal to complete your payment securely.
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Security Notice */}
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <Lock className="h-4 w-4" />
-                          <span>Your payment information is encrypted and secure</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Navigation Buttons */}
-                    <div className="flex justify-between pt-6 border-t">
-                      <Button variant="outline" onClick={handlePrevious} disabled={step === 1 || isProcessingPayment}>
-                        Previous
-                      </Button>
-
-                      {step < 5 ? (
-                        <Button
-                          onClick={handleNext}
-                          disabled={
-                            (step === 1 && (!bookingData.course || !bookingData.instructor)) ||
-                            (step === 2 && (!bookingData.date || !bookingData.time || !bookingData.duration)) ||
-                            (step === 3 &&
-                              (!bookingData.studentName ||
-                                !bookingData.email ||
-                                !bookingData.phone ||
-                                !bookingData.address)) ||
-                            step === 4
-                          }
-                        >
-                          {step === 4 ? "Proceed to Payment" : "Next"}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={handleSubmit}
-                          disabled={
-                            !bookingData.paymentMethod ||
-                            (bookingData.paymentMethod === "card" &&
-                              (!bookingData.cardName ||
-                                !bookingData.cardNumber ||
-                                !bookingData.expiryDate ||
-                                !bookingData.cvv)) ||
-                            isProcessingPayment
-                          }
-                        >
-                          {isProcessingPayment ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Processing Payment...
-                            </>
-                          ) : (
-                            <>
-                              <Lock className="h-4 w-4 mr-2" />
-                              Pay ${totalCost}
-                            </>
-                          )}
-                        </Button>
-                      )}
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      {selectedCourse.description}
+                    </p>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">What's Included:</h4>
+                      <ul className="space-y-1 text-sm">
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-primary mr-2" />
+                          {selectedCourse.bullet_pt1}
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-primary mr-2" />
+                          {selectedCourse.bullet_pt2}
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-primary mr-2" />
+                          {selectedCourse.bullet_pt3}
+                        </li>
+                      </ul>
                     </div>
                   </CardContent>
                 </Card>
               )}
             </div>
           </div>
-        </section>
-      </main>
-      <Footer />
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Select Your Instructor</h2>
+              <p className="text-muted-foreground">
+                Choose from our experienced driving instructors
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <Label htmlFor="instructor-select">Select Instructor</Label>
+              <Select
+                value={bookingData.instructorId.toString()}
+                onValueChange={(value) =>
+                  setBookingData((prev) => ({
+                    ...prev,
+                    instructorId: parseInt(value),
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose an instructor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {instructors.map((instructor) => (
+                    <SelectItem
+                      key={instructor.id}
+                      value={instructor.id.toString()}
+                    >
+                      {instructor.first_name} {instructor.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Choose Date & Time</h2>
+              <p className="text-muted-foreground">
+                Select your preferred lesson date and time
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <Label>Select Date</Label>
+                <Calendar
+                  mode="single"
+                  selected={bookingData.date}
+                  onSelect={handleDateSelect}
+                  disabled={(date) => date < new Date() || date.getDay() === 0} // Disable past dates and Sundays
+                  className="rounded-md border"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label>Select Time</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {timeSlots.map((time) => (
+                    <Button
+                      key={time}
+                      variant={
+                        bookingData.time === time ? "default" : "outline"
+                      }
+                      onClick={() => handleTimeSelect(time)}
+                      className="w-full"
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Additional Message</h2>
+              <p className="text-muted-foreground">
+                Any special requirements or notes for your instructor
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <Label htmlFor="message">Message (Optional)</Label>
+              <Textarea
+                id="message"
+                placeholder="Tell us about any specific areas you'd like to focus on, accessibility needs, or other special requirements..."
+                value={bookingData.message}
+                onChange={(e) =>
+                  setBookingData((prev) => ({
+                    ...prev,
+                    message: e.target.value,
+                  }))
+                }
+                rows={5}
+              />
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Confirm & Book</h2>
+              <p className="text-muted-foreground">
+                Review your booking details and confirm
+              </p>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Booking Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Course</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedCourse?.course_title}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Package</Label>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {selectedCourse?.package_type}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Instructor</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {
+                        instructors.find(
+                          (i) => i.id === bookingData.instructorId
+                        )?.first_name
+                      }{" "}
+                      {
+                        instructors.find(
+                          (i) => i.id === bookingData.instructorId
+                        )?.last_name
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Date & Time</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {bookingData.date?.toLocaleDateString()} at{" "}
+                      {bookingData.time}
+                    </p>
+                  </div>
+                </div>
+
+                {bookingData.message && (
+                  <div>
+                    <Label className="text-sm font-medium">Special Notes</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {bookingData.message}
+                    </p>
+                  </div>
+                )}
+
+                <Separator />
+
+                <div className="flex justify-between items-center text-lg font-bold">
+                  <span>Total Price:</span>
+                  <span className="flex items-center">
+                    <DollarSign className="h-5 w-5" />
+                    {selectedCourse?.discounted_price ||
+                      selectedCourse?.total_price}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p>Loading booking form...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Progress Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold">Book Your Lesson</h1>
+            <Badge variant="outline">Step {currentStep} of 5</Badge>
+          </div>
+
+          <Progress value={(currentStep / 5) * 100} className="mb-4" />
+
+          <div className="flex justify-between items-center">
+            {[1, 2, 3, 4, 5].map((step) => (
+              <div
+                key={step}
+                className={`flex items-center space-x-2 ${
+                  step <= currentStep ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+                    step <= currentStep
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-muted"
+                  }`}
+                >
+                  {step < currentStep ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    getStepIcon(step)
+                  )}
+                </div>
+                <span className="text-sm font-medium hidden sm:block">
+                  {step === 1 && "Course"}
+                  {step === 2 && "Instructor"}
+                  {step === 3 && "Date & Time"}
+                  {step === 4 && "Message"}
+                  {step === 5 && "Confirm"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <Card className="mb-8">
+          <CardContent className="p-6">{renderStepContent()}</CardContent>
+        </Card>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+
+          {currentStep < 5 ? (
+            <Button onClick={handleNext} disabled={!canProceed()}>
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleBookingSubmit}
+              disabled={loading || !canProceed()}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {loading ? "Processing..." : "Confirm Booking"}
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
+
+export default Booking;
