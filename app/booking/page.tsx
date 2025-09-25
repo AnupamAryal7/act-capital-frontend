@@ -101,7 +101,7 @@ const Booking = () => {
           setCourses(Array.isArray(coursesData) ? coursesData : []);
 
           // Pre-select course from URL parameter
-          const courseIdParam = searchParams.get("course_id");
+          const courseIdParam = searchParams.get("course");
           if (courseIdParam && coursesData.length > 0) {
             const preSelectedCourse = coursesData.find(
               (c: Course) => c.id === parseInt(courseIdParam)
