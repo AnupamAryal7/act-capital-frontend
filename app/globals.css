@@ -33,7 +33,9 @@
   --sidebar: oklch(0.97 0 0); /* Light gray sidebar */
   --sidebar-foreground: oklch(0.35 0 0); /* Dark gray sidebar text */
   --sidebar-primary: oklch(0.55 0.15 264); /* Primary blue sidebar */
-  --sidebar-primary-foreground: oklch(1 0 0); /* White text on sidebar primary */
+  --sidebar-primary-foreground: oklch(
+    1 0 0
+  ); /* White text on sidebar primary */
   --sidebar-accent: oklch(0.6 0.15 162); /* Emerald sidebar accent */
   --sidebar-accent-foreground: oklch(1 0 0); /* White text on sidebar accent */
   --sidebar-border: oklch(0.9 0 0); /* Light gray sidebar border */
@@ -68,8 +70,12 @@
   --chart-5: oklch(0.7 0.15 45);
   --sidebar: oklch(0.15 0 0); /* Dark sidebar */
   --sidebar-foreground: oklch(0.95 0 0); /* Light sidebar text */
-  --sidebar-primary: oklch(0.65 0.15 264); /* Lighter primary for dark sidebar */
-  --sidebar-primary-foreground: oklch(0.1 0 0); /* Dark text on sidebar primary */
+  --sidebar-primary: oklch(
+    0.65 0.15 264
+  ); /* Lighter primary for dark sidebar */
+  --sidebar-primary-foreground: oklch(
+    0.1 0 0
+  ); /* Dark text on sidebar primary */
   --sidebar-accent: oklch(0.7 0.15 162); /* Lighter accent for dark sidebar */
   --sidebar-accent-foreground: oklch(0.1 0 0); /* Dark text on sidebar accent */
   --sidebar-border: oklch(0.25 0 0); /* Dark sidebar border */
@@ -117,11 +123,11 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --animate-star-btn: star-btn calc(var(--duration) * 1s) linear infinite;
   @keyframes star-btn {
-  0% {
-    offset-distance: 0%;
+    0% {
+      offset-distance: 0%;
     }
-  100% {
-    offset-distance: 100%;
+    100% {
+      offset-distance: 100%;
     }
   }
 }
