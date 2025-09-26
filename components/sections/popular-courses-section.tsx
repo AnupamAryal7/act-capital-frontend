@@ -60,17 +60,28 @@ export function PopularCoursesSection() {
   }, []);
 
   const handleBookNow = (courseId: number) => {
-    // Implement booking functionality
-    console.log("Book Now clicked for course:", courseId);
-    // You can redirect to booking page or open booking modal
-    // window.location.href = `/book/${courseId}`;
+    // Check if user is logged in
+    const userData = localStorage.getItem("user");
+
+    if (!userData) {
+      // User not logged in - redirect to login with booking intent
+      localStorage.setItem(
+        "redirectAfterLogin",
+        `/booking?course_id=${courseId}`
+      );
+      window.location.href = `/login?redirect=/booking?course_id=${courseId}`;
+    } else {
+      // User is logged in - go directly to booking
+      window.location.href = `/booking?course_id=${courseId}`;
+    }
   };
 
   const handleInquiry = (courseId: number) => {
-    // Implement inquiry functionality
-    console.log("Inquiry clicked for course:", courseId);
-    // You can redirect to contact form or open inquiry modal
-    // window.location.href = `/inquiry/${courseId}`;
+    // For now, just log the inquiry - can be implemented later
+    console.log("Inquiry for course:", courseId);
+    alert(
+      "Inquiry functionality coming soon! Please use the contact form or call us directly."
+    );
   };
 
   const isPopularCourse = (course: Course) => {
