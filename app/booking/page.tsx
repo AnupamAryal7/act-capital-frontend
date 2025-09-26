@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +53,7 @@ const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 // Static instructor data (as requested)
 const STATIC_INSTRUCTOR = {
   id: 1,
-  name: "Jeevan Pandey",
+  name: "Sarah Johnson",
   experience: "8+ years",
   specialization: "Beginner & Advanced Courses",
 };
@@ -73,8 +70,6 @@ const TIME_SLOTS = [
 ];
 
 export default function BookingPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -98,8 +93,9 @@ export default function BookingPage() {
         const data = await response.json();
         setCourses(Array.isArray(data) ? data : []);
 
-        // Pre-select course from URL parameter
-        const courseIdParam = searchParams.get("course_id");
+        // Pre-select course from URL parameter if available
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseIdParam = urlParams.get("course_id");
         if (courseIdParam) {
           const courseId = parseInt(courseIdParam);
           const preSelectedCourse = data.find(
@@ -154,6 +150,16 @@ export default function BookingPage() {
     try {
       setLoading(true);
 
+      // Get user data from localStorage
+      const userData = localStorage.getItem("user");
+      if (!userData) {
+        alert("Please login to continue");
+        window.location.href = "/login";
+        return;
+      }
+
+      const user = JSON.parse(userData);
+
       // Create class session first
       const sessionResponse = await fetch(`${API_BASE_URL}/class-sessions/`, {
         method: "POST",
@@ -174,7 +180,7 @@ export default function BookingPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            student_id: JSON.parse(localStorage.getItem("user") || "{}").id,
+            student_id: user.id,
             session_id: sessionData.id,
             pickup_location: bookingData.pickupLocation,
             notes: bookingData.message,
@@ -184,7 +190,7 @@ export default function BookingPage() {
 
         if (bookingResponse.ok) {
           alert("Booking created successfully!");
-          router.push("/dashboard");
+          window.location.href = "/dashboard";
         } else {
           alert("Failed to create booking");
         }
@@ -543,10 +549,20 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 text-white py-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-2xl lg:text-3xl font-bold">
+            Book Your Driving Lesson
+          </h1>
+          <p className="text-white/90 mt-1">
+            Complete the form below to schedule your session
+          </p>
+        </div>
+      </div>
 
-      <main className="flex-1 py-8 bg-gray-50">
+      <main className="flex-1 py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto">
             {/* Progress Steps */}
@@ -612,8 +628,6 @@ export default function BookingPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
