@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -24,7 +23,6 @@ import {
   GraduationCap,
   Users,
   RefreshCw,
-  CheckCircle,
 } from "lucide-react";
 
 interface Student {
@@ -248,9 +246,25 @@ export default function StudentDashboard() {
   };
 
   const handleEnrollCourse = (courseId: number) => {
-    console.log("Enrolling in course:", courseId);
-    // Implement enrollment logic here
-    alert("Enrollment functionality coming soon!");
+    // Check if user is logged in
+    const userData = localStorage.getItem("user");
+
+    if (!userData) {
+      // User not logged in - redirect to login with booking intent
+      localStorage.setItem(
+        "redirectAfterLogin",
+        `/booking?course_id=${courseId}`
+      );
+      window.location.href = `/login?redirect=/booking?course_id=${courseId}`;
+    } else {
+      // User is logged in - go directly to booking
+      window.location.href = `/booking?course_id=${courseId}`;
+    }
+  };
+
+  const handleBookLesson = () => {
+    // Navigate to booking page without pre-selected course
+    window.location.href = "/booking";
   };
 
   if (!user) {
@@ -337,20 +351,23 @@ export default function StudentDashboard() {
                       ))}
                     </div>
                     <div className="mt-6 space-y-3">
-                      <Button className="w-full" size="lg">
+                      <Button
+                        className="w-full"
+                        size="lg"
+                        onClick={handleBookLesson}
+                      >
                         <Calendar className="h-4 w-4 mr-2" />
                         Book a Lesson
                       </Button>
-                      <Link href={"/courses"}>
-                        <Button
-                          variant="outline"
-                          className="w-full bg-transparent"
-                          size="lg"
-                        >
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          View Courses
-                        </Button>
-                      </Link>
+                      <Button
+                        variant="outline"
+                        className="w-full bg-transparent"
+                        size="lg"
+                        onClick={() => (window.location.href = "/courses")}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        View Courses
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -567,25 +584,6 @@ export default function StudentDashboard() {
                                   </span>
                                 )}
                             </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="text-sm font-medium">
-                              What's Included:
-                            </div>
-                            <ul className="text-sm text-muted-foreground space-y-1">
-                              <li className="flex items-center space-x-2">
-                                <CheckCircle className="h-3 w-3 text-secondary" />
-                                <span>{course.bullet_pt1}</span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <CheckCircle className="h-3 w-3 text-secondary" />
-                                <span>{course.bullet_pt2}</span>
-                              </li>
-                              <li className="flex items-center space-x-2">
-                                <CheckCircle className="h-3 w-3 text-secondary" />
-                                <span>{course.bullet_pt3}</span>
-                              </li>
-                            </ul>
                           </div>
                           <Button
                             className="w-full"
