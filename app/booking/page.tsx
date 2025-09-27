@@ -60,7 +60,7 @@ const STATIC_INSTRUCTOR = {
   experience: "8+ years",
   specialization: "Beginner & Advanced Courses",
   image: "/instructors/jan_jeevan.png",
-  phone: "+61 420 995 333",,
+  phone: "+61 420 995 333",
   email: "jeevan.pandey68@gmail.com",
 };
 
