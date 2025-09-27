@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import Image from "next/image";
 import {
   Select,
   SelectContent,
@@ -24,6 +25,8 @@ import {
   ChevronRight,
   Check,
   BookOpen,
+  Phone,
+  Mail,
 } from "lucide-react";
 
 interface Course {
@@ -53,9 +56,12 @@ const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 // Static instructor data (as requested)
 const STATIC_INSTRUCTOR = {
   id: 1,
-  name: "Sarah Johnson",
+  name: "Jeevan Pandey",
   experience: "8+ years",
   specialization: "Beginner & Advanced Courses",
+  image: "/instructors/jan_jeevan.png",
+  phone: "+61 420 995 333",
+  email: "jeevan.pandey68@gmail.com",
 };
 
 // Available time slots
@@ -329,12 +335,20 @@ export default function BookingPage() {
               </p>
             </div>
 
-            <Card className="border-primary/20">
+            <Card className="border-primary/20 hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                    <User className="h-8 w-8 text-primary" />
+                  {/* Instructor Image */}
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/20">
+                    <Image
+                      src={STATIC_INSTRUCTOR.image}
+                      alt={STATIC_INSTRUCTOR.name}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
+
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">
                       {STATIC_INSTRUCTOR.name}
@@ -345,7 +359,35 @@ export default function BookingPage() {
                     <p className="text-sm text-primary">
                       {STATIC_INSTRUCTOR.specialization}
                     </p>
+
+                    {/* Contact Buttons */}
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 text-xs h-8"
+                        onClick={() =>
+                          window.open(`tel:${STATIC_INSTRUCTOR.phone}`)
+                        }
+                      >
+                        <Phone className="h-3 w-3" />
+                        Call
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 text-xs h-8"
+                        onClick={() =>
+                          window.open(`mailto:${STATIC_INSTRUCTOR.email}`)
+                        }
+                      >
+                        <Mail className="h-3 w-3" />
+                        Email
+                      </Button>
+                    </div>
                   </div>
+
                   <Badge variant="default">Selected</Badge>
                 </div>
               </CardContent>
