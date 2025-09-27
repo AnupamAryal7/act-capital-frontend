@@ -53,9 +53,10 @@ const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 // Static instructor data (as requested)
 const STATIC_INSTRUCTOR = {
   id: 1,
-  name: "Sarah Johnson",
+  name: "Jeevan Pandey",
   experience: "8+ years",
   specialization: "Beginner & Advanced Courses",
+  image: "/instructors/jan_jeevan.png",
 };
 
 // Available time slots
