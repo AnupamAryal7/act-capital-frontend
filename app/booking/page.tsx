@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import Image from "next/image";
 import {
   Select,
   SelectContent,
@@ -25,8 +24,6 @@ import {
   ChevronRight,
   Check,
   BookOpen,
-  Phone,
-  Mail,
 } from "lucide-react";
 
 interface Course {
@@ -45,10 +42,12 @@ interface Course {
 interface BookingData {
   courseId: number;
   instructorId: number;
+  classId: number;
   date: string;
   time: string;
-  message: string;
-  pickupLocation: string;
+  phoneNumber: string;
+  suburb: string;
+  additionalMessage: string;
 }
 
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
@@ -56,12 +55,9 @@ const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 // Static instructor data (as requested)
 const STATIC_INSTRUCTOR = {
   id: 1,
-  name: "Jeevan Pandey",
+  name: "Sarah Johnson",
   experience: "8+ years",
   specialization: "Beginner & Advanced Courses",
-  image: "/instructors/jan_jeevan.png",
-  phone: "+61 420 995 333",
-  email: "jeevan.pandey68@gmail.com",
 };
 
 // Available time slots
@@ -84,10 +80,12 @@ export default function BookingPage() {
   const [bookingData, setBookingData] = useState<BookingData>({
     courseId: 0,
     instructorId: STATIC_INSTRUCTOR.id,
+    classId: 0, // Will be set when course/instructor/time is selected
     date: "",
     time: "",
-    message: "",
-    pickupLocation: "",
+    phoneNumber: "",
+    suburb: "",
+    additionalMessage: "",
   });
 
   // Fetch courses
@@ -166,46 +164,42 @@ export default function BookingPage() {
 
       const user = JSON.parse(userData);
 
-      // Create class session first
-      const sessionResponse = await fetch(`${API_BASE_URL}/class-sessions/`, {
+      // For now, we'll use a temporary class_id (1) since class sessions aren't being created
+      // In a real implementation, you'd either:
+      // 1. Create a class session first, or
+      // 2. Have pre-existing class sessions to select from
+      const tempClassId = 1;
+
+      // Create booking using your API endpoint structure
+      const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          course_id: bookingData.courseId,
-          instructor_id: bookingData.instructorId,
-          date_time: `${bookingData.date} ${bookingData.time}`,
-          suburb: bookingData.pickupLocation,
+          student_id: user.id,
+          class_id: tempClassId,
+          phone_no: bookingData.phoneNumber,
+          suburb: bookingData.suburb,
+          additional_message: bookingData.additionalMessage,
+          status: "pending",
+          remarks: "pending",
         }),
       });
 
-      if (sessionResponse.ok) {
-        const sessionData = await sessionResponse.json();
-
-        // Create booking
-        const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            student_id: user.id,
-            session_id: sessionData.id,
-            pickup_location: bookingData.pickupLocation,
-            notes: bookingData.message,
-            status: "pending",
-          }),
-        });
-
-        if (bookingResponse.ok) {
-          alert("Booking created successfully!");
-          window.location.href = "/dashboard";
-        } else {
-          alert("Failed to create booking");
-        }
+      if (bookingResponse.ok) {
+        const bookingResult = await bookingResponse.json();
+        console.log("Booking created:", bookingResult);
+        alert(
+          "Booking created successfully! Your booking is pending confirmation."
+        );
+        window.location.href = "/dashboard";
       } else {
-        alert("Failed to create class session");
+        const errorData = await bookingResponse.json();
+        console.error("Booking failed:", errorData);
+        alert("Failed to create booking. Please try again.");
       }
     } catch (error) {
       console.error("Booking error:", error);
-      alert("An error occurred during booking");
+      alert("An error occurred during booking. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -220,7 +214,10 @@ export default function BookingPage() {
       case 3:
         return bookingData.date && bookingData.time;
       case 4:
-        return bookingData.pickupLocation.trim().length > 0;
+        return (
+          bookingData.phoneNumber.trim().length > 0 &&
+          bookingData.suburb.trim().length > 0
+        );
       case 5:
         return true;
       default:
@@ -335,20 +332,12 @@ export default function BookingPage() {
               </p>
             </div>
 
-            <Card className="border-primary/20 hover:shadow-lg transition-shadow">
+            <Card className="border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  {/* Instructor Image */}
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/20">
-                    <Image
-                      src={STATIC_INSTRUCTOR.image}
-                      alt={STATIC_INSTRUCTOR.name}
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                    <User className="h-8 w-8 text-primary" />
                   </div>
-
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">
                       {STATIC_INSTRUCTOR.name}
@@ -359,35 +348,7 @@ export default function BookingPage() {
                     <p className="text-sm text-primary">
                       {STATIC_INSTRUCTOR.specialization}
                     </p>
-
-                    {/* Contact Buttons */}
-                    <div className="flex gap-2 mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2 text-xs h-8"
-                        onClick={() =>
-                          window.open(`tel:${STATIC_INSTRUCTOR.phone}`)
-                        }
-                      >
-                        <Phone className="h-3 w-3" />
-                        Call
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2 text-xs h-8"
-                        onClick={() =>
-                          window.open(`mailto:${STATIC_INSTRUCTOR.email}`)
-                        }
-                      >
-                        <Mail className="h-3 w-3" />
-                        Email
-                      </Button>
-                    </div>
                   </div>
-
                   <Badge variant="default">Selected</Badge>
                 </div>
               </CardContent>
@@ -464,23 +425,40 @@ export default function BookingPage() {
           <div className="space-y-6">
             <div className="text-center">
               <MessageSquare className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Additional Details</h2>
+              <h2 className="text-2xl font-bold mb-2">Contact Details</h2>
               <p className="text-muted-foreground">
-                Provide pickup location and any special requests
+                Provide your contact information and pickup location
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="pickup">Pickup Location *</Label>
+                <Label htmlFor="phone">Phone Number *</Label>
                 <Input
-                  id="pickup"
-                  placeholder="Enter your pickup address or suburb"
-                  value={bookingData.pickupLocation}
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={bookingData.phoneNumber}
                   onChange={(e) =>
                     setBookingData((prev) => ({
                       ...prev,
-                      pickupLocation: e.target.value,
+                      phoneNumber: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="suburb">Suburb *</Label>
+                <Input
+                  id="suburb"
+                  placeholder="Enter your suburb for pickup"
+                  value={bookingData.suburb}
+                  onChange={(e) =>
+                    setBookingData((prev) => ({
+                      ...prev,
+                      suburb: e.target.value,
                     }))
                   }
                   required
@@ -492,11 +470,11 @@ export default function BookingPage() {
                 <Textarea
                   id="message"
                   placeholder="Any special requests or notes for your instructor..."
-                  value={bookingData.message}
+                  value={bookingData.additionalMessage}
                   onChange={(e) =>
                     setBookingData((prev) => ({
                       ...prev,
-                      message: e.target.value,
+                      additionalMessage: e.target.value,
                     }))
                   }
                   rows={4}
@@ -544,17 +522,22 @@ export default function BookingPage() {
                 </div>
 
                 <div>
-                  <span className="text-sm font-medium">Pickup Location:</span>
-                  <p className="text-sm">{bookingData.pickupLocation}</p>
+                  <span className="text-sm font-medium">Phone:</span>
+                  <p className="text-sm">{bookingData.phoneNumber}</p>
                 </div>
 
-                {bookingData.message && (
+                <div>
+                  <span className="text-sm font-medium">Suburb:</span>
+                  <p className="text-sm">{bookingData.suburb}</p>
+                </div>
+
+                {bookingData.additionalMessage && (
                   <div>
                     <span className="text-sm font-medium">
                       Additional Message:
                     </span>
                     <p className="text-sm text-muted-foreground">
-                      {bookingData.message}
+                      {bookingData.additionalMessage}
                     </p>
                   </div>
                 )}
