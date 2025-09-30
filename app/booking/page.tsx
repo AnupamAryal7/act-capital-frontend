@@ -84,7 +84,7 @@ export default function BookingPage() {
   const [bookingData, setBookingData] = useState<BookingData>({
     courseId: 0,
     instructorId: STATIC_INSTRUCTOR.id,
-    date: "",
+    date: new Date().toISOString().split("T")[0],
     time: "",
     message: "",
     pickupLocation: "",
