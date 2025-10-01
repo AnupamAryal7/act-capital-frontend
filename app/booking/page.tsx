@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,8 +25,9 @@ import {
   ChevronRight,
   Check,
   BookOpen,
-  Phone,
+  Plus,
   Mail,
+  Phone,
 } from "lucide-react";
 
 interface Course {
@@ -36,22 +37,37 @@ interface Course {
   duration: string;
   package_type: string;
   total_price: number;
-  discounted_price: number;
-  bullet_pt1: string;
-  bullet_pt2: string;
-  bullet_pt3: string;
+  discounted_price?: number;
+  bullet_pt1?: string;
+  bullet_pt2?: string;
+  bullet_pt3?: string;
+}
+
+interface AvailableSession {
+  id: number;
+  course_id: number;
+  instructor_id: number;
+  instructor_name: string;
+  date_time: string;
+  suburb: string;
+  course_title: string;
 }
 
 interface BookingData {
+  bookingType: "browse" | "create";
   courseId: number;
   instructorId: number;
+  selectedSessionId: number | null;
   date: string;
   time: string;
-  message: string;
-  pickupLocation: string;
+  phoneNumber: string;
+  suburb: string;
+  additionalMessage: string;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+// Use env var if available, otherwise fallback to localhost
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api/v1";
 
 // Static instructor data (as requested)
 const STATIC_INSTRUCTOR = {
@@ -75,46 +91,84 @@ const TIME_SLOTS = [
   "4:00 PM",
 ];
 
-export default function BookingPage() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+function combineDateAndTime(dateStr: string, timeStr: string) {
+  // Create a Date using the local timezone. The backend should accept ISO string.
+  // Example input: "2025-10-01" and "9:00 AM".
+  const combined = new Date(`${dateStr} ${timeStr}`);
+  return combined.toISOString();
+}
+
+export default function BookingPage(): JSX.Element {
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [availableSessions, setAvailableSessions] = useState<
+    AvailableSession[]
+  >([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   const [bookingData, setBookingData] = useState<BookingData>({
+    bookingType: "browse",
     courseId: 0,
     instructorId: STATIC_INSTRUCTOR.id,
-    date: "",
+    selectedSessionId: null,
+    date: new Date().toISOString().split("T")[0], // today's date
     time: "",
-    message: "",
-    pickupLocation: "",
+    phoneNumber: "",
+    suburb: "",
+    additionalMessage: "",
   });
 
-  // Fetch courses
+  // Fetch available class sessions (optional course filter)
+  const fetchAvailableSessions = async (courseId?: number) => {
+    try {
+      const url = courseId
+        ? `${API_BASE_URL}/class-sessions/?course_id=${courseId}`
+        : `${API_BASE_URL}/class-sessions/`;
+
+      const resp = await fetch(url);
+      if (!resp.ok) return setAvailableSessions([]);
+      const data = await resp.json();
+      setAvailableSessions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error fetching available sessions:", err);
+      setAvailableSessions([]);
+    }
+  };
+
+  // Fetch courses and try to pre-select from URL params if present
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/courses/active`);
-      if (response.ok) {
-        const data = await response.json();
-        setCourses(Array.isArray(data) ? data : []);
+      const resp = await fetch(`${API_BASE_URL}/courses/active`);
+      if (!resp.ok) return;
+      const data = await resp.json();
+      const list = Array.isArray(data) ? data : [];
+      setCourses(list);
 
-        // Pre-select course from URL parameter if available
+      // Pre-select course from URL parameter if available (runs in browser)
+      try {
         const urlParams = new URLSearchParams(window.location.search);
-        const courseIdParam = urlParams.get("course_id");
+        const courseIdParam =
+          urlParams.get("course_id") || urlParams.get("course");
         if (courseIdParam) {
-          const courseId = parseInt(courseIdParam);
-          const preSelectedCourse = data.find(
-            (course: Course) => course.id === courseId
-          );
-          if (preSelectedCourse) {
-            setSelectedCourse(preSelectedCourse);
+          const courseId = parseInt(courseIdParam, 10);
+          const preSelected =
+            list.find((c: Course) => c.id === courseId) || null;
+          if (preSelected) {
+            setSelectedCourse(preSelected);
             setBookingData((prev) => ({ ...prev, courseId: courseId }));
+            // fetch sessions for this course if browsing
+            if (bookingData.bookingType === "browse") {
+              fetchAvailableSessions(courseId);
+            }
           }
         }
+      } catch (err) {
+        // ignore window parsing errors on serverside (but useEffect ensures client-only)
       }
-    } catch (error) {
-      console.error("Error fetching courses:", error);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
     } finally {
       setLoading(false);
     }
@@ -122,13 +176,29 @@ export default function BookingPage() {
 
   useEffect(() => {
     fetchCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCourseChange = (courseId: string) => {
-    const course = courses.find((c) => c.id === parseInt(courseId));
-    if (course) {
-      setSelectedCourse(course);
-      setBookingData((prev) => ({ ...prev, courseId: course.id }));
+  // When the selected course or booking type changes, refresh sessions if needed
+  useEffect(() => {
+    if (selectedCourse && bookingData.bookingType === "browse") {
+      fetchAvailableSessions(selectedCourse.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourse, bookingData.bookingType]);
+
+  const handleCourseChange = (courseIdString: string) => {
+    const id = parseInt(courseIdString, 10);
+    const course = courses.find((c) => c.id === id) || null;
+    setSelectedCourse(course);
+    setBookingData((prev) => ({
+      ...prev,
+      courseId: id,
+      selectedSessionId: null,
+    }));
+    // fetch sessions if browsing
+    if (bookingData.bookingType === "browse") {
+      fetchAvailableSessions(id);
     }
   };
 
@@ -141,86 +211,128 @@ export default function BookingPage() {
   };
 
   const handleNext = () => {
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    }
+    if (currentStep < 5) setCurrentStep((s) => s + 1);
   };
 
   const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 1) setCurrentStep((s) => s - 1);
   };
 
   const handleBookingSubmit = async () => {
     try {
       setLoading(true);
 
-      // Get user data from localStorage
+      // Basic validation
       const userData = localStorage.getItem("user");
       if (!userData) {
         alert("Please login to continue");
         window.location.href = "/login";
         return;
       }
-
       const user = JSON.parse(userData);
 
-      // Create class session first
-      const sessionResponse = await fetch(`${API_BASE_URL}/class-sessions/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          course_id: bookingData.courseId,
-          instructor_id: bookingData.instructorId,
-          date_time: `${bookingData.date} ${bookingData.time}`,
-          suburb: bookingData.pickupLocation,
-        }),
-      });
+      if (bookingData.courseId <= 0) {
+        alert("Please select a course.");
+        return;
+      }
 
-      if (sessionResponse.ok) {
-        const sessionData = await sessionResponse.json();
+      let classSessionId: number | null = null;
 
-        // Create booking
-        const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
+      if (bookingData.bookingType === "browse") {
+        if (!bookingData.selectedSessionId) {
+          alert("Please select a session first");
+          return;
+        }
+        classSessionId = bookingData.selectedSessionId;
+      } else {
+        // create a new class session
+        if (!bookingData.date || !bookingData.time) {
+          alert("Please select date and time for your custom session.");
+          return;
+        }
+
+        const date_time = combineDateAndTime(
+          bookingData.date,
+          bookingData.time
+        );
+
+        const sessionResponse = await fetch(`${API_BASE_URL}/class-sessions/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            student_id: user.id,
-            session_id: sessionData.id,
-            pickup_location: bookingData.pickupLocation,
-            notes: bookingData.message,
-            status: "pending",
+            course_id: bookingData.courseId,
+            instructor_id: bookingData.instructorId,
+            date_time,
+            suburb: bookingData.suburb,
           }),
         });
 
-        if (bookingResponse.ok) {
-          alert("Booking created successfully!");
-          window.location.href = "/dashboard";
-        } else {
-          alert("Failed to create booking");
+        if (!sessionResponse.ok) {
+          const err = await sessionResponse.text();
+          console.error("Session creation failed:", err);
+          alert("Failed to create class session. Please try again.");
+          return;
         }
+
+        const sessionData = await sessionResponse.json();
+        classSessionId = sessionData.id;
+      }
+
+      // create booking
+      const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          student_id: user.id,
+          class_id: classSessionId,
+          phone_no: bookingData.phoneNumber,
+          suburb: bookingData.suburb,
+          additional_message: bookingData.additionalMessage,
+          status: "pending",
+          remarks: "pending",
+        }),
+      });
+
+      if (bookingResponse.ok) {
+        const bookingResult = await bookingResponse.json();
+        console.log("Booking created:", bookingResult);
+        alert(
+          `Booking created successfully! ${
+            bookingData.bookingType === "browse"
+              ? "You have booked an existing session."
+              : "A new session was created for you."
+          } Your booking is pending confirmation.`
+        );
+        window.location.href = "/dashboard";
       } else {
-        alert("Failed to create class session");
+        const err = await bookingResponse.text();
+        console.error("Booking failed:", err);
+        alert("Failed to create booking. Please try again.");
       }
     } catch (error) {
       console.error("Booking error:", error);
-      alert("An error occurred during booking");
+      alert("An error occurred during booking. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const isStepValid = () => {
+  const isStepValid = (): boolean => {
     switch (currentStep) {
       case 1:
         return bookingData.courseId > 0;
       case 2:
+        if (bookingData.bookingType === "browse")
+          return bookingData.selectedSessionId !== null;
         return bookingData.instructorId > 0;
       case 3:
-        return bookingData.date && bookingData.time;
+        if (bookingData.bookingType === "browse") return true; // session already chosen
+        return Boolean(bookingData.date && bookingData.time);
       case 4:
-        return bookingData.pickupLocation.trim().length > 0;
+        return (
+          bookingData.phoneNumber.trim().length > 0 &&
+          bookingData.suburb.trim().length > 0
+        );
       case 5:
         return true;
       default:
@@ -235,16 +347,73 @@ export default function BookingPage() {
           <div className="space-y-6">
             <div className="text-center">
               <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Choose Your Course</h2>
+              <h2 className="text-2xl font-bold mb-2">Choose Booking Method</h2>
               <p className="text-muted-foreground">
-                Select the driving course you'd like to book
+                Select how you'd like to book your lesson
               </p>
             </div>
 
+            {/* Booking Type Selection */}
+            <div className="space-y-4">
+              <Label>Booking Method</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card
+                  className={`cursor-pointer transition-colors ${
+                    bookingData.bookingType === "browse"
+                      ? "border-primary bg-primary/5"
+                      : "hover:border-primary/50"
+                  }`}
+                  onClick={() =>
+                    setBookingData((prev) => ({
+                      ...prev,
+                      bookingType: "browse",
+                    }))
+                  }
+                >
+                  <CardContent className="p-6">
+                    <div className="text-center space-y-2">
+                      <Calendar className="h-8 w-8 text-primary mx-auto" />
+                      <h3 className="font-semibold">
+                        Browse Available Sessions
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Choose from pre-scheduled time slots
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className={`cursor-pointer transition-colors ${
+                    bookingData.bookingType === "create"
+                      ? "border-primary bg-primary/5"
+                      : "hover:border-primary/50"
+                  }`}
+                  onClick={() =>
+                    setBookingData((prev) => ({
+                      ...prev,
+                      bookingType: "create",
+                    }))
+                  }
+                >
+                  <CardContent className="p-6">
+                    <div className="text-center space-y-2">
+                      <Plus className="h-8 w-8 text-primary mx-auto" />
+                      <h3 className="font-semibold">Create Custom Session</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Schedule your preferred time
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Course Selection */}
             <div className="space-y-4">
               <Label>Select Course</Label>
               <Select
-                value={bookingData.courseId.toString()}
+                value={bookingData.courseId ? String(bookingData.courseId) : ""}
                 onValueChange={handleCourseChange}
               >
                 <SelectTrigger>
@@ -252,7 +421,7 @@ export default function BookingPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {courses.map((course) => (
-                    <SelectItem key={course.id} value={course.id.toString()}>
+                    <SelectItem key={course.id} value={String(course.id)}>
                       {course.course_title}
                     </SelectItem>
                   ))}
@@ -286,7 +455,7 @@ export default function BookingPage() {
                       <span className="text-sm font-medium">Price:</span>
                       <p className="text-sm font-semibold text-primary">
                         $
-                        {selectedCourse.discounted_price ||
+                        {selectedCourse.discounted_price ??
                           selectedCourse.total_price}
                         {selectedCourse.discounted_price &&
                           selectedCourse.discounted_price <
@@ -304,18 +473,24 @@ export default function BookingPage() {
                       What's Included:
                     </span>
                     <ul className="space-y-1">
-                      <li className="flex items-center text-sm">
-                        <Check className="h-4 w-4 text-green-600 mr-2" />
-                        {selectedCourse.bullet_pt1}
-                      </li>
-                      <li className="flex items-center text-sm">
-                        <Check className="h-4 w-4 text-green-600 mr-2" />
-                        {selectedCourse.bullet_pt2}
-                      </li>
-                      <li className="flex items-center text-sm">
-                        <Check className="h-4 w-4 text-green-600 mr-2" />
-                        {selectedCourse.bullet_pt3}
-                      </li>
+                      {selectedCourse.bullet_pt1 && (
+                        <li className="flex items-center text-sm">
+                          <Check className="h-4 w-4 mr-2" />
+                          {selectedCourse.bullet_pt1}
+                        </li>
+                      )}
+                      {selectedCourse.bullet_pt2 && (
+                        <li className="flex items-center text-sm">
+                          <Check className="h-4 w-4 mr-2" />
+                          {selectedCourse.bullet_pt2}
+                        </li>
+                      )}
+                      {selectedCourse.bullet_pt3 && (
+                        <li className="flex items-center text-sm">
+                          <Check className="h-4 w-4 mr-2" />
+                          {selectedCourse.bullet_pt3}
+                        </li>
+                      )}
                     </ul>
                   </div>
                 </CardContent>
@@ -325,13 +500,89 @@ export default function BookingPage() {
         );
 
       case 2:
+        if (bookingData.bookingType === "browse") {
+          return (
+            <div className="space-y-6">
+              <div className="text-center">
+                <Calendar className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">
+                  Browse Available Sessions
+                </h2>
+                <p className="text-muted-foreground">
+                  Select from pre-scheduled driving lesson slots
+                </p>
+              </div>
+
+              {availableSessions.length === 0 ? (
+                <div className="text-center py-8">
+                  <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-4">
+                    No available sessions found for this course.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      setBookingData((prev) => ({
+                        ...prev,
+                        bookingType: "create",
+                      }))
+                    }
+                  >
+                    Create Custom Session Instead
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Label>Available Sessions</Label>
+                  {availableSessions.map((session) => (
+                    <Card
+                      key={session.id}
+                      className={`cursor-pointer transition-colors ${
+                        bookingData.selectedSessionId === session.id
+                          ? "border-primary bg-primary/5"
+                          : "hover:border-primary/50"
+                      }`}
+                      onClick={() =>
+                        setBookingData((prev) => ({
+                          ...prev,
+                          selectedSessionId: session.id,
+                        }))
+                      }
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="font-semibold">
+                              {session.course_title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              Instructor: {session.instructor_name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(session.date_time).toLocaleString()} -{" "}
+                              {session.suburb}
+                            </p>
+                          </div>
+                          {bookingData.selectedSessionId === session.id && (
+                            <Badge variant="default">Selected</Badge>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-6">
             <div className="text-center">
               <User className="h-12 w-12 text-primary mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Select Instructor</h2>
               <p className="text-muted-foreground">
-                Your assigned driving instructor
+                Choose your driving instructor
               </p>
             </div>
 
@@ -392,10 +643,6 @@ export default function BookingPage() {
                 </div>
               </CardContent>
             </Card>
-
-            <div className="text-sm text-muted-foreground text-center">
-              Currently showing available instructor for your selected course
-            </div>
           </div>
         );
 
@@ -464,23 +711,40 @@ export default function BookingPage() {
           <div className="space-y-6">
             <div className="text-center">
               <MessageSquare className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Additional Details</h2>
+              <h2 className="text-2xl font-bold mb-2">Contact Details</h2>
               <p className="text-muted-foreground">
-                Provide pickup location and any special requests
+                Provide your contact information and pickup location
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="pickup">Pickup Location *</Label>
+                <Label htmlFor="phone">Phone Number *</Label>
                 <Input
-                  id="pickup"
-                  placeholder="Enter your pickup address or suburb"
-                  value={bookingData.pickupLocation}
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={bookingData.phoneNumber}
                   onChange={(e) =>
                     setBookingData((prev) => ({
                       ...prev,
-                      pickupLocation: e.target.value,
+                      phoneNumber: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="suburb">Suburb *</Label>
+                <Input
+                  id="suburb"
+                  placeholder="Enter your suburb for pickup"
+                  value={bookingData.suburb}
+                  onChange={(e) =>
+                    setBookingData((prev) => ({
+                      ...prev,
+                      suburb: e.target.value,
                     }))
                   }
                   required
@@ -492,11 +756,11 @@ export default function BookingPage() {
                 <Textarea
                   id="message"
                   placeholder="Any special requests or notes for your instructor..."
-                  value={bookingData.message}
+                  value={bookingData.additionalMessage}
                   onChange={(e) =>
                     setBookingData((prev) => ({
                       ...prev,
-                      message: e.target.value,
+                      additionalMessage: e.target.value,
                     }))
                   }
                   rows={4}
@@ -544,17 +808,22 @@ export default function BookingPage() {
                 </div>
 
                 <div>
-                  <span className="text-sm font-medium">Pickup Location:</span>
-                  <p className="text-sm">{bookingData.pickupLocation}</p>
+                  <span className="text-sm font-medium">Phone:</span>
+                  <p className="text-sm">{bookingData.phoneNumber}</p>
                 </div>
 
-                {bookingData.message && (
+                <div>
+                  <span className="text-sm font-medium">Suburb:</span>
+                  <p className="text-sm">{bookingData.suburb}</p>
+                </div>
+
+                {bookingData.additionalMessage && (
                   <div>
                     <span className="text-sm font-medium">
                       Additional Message:
                     </span>
                     <p className="text-sm text-muted-foreground">
-                      {bookingData.message}
+                      {bookingData.additionalMessage}
                     </p>
                   </div>
                 )}
@@ -564,7 +833,7 @@ export default function BookingPage() {
                     <span className="text-lg font-semibold">Total Amount:</span>
                     <span className="text-2xl font-bold text-primary">
                       $
-                      {selectedCourse?.discounted_price ||
+                      {selectedCourse?.discounted_price ??
                         selectedCourse?.total_price}
                     </span>
                   </div>
@@ -583,7 +852,7 @@ export default function BookingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-4">Loading Booking Form...</h2>
         </div>
       </div>
