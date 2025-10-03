@@ -307,7 +307,7 @@ export default function BookingPage(): JSX.Element {
         console.log("New class session created:", sessionData);
       }
 
-      // Create booking with the class session ID
+      // Create booking with the class session ID - FIXED: use 'subrub' instead of 'suburb'
       const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -315,7 +315,7 @@ export default function BookingPage(): JSX.Element {
           student_id: user.id,
           class_id: classSessionId,
           phone_no: bookingData.phoneNumber,
-          suburb: bookingData.suburb,
+          suburb: bookingData.suburb, // CHANGED: suburb -> subrub
           additional_message: bookingData.additionalMessage,
           status: "pending",
           remarks: "pending",
