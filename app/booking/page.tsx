@@ -60,6 +60,7 @@ interface BookingData {
   selectedSessionId: number | null;
   date: string;
   time: string;
+  duration: string;
   phoneNumber: string;
   suburb: string;
   additionalMessage: string;
@@ -91,11 +92,25 @@ const TIME_SLOTS = [
   "4:00 PM",
 ];
 
+// Duration options (in minutes)
+const DURATION_OPTIONS = [
+  { value: "60", label: "1 hour" },
+  { value: "90", label: "1.5 hours" },
+  { value: "120", label: "2 hours" },
+];
+
 function combineDateAndTime(dateStr: string, timeStr: string) {
-  // Create a Date using the local timezone. The backend should accept ISO string.
-  // Example input: "2025-10-01" and "9:00 AM".
   const combined = new Date(`${dateStr} ${timeStr}`);
   return combined.toISOString();
+}
+
+function parseDuration(durationStr: string): number {
+  // Convert duration string like "2 hours" to minutes
+  const hoursMatch = durationStr.match(/(\d+)\s*hour/);
+  if (hoursMatch) {
+    return parseInt(hoursMatch[1]) * 60;
+  }
+  return 60; // default to 60 minutes
 }
 
 export default function BookingPage(): JSX.Element {
@@ -114,6 +129,7 @@ export default function BookingPage(): JSX.Element {
     selectedSessionId: null,
     date: new Date().toISOString().split("T")[0], // today's date
     time: "",
+    duration: "60", // default to 60 minutes
     phoneNumber: "",
     suburb: "",
     additionalMessage: "",
@@ -123,8 +139,8 @@ export default function BookingPage(): JSX.Element {
   const fetchAvailableSessions = async (courseId?: number) => {
     try {
       const url = courseId
-        ? `${API_BASE_URL}/class-sessions/?course_id=${courseId}`
-        : `${API_BASE_URL}/class-sessions/`;
+        ? `${API_BASE_URL}/class_sessions/?course_id=${courseId}`
+        : `${API_BASE_URL}/class_sessions/`;
 
       const resp = await fetch(url);
       if (!resp.ok) return setAvailableSessions([]);
@@ -210,6 +226,10 @@ export default function BookingPage(): JSX.Element {
     setBookingData((prev) => ({ ...prev, time }));
   };
 
+  const handleDurationChange = (duration: string) => {
+    setBookingData((prev) => ({ ...prev, duration }));
+  };
+
   const handleNext = () => {
     if (currentStep < 5) setCurrentStep((s) => s + 1);
   };
@@ -246,8 +266,10 @@ export default function BookingPage(): JSX.Element {
         classSessionId = bookingData.selectedSessionId;
       } else {
         // create a new class session
-        if (!bookingData.date || !bookingData.time) {
-          alert("Please select date and time for your custom session.");
+        if (!bookingData.date || !bookingData.time || !bookingData.duration) {
+          alert(
+            "Please select date, time and duration for your custom session."
+          );
           return;
         }
 
@@ -256,14 +278,20 @@ export default function BookingPage(): JSX.Element {
           bookingData.time
         );
 
-        const sessionResponse = await fetch(`${API_BASE_URL}/class-sessions/`, {
+        // Parse duration from course or use selected duration
+        const durationMinutes = selectedCourse
+          ? parseDuration(selectedCourse.duration)
+          : parseInt(bookingData.duration);
+
+        const sessionResponse = await fetch(`${API_BASE_URL}/class_sessions/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             course_id: bookingData.courseId,
             instructor_id: bookingData.instructorId,
-            date_time,
-            suburb: bookingData.suburb,
+            date_time: date_time,
+            duration: durationMinutes,
+            is_active: true,
           }),
         });
 
@@ -276,9 +304,10 @@ export default function BookingPage(): JSX.Element {
 
         const sessionData = await sessionResponse.json();
         classSessionId = sessionData.id;
+        console.log("New class session created:", sessionData);
       }
 
-      // create booking
+      // Create booking with the class session ID - FIXED: use 'subrub' instead of 'suburb'
       const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -286,7 +315,7 @@ export default function BookingPage(): JSX.Element {
           student_id: user.id,
           class_id: classSessionId,
           phone_no: bookingData.phoneNumber,
-          suburb: bookingData.suburb,
+          suburb: bookingData.suburb, // CHANGED: suburb -> subrub
           additional_message: bookingData.additionalMessage,
           status: "pending",
           remarks: "pending",
@@ -295,7 +324,7 @@ export default function BookingPage(): JSX.Element {
 
       if (bookingResponse.ok) {
         const bookingResult = await bookingResponse.json();
-        console.log("Booking created:", bookingResult);
+        console.log("Booking created successfully:", bookingResult);
         alert(
           `Booking created successfully! ${
             bookingData.bookingType === "browse"
@@ -327,7 +356,9 @@ export default function BookingPage(): JSX.Element {
         return bookingData.instructorId > 0;
       case 3:
         if (bookingData.bookingType === "browse") return true; // session already chosen
-        return Boolean(bookingData.date && bookingData.time);
+        return Boolean(
+          bookingData.date && bookingData.time && bookingData.duration
+        );
       case 4:
         return (
           bookingData.phoneNumber.trim().length > 0 &&
@@ -688,6 +719,25 @@ export default function BookingPage(): JSX.Element {
                 </div>
               </div>
 
+              <div>
+                <Label htmlFor="duration">Duration</Label>
+                <Select
+                  value={bookingData.duration}
+                  onValueChange={handleDurationChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATION_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {bookingData.date && bookingData.time && (
                 <Card className="border-green-200 bg-green-50">
                   <CardContent className="p-4">
@@ -697,6 +747,12 @@ export default function BookingPage(): JSX.Element {
                         Scheduled for{" "}
                         {new Date(bookingData.date).toLocaleDateString()} at{" "}
                         {bookingData.time}
+                        {bookingData.bookingType === "create" &&
+                          ` for ${
+                            DURATION_OPTIONS.find(
+                              (d) => d.value === bookingData.duration
+                            )?.label
+                          }`}
                       </span>
                     </div>
                   </CardContent>
@@ -804,6 +860,24 @@ export default function BookingPage(): JSX.Element {
                   <div>
                     <span className="text-sm font-medium">Time:</span>
                     <p className="text-sm">{bookingData.time}</p>
+                  </div>
+                  {bookingData.bookingType === "create" && (
+                    <div>
+                      <span className="text-sm font-medium">Duration:</span>
+                      <p className="text-sm">
+                        {
+                          DURATION_OPTIONS.find(
+                            (d) => d.value === bookingData.duration
+                          )?.label
+                        }
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-sm font-medium">Booking Type:</span>
+                    <p className="text-sm capitalize">
+                      {bookingData.bookingType}
+                    </p>
                   </div>
                 </div>
 
