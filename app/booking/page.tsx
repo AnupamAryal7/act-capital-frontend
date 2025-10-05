@@ -719,27 +719,24 @@ export default function BookingPage(): JSX.Element {
                 </div>
               </div>
 
-              {/* Duration Selection - Only for custom sessions */}
-              {bookingData.bookingType === "create" && (
-                <div>
-                  <Label htmlFor="duration">Duration</Label>
-                  <Select
-                    value={bookingData.duration}
-                    onValueChange={handleDurationChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DURATION_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div>
+                <Label htmlFor="duration">Duration</Label>
+                <Select
+                  value={bookingData.duration}
+                  onValueChange={handleDurationChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATION_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {bookingData.date && bookingData.time && (
                 <Card className="border-green-200 bg-green-50">
