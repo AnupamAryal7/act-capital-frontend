@@ -145,7 +145,7 @@ function InstructorDashboard({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="grid w-full grid-cols-4 bg-muted p-1 rounded-lg mb-6">
+          <div className="grid w-full grid-cols-5 bg-muted p-1 rounded-lg mb-6">
             {navItems.map((item) => {
               const IconComponent = item.icon;
               return (
