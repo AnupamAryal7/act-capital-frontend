@@ -16,6 +16,7 @@ import {
   Star,
   DollarSign,
   FileText,
+  CalendarCheck,
 } from "lucide-react";
 
 interface InstructorUser {
@@ -63,6 +64,11 @@ function InstructorDashboard({ children }: { children: React.ReactNode }) {
       label: "Reports",
       path: "/instructor/reports",
       icon: FileText,
+    },
+    {
+      label: "New Bookings",
+      path: "/instructor/bookings",
+      icon: CalendarCheck,
     },
   ];
 
