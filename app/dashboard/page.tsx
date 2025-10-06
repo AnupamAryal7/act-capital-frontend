@@ -50,7 +50,7 @@ interface Booking {
   phone_no: string;
   suburb: string;
   additional_message: string;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
+  status: "pending" | "confirmed" | "completed" | "cancelled" | "attended";
   remarks: string;
   created_at: string;
   updated_at: string | null;
@@ -364,6 +364,8 @@ export default function StudentDashboard() {
                                     ? "default"
                                     : booking.status === "completed"
                                     ? "secondary"
+                                    : booking.status === "attended"
+                                    ? "tertary"
                                     : "destructive"
                                 }
                               >
