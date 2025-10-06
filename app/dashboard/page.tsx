@@ -9,6 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   Calendar,
   Clock,
   BookOpen,
@@ -23,6 +30,7 @@ import {
   GraduationCap,
   Users,
   RefreshCw,
+  Info,
 } from "lucide-react";
 
 interface Student {
@@ -37,12 +45,15 @@ interface Student {
 
 interface Booking {
   id: number;
-  date: string;
-  time: string;
-  instructor: string;
-  type: string;
-  location: string;
-  status: "upcoming" | "completed" | "cancelled";
+  student_id: number;
+  class_id: number;
+  phone_no: string;
+  suburb: string;
+  additional_message: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  remarks: string;
+  created_at: string;
+  updated_at: string | null;
 }
 
 interface Course {
@@ -90,29 +101,11 @@ export default function StudentDashboard() {
   const [feedback, setFeedback] = useState("");
   const [availableCourses, setAvailableCourses] = useState<APICourse[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  // Mock data (keeping existing for bookings, enrolled courses, reviews)
-  const recentBookings: Booking[] = [
-    {
-      id: 1,
-      date: "2024-01-20",
-      time: "10:00 AM",
-      instructor: "Sarah Johnson",
-      type: "Practical Lesson",
-      location: "Chisholm, ACT",
-      status: "upcoming",
-    },
-    {
-      id: 2,
-      date: "2024-01-15",
-      time: "2:00 PM",
-      instructor: "Mike Chen",
-      type: "Highway Driving",
-      location: "Tuggeranong, ACT",
-      status: "completed",
-    },
-  ];
-
+  // Mock data for enrolled courses and reviews
   const enrolledCourses: Course[] = [
     {
       id: 1,
@@ -164,6 +157,28 @@ export default function StudentDashboard() {
     },
   ];
 
+  // Fetch student bookings from API
+  const fetchStudentBookings = async (studentId: string) => {
+    try {
+      setBookingsLoading(true);
+      const response = await fetch(
+        `${API_BASE_URL}/bookings/student/${studentId}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setRecentBookings(Array.isArray(data) ? data : []);
+      } else {
+        console.error("Failed to fetch bookings");
+        setRecentBookings([]);
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      setRecentBookings([]);
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
   // Fetch active courses from API
   const fetchActiveCourses = async () => {
     try {
@@ -205,12 +220,15 @@ export default function StudentDashboard() {
               "User",
             email: parsedUser.email || "",
             role: parsedUser.role || "student",
-            phone: parsedUser.phone_number || parsedUser.phone || undefined, // Handle both formats
+            phone: parsedUser.phone_number || parsedUser.phone || undefined,
             address: parsedUser.address || undefined,
             license_number: parsedUser.license_number || undefined,
           };
           setUser(dashboardUser);
           console.log("Final dashboard user set:", dashboardUser);
+
+          // Fetch bookings for this user
+          fetchStudentBookings(dashboardUser.id);
         } else {
           console.log("Invalid user data structure");
           window.location.href = "/login";
@@ -315,41 +333,74 @@ export default function StudentDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {recentBookings.map((booking) => (
-                        <div
-                          key={booking.id}
-                          className="p-4 border rounded-lg bg-gray-50"
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-semibold">{booking.type}</h4>
-                            <Badge
-                              variant={
-                                booking.status === "upcoming"
-                                  ? "default"
-                                  : "secondary"
-                              }
+                    {bookingsLoading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                        <span>Loading bookings...</span>
+                      </div>
+                    ) : recentBookings.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground mb-4">
+                          No bookings yet. Book your first lesson!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {recentBookings.map((booking) => (
+                          <div
+                            key={booking.id}
+                            className="p-4 border rounded-lg bg-gray-50"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-semibold">
+                                Booking #{booking.id}
+                              </h4>
+                              <Badge
+                                variant={
+                                  booking.status === "pending"
+                                    ? "default"
+                                    : booking.status === "confirmed"
+                                    ? "default"
+                                    : booking.status === "completed"
+                                    ? "secondary"
+                                    : "destructive"
+                                }
+                              >
+                                {booking.status}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
+                              <Clock className="h-3 w-3" />
+                              {new Date(
+                                booking.created_at
+                              ).toLocaleDateString()}{" "}
+                              at{" "}
+                              {new Date(
+                                booking.created_at
+                              ).toLocaleTimeString()}
+                            </p>
+                            <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
+                              <Phone className="h-3 w-3" />
+                              {booking.phone_no}
+                            </p>
+                            <p className="text-sm text-gray-600 flex items-center gap-1 mb-3">
+                              <MapPin className="h-3 w-3" />
+                              {booking.suburb}
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => setSelectedBooking(booking)}
                             >
-                              {booking.status}
-                            </Badge>
+                              <Info className="h-3 w-3 mr-2" />
+                              More Details
+                            </Button>
                           </div>
-                          <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
-                            <Clock className="h-3 w-3" />
-                            {new Date(
-                              booking.date
-                            ).toLocaleDateString()} at {booking.time}
-                          </p>
-                          <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
-                            <User className="h-3 w-3" />
-                            {booking.instructor}
-                          </p>
-                          <p className="text-sm text-gray-600 flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {booking.location}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="mt-6 space-y-3">
                       <Button
                         className="w-full"
@@ -727,6 +778,126 @@ export default function StudentDashboard() {
           </div>
         </div>
       </section>
+
+      {/* Booking Details Dialog */}
+      <Dialog
+        open={!!selectedBooking}
+        onOpenChange={() => setSelectedBooking(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Booking Details</DialogTitle>
+            <DialogDescription>
+              Complete information about your booking
+            </DialogDescription>
+          </DialogHeader>
+          {selectedBooking && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Booking ID
+                  </p>
+                  <p className="text-base font-semibold">
+                    {selectedBooking.id}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <Badge
+                    variant={
+                      selectedBooking.status === "pending"
+                        ? "default"
+                        : selectedBooking.status === "confirmed"
+                        ? "default"
+                        : selectedBooking.status === "completed"
+                        ? "secondary"
+                        : "destructive"
+                    }
+                  >
+                    {selectedBooking.status}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Student ID
+                  </p>
+                  <p className="text-base">{selectedBooking.student_id}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Class ID</p>
+                  <p className="text-base">{selectedBooking.class_id}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Phone Number
+                  </p>
+                  <p className="text-base">{selectedBooking.phone_no}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Suburb</p>
+                  <p className="text-base">{selectedBooking.suburb}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  Additional Message
+                </p>
+                <p className="text-base p-3 bg-gray-50 rounded-lg">
+                  {selectedBooking.additional_message ||
+                    "No additional message"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  Remarks
+                </p>
+                <p className="text-base p-3 bg-gray-50 rounded-lg">
+                  {selectedBooking.remarks || "No remarks"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Created At
+                  </p>
+                  <p className="text-sm">
+                    {new Date(selectedBooking.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Updated At
+                  </p>
+                  <p className="text-sm">
+                    {selectedBooking.updated_at
+                      ? new Date(selectedBooking.updated_at).toLocaleString()
+                      : "Not updated"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button
+                  className="w-full"
+                  onClick={() => setSelectedBooking(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
