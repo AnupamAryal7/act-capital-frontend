@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,21 +24,18 @@ import {
 import {
   Calendar,
   Search,
-  Filter,
   Edit,
   Trash2,
   RefreshCw,
   Phone,
   MapPin,
-  User,
-  MessageSquare,
   Check,
-  X,
   Clock,
   AlertCircle,
   CheckCircle,
   XCircle,
   UserX,
+  FileText,
 } from "lucide-react";
 
 interface Booking {
@@ -102,6 +97,7 @@ export default function InstructorBookings() {
     additional_message: "",
   });
   const [newStatus, setNewStatus] = useState("");
+  const [creatingReport, setCreatingReport] = useState<number | null>(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -126,30 +122,6 @@ export default function InstructorBookings() {
     } catch (error) {
       console.error("Error fetching bookings:", error);
       setBookings([]);
-      setFilteredBookings([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Search by phone number
-  const searchByPhone = async (phoneNo: string) => {
-    if (!phoneNo.trim()) {
-      setFilteredBookings(bookings);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/bookings/phone/${phoneNo}`);
-      if (response.ok) {
-        const data = await response.json();
-        setFilteredBookings(Array.isArray(data) ? data : []);
-      } else {
-        setFilteredBookings([]);
-      }
-    } catch (error) {
-      console.error("Error searching by phone:", error);
       setFilteredBookings([]);
     } finally {
       setLoading(false);
@@ -226,6 +198,44 @@ export default function InstructorBookings() {
     }
   };
 
+  // Create initial progress report
+  const createProgressReport = async (booking: Booking) => {
+    try {
+      setCreatingReport(booking.id);
+      const response = await fetch(`${API_BASE_URL}/progress-reports/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: booking.student_id,
+          course_id: booking.class_id,
+          progress_percentage: 0,
+          status: "not_started",
+          feedback: "not inserted yet",
+          remarks: "not inserted yet",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Progress report created successfully! Report ID: ${data.id}`);
+      } else {
+        const errorData = await response.json();
+        alert(
+          `Failed to create progress report: ${
+            errorData.detail || "Unknown error"
+          }`
+        );
+      }
+    } catch (error) {
+      console.error("Error creating progress report:", error);
+      alert("Error creating progress report");
+    } finally {
+      setCreatingReport(null);
+    }
+  };
+
   // Filter bookings
   useEffect(() => {
     let filtered = [...bookings];
@@ -298,10 +308,8 @@ export default function InstructorBookings() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navigation />
-
       {/* Header */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-8">
+      <section className="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl lg:text-4xl font-bold mb-2">
@@ -327,7 +335,7 @@ export default function InstructorBookings() {
                       <p className="text-sm text-gray-600">Total Bookings</p>
                       <p className="text-2xl font-bold">{bookings.length}</p>
                     </div>
-                    <Calendar className="h-8 w-8 text-primary" />
+                    <Calendar className="h-8 w-8 text-blue-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -547,6 +555,21 @@ export default function InstructorBookings() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
+                                      onClick={() =>
+                                        createProgressReport(booking)
+                                      }
+                                      title="Create Report"
+                                      disabled={creatingReport === booking.id}
+                                    >
+                                      {creatingReport === booking.id ? (
+                                        <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+                                      ) : (
+                                        <FileText className="h-4 w-4 text-blue-500" />
+                                      )}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
                                       onClick={() => openDeleteDialog(booking)}
                                       title="Delete Booking"
                                     >
@@ -620,6 +643,19 @@ export default function InstructorBookings() {
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
                                   Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => createProgressReport(booking)}
+                                  disabled={creatingReport === booking.id}
+                                  title="Create Report"
+                                >
+                                  {creatingReport === booking.id ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+                                  ) : (
+                                    <FileText className="h-4 w-4 text-blue-500" />
+                                  )}
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -858,8 +894,6 @@ export default function InstructorBookings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Footer />
     </div>
   );
 }
