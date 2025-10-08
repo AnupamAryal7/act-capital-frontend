@@ -450,7 +450,7 @@ export default function StudentDashboard() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {recentBookings.slice(0, 3).map((booking) => (
+                        {recentBookings.slice(0, 4).map((booking) => (
                           <div
                             key={booking.id}
                             className="p-4 border rounded-lg bg-gray-50"
