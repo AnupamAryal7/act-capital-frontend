@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +29,11 @@ import {
   Users,
   RefreshCw,
   Info,
+  FileText,
+  TrendingUp,
+  CheckCircle,
+  XCircle,
+  Loader,
 } from "lucide-react";
 
 interface Student {
@@ -54,16 +57,6 @@ interface Booking {
   remarks: string;
   created_at: string;
   updated_at: string | null;
-}
-
-interface Course {
-  id: number;
-  name: string;
-  progress: number;
-  instructor: string;
-  next_session: string;
-  total_sessions: number;
-  completed_sessions: number;
 }
 
 interface APICourse {
@@ -93,7 +86,54 @@ interface Review {
   date: string;
 }
 
+interface ProgressReport {
+  id: number;
+  user_id: number;
+  course_id: number;
+  progress_percentage: number;
+  status: string;
+  feedback: string;
+  remarks: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+interface EnrolledCourse {
+  id: number;
+  course_id: number;
+  course_name: string;
+  progress_percentage: number;
+  status: string;
+  feedback: string;
+  remarks: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+
+const STATUS_CONFIG = {
+  not_started: {
+    label: "Not Started",
+    color: "bg-gray-100 text-gray-700",
+    icon: XCircle,
+  },
+  in_progress: {
+    label: "In Progress",
+    color: "bg-blue-100 text-blue-700",
+    icon: Loader,
+  },
+  completed: {
+    label: "Completed",
+    color: "bg-green-100 text-green-700",
+    icon: CheckCircle,
+  },
+  on_hold: {
+    label: "On Hold",
+    color: "bg-yellow-100 text-yellow-700",
+    icon: Clock,
+  },
+};
 
 export default function StudentDashboard() {
   const [user, setUser] = useState<Student | null>(null);
@@ -104,28 +144,16 @@ export default function StudentDashboard() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-
-  // Mock data for enrolled courses and reviews
-  const enrolledCourses: Course[] = [
-    {
-      id: 1,
-      name: "Beginner Driving Course",
-      progress: 75,
-      instructor: "Sarah Johnson",
-      next_session: "2024-01-20 10:00 AM",
-      total_sessions: 20,
-      completed_sessions: 15,
-    },
-    {
-      id: 2,
-      name: "Highway Driving Mastery",
-      progress: 40,
-      instructor: "Mike Chen",
-      next_session: "2024-01-25 2:00 PM",
-      total_sessions: 10,
-      completed_sessions: 4,
-    },
-  ];
+  const [progressReports, setProgressReports] = useState<ProgressReport[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(true);
+  const [selectedReport, setSelectedReport] = useState<ProgressReport | null>(
+    null
+  );
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
+  const [enrolledCoursesLoading, setEnrolledCoursesLoading] = useState(true);
+  const [selectedCourseMessage, setSelectedCourseMessage] = useState<{
+    [key: number]: string;
+  }>({});
 
   const studentReviews: Review[] = [
     {
@@ -156,6 +184,67 @@ export default function StudentDashboard() {
       date: "2024-01-05",
     },
   ];
+
+  // Fetch progress reports for enrolled courses
+  const fetchEnrolledCourses = async (userId: string) => {
+    try {
+      setEnrolledCoursesLoading(true);
+      const response = await fetch(
+        `${API_BASE_URL}/progress-reports/?user_id=${userId}&skip=0&limit=100`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const reports = Array.isArray(data) ? data : [];
+
+        // Transform progress reports into enrolled courses format
+        const courses: EnrolledCourse[] = reports.map(
+          (report: ProgressReport) => ({
+            id: report.id,
+            course_id: report.course_id,
+            course_name: getCourseName(report.course_id),
+            progress_percentage: report.progress_percentage,
+            status: report.status,
+            feedback: report.feedback,
+            remarks: report.remarks,
+            created_at: report.created_at,
+            updated_at: report.updated_at,
+          })
+        );
+
+        setEnrolledCourses(courses);
+      } else {
+        console.error("Failed to fetch enrolled courses");
+        setEnrolledCourses([]);
+      }
+    } catch (error) {
+      console.error("Error fetching enrolled courses:", error);
+      setEnrolledCourses([]);
+    } finally {
+      setEnrolledCoursesLoading(false);
+    }
+  };
+
+  // Fetch progress reports for the student
+  const fetchProgressReports = async (userId: string) => {
+    try {
+      setReportsLoading(true);
+      const response = await fetch(
+        `${API_BASE_URL}/progress-reports/?user_id=${userId}&skip=0&limit=100`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setProgressReports(Array.isArray(data) ? data : []);
+      } else {
+        console.error("Failed to fetch progress reports");
+        setProgressReports([]);
+      }
+    } catch (error) {
+      console.error("Error fetching progress reports:", error);
+      setProgressReports([]);
+    } finally {
+      setReportsLoading(false);
+    }
+  };
 
   // Fetch student bookings from API
   const fetchStudentBookings = async (studentId: string) => {
@@ -199,8 +288,13 @@ export default function StudentDashboard() {
     }
   };
 
+  // Get course name by ID
+  const getCourseName = (courseId: number) => {
+    const course = availableCourses.find((c) => c.id === courseId);
+    return course ? course.course_title : `Course #${courseId}`;
+  };
+
   useEffect(() => {
-    // Get user data from localStorage (set by your auth provider)
     const userData = localStorage.getItem("user");
 
     if (userData) {
@@ -208,9 +302,7 @@ export default function StudentDashboard() {
         const parsedUser = JSON.parse(userData);
         console.log("Parsed user data from localStorage:", parsedUser);
 
-        // Check if user object has required fields (from your auth provider)
         if (parsedUser.id && parsedUser.email) {
-          // Map auth provider user data to dashboard interface
           const dashboardUser: Student = {
             id: parsedUser.id?.toString() || "1",
             full_name:
@@ -227,8 +319,10 @@ export default function StudentDashboard() {
           setUser(dashboardUser);
           console.log("Final dashboard user set:", dashboardUser);
 
-          // Fetch bookings for this user
+          // Fetch data for this user
           fetchStudentBookings(dashboardUser.id);
+          fetchProgressReports(dashboardUser.id);
+          fetchEnrolledCourses(dashboardUser.id);
         } else {
           console.log("Invalid user data structure");
           window.location.href = "/login";
@@ -243,14 +337,22 @@ export default function StudentDashboard() {
       window.location.href = "/login";
     }
 
-    // Fetch courses when component mounts
     fetchActiveCourses();
   }, []);
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      console.log("Message sent:", message);
-      setMessage("");
+  const handleSendMessage = (courseId?: number) => {
+    const msg = courseId ? selectedCourseMessage[courseId] : message;
+    if (msg?.trim()) {
+      console.log(
+        "Message sent:",
+        msg,
+        courseId ? `for course ${courseId}` : ""
+      );
+      if (courseId) {
+        setSelectedCourseMessage({ ...selectedCourseMessage, [courseId]: "" });
+      } else {
+        setMessage("");
+      }
       alert("Message sent to instructor!");
     }
   };
@@ -264,25 +366,28 @@ export default function StudentDashboard() {
   };
 
   const handleEnrollCourse = (courseId: number) => {
-    // Check if user is logged in
     const userData = localStorage.getItem("user");
 
     if (!userData) {
-      // User not logged in - redirect to login with booking intent
       localStorage.setItem(
         "redirectAfterLogin",
         `/booking?course_id=${courseId}`
       );
       window.location.href = `/login?redirect=/booking?course_id=${courseId}`;
     } else {
-      // User is logged in - go directly to booking
       window.location.href = `/booking?course_id=${courseId}`;
     }
   };
 
   const handleBookLesson = () => {
-    // Navigate to booking page without pre-selected course
     window.location.href = "/booking";
+  };
+
+  const getStatusConfig = (status: string) => {
+    return (
+      STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ||
+      STATUS_CONFIG.not_started
+    );
   };
 
   if (!user) {
@@ -301,10 +406,8 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navigation />
-
-      {/* Greeting Section */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-8">
+      {/* Header */}
+      <section className="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl lg:text-4xl font-bold mb-2">
@@ -347,7 +450,7 @@ export default function StudentDashboard() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {recentBookings.map((booking) => (
+                        {recentBookings.slice(0, 4).map((booking) => (
                           <div
                             key={booking.id}
                             className="p-4 border rounded-lg bg-gray-50"
@@ -426,9 +529,8 @@ export default function StudentDashboard() {
                 </Card>
               </div>
 
-              {/* Right Column - Profile & Courses */}
+              {/* Right Column - Profile */}
               <div className="space-y-6">
-                {/* Profile Details */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -479,71 +581,316 @@ export default function StudentDashboard() {
                 {/* Enrolled Courses */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <GraduationCap className="h-5 w-5 text-primary" />
-                      Enrolled Courses
-                    </CardTitle>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="flex items-center gap-2">
+                        <GraduationCap className="h-5 w-5 text-primary" />
+                        Enrolled Courses
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => user && fetchEnrolledCourses(user.id)}
+                        disabled={enrolledCoursesLoading}
+                      >
+                        <RefreshCw
+                          className={`h-4 w-4 ${
+                            enrolledCoursesLoading ? "animate-spin" : ""
+                          }`}
+                        />
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {enrolledCourses.map((course) => (
-                        <div key={course.id} className="p-4 border rounded-lg">
-                          <div className="flex justify-between items-start mb-3">
-                            <h4 className="font-semibold">{course.name}</h4>
-                            <Badge variant="outline">
-                              {course.completed_sessions}/
-                              {course.total_sessions}
-                            </Badge>
-                          </div>
-                          <div className="mb-3">
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Progress</span>
-                              <span>{course.progress}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-primary h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${course.progress}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-2">
-                            Instructor: {course.instructor}
-                          </p>
-                          <p className="text-sm text-gray-600 mb-3">
-                            Next Session: {course.next_session}
-                          </p>
+                    {enrolledCoursesLoading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                        <span>Loading courses...</span>
+                      </div>
+                    ) : enrolledCourses.length === 0 ? (
+                      <div className="text-center py-8">
+                        <GraduationCap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground mb-2">
+                          No enrolled courses yet
+                        </p>
+                        <p className="text-sm text-gray-500 mb-4">
+                          Book a lesson to get started!
+                        </p>
+                        <Button size="sm" onClick={handleBookLesson}>
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Book a Lesson
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {enrolledCourses.map((course) => {
+                          const statusConfig = getStatusConfig(course.status);
+                          const StatusIcon = statusConfig.icon;
+                          return (
+                            <div
+                              key={course.id}
+                              className="p-4 border rounded-lg bg-white"
+                            >
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold">
+                                    {course.course_name}
+                                  </h4>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Report ID: #{course.id}
+                                  </p>
+                                </div>
+                                <div
+                                  className={`px-2 py-1 rounded-full flex items-center gap-1 text-xs ${statusConfig.color}`}
+                                >
+                                  <StatusIcon className="h-3 w-3" />
+                                  <span>{statusConfig.label}</span>
+                                </div>
+                              </div>
 
-                          {/* Message to Instructor */}
-                          <div className="space-y-2">
-                            <div className="flex gap-2">
-                              <Input
-                                placeholder="Send message to instructor..."
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                className="flex-1"
-                              />
-                              <Button size="sm" onClick={handleSendMessage}>
-                                <Send className="h-4 w-4" />
-                              </Button>
+                              <div className="mb-3">
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span className="font-medium">Progress</span>
+                                  <span className="font-bold text-primary">
+                                    {course.progress_percentage}%
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                                    style={{
+                                      width: `${course.progress_percentage}%`,
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+
+                              {course.feedback &&
+                                course.feedback !== "not inserted yet" && (
+                                  <div className="mb-3 p-2 bg-blue-50 rounded text-xs">
+                                    <p className="text-gray-600 line-clamp-2">
+                                      <span className="font-semibold">
+                                        Feedback:{" "}
+                                      </span>
+                                      {course.feedback}
+                                    </p>
+                                  </div>
+                                )}
+
+                              <div className="text-xs text-gray-500 mb-3">
+                                Last updated:{" "}
+                                {course.updated_at
+                                  ? new Date(
+                                      course.updated_at
+                                    ).toLocaleDateString()
+                                  : new Date(
+                                      course.created_at
+                                    ).toLocaleDateString()}
+                              </div>
+
+                              {/* Message to Instructor */}
+                              <div className="space-y-2">
+                                <div className="flex gap-2">
+                                  <Input
+                                    placeholder="Send message to instructor..."
+                                    value={
+                                      selectedCourseMessage[course.id] || ""
+                                    }
+                                    onChange={(e) =>
+                                      setSelectedCourseMessage({
+                                        ...selectedCourseMessage,
+                                        [course.id]: e.target.value,
+                                      })
+                                    }
+                                    className="flex-1 text-sm"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleSendMessage(course.id)}
+                                    disabled={
+                                      !selectedCourseMessage[course.id]?.trim()
+                                    }
+                                  >
+                                    <Send className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full"
+                                  onClick={() => {
+                                    const report = progressReports.find(
+                                      (r) => r.id === course.id
+                                    );
+                                    if (report) setSelectedReport(report);
+                                  }}
+                                >
+                                  <FileText className="h-3 w-3 mr-2" />
+                                  View Full Report
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {/* Review Button */}
-                    <Button
-                      variant="outline"
-                      className="w-full mt-4 bg-transparent"
-                    >
-                      <Star className="h-4 w-4 mr-2" />
-                      Write a Review
-                    </Button>
+                    {enrolledCourses.length > 0 && (
+                      <Button
+                        variant="outline"
+                        className="w-full mt-4 bg-transparent"
+                      >
+                        <Star className="h-4 w-4 mr-2" />
+                        Write a Review
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </div>
             </div>
+
+            {/* Progress Reports / Enrolled Courses */}
+            <Card className="mb-12">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5 text-primary" />
+                    My Progress Reports
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => user && fetchProgressReports(user.id)}
+                    disabled={reportsLoading}
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 ${
+                        reportsLoading ? "animate-spin" : ""
+                      }`}
+                    />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {reportsLoading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                    <span>Loading progress reports...</span>
+                  </div>
+                ) : progressReports.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-2">
+                      No progress reports yet
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Your instructor will create progress reports as you
+                      complete your courses
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {progressReports.map((report) => {
+                      const statusConfig = getStatusConfig(report.status);
+                      const StatusIcon = statusConfig.icon;
+                      return (
+                        <div
+                          key={report.id}
+                          className="p-6 border rounded-lg bg-white hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-lg mb-1">
+                                {getCourseName(report.course_id)}
+                              </h4>
+                              <p className="text-sm text-gray-500">
+                                Report ID: #{report.id}
+                              </p>
+                            </div>
+                            <div
+                              className={`px-3 py-1 rounded-full flex items-center gap-2 ${statusConfig.color}`}
+                            >
+                              <StatusIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">
+                                {statusConfig.label}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Progress Bar */}
+                          <div className="mb-4">
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="font-medium">Progress</span>
+                              <span className="font-bold text-primary">
+                                {report.progress_percentage}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${report.progress_percentage}%`,
+                                }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          {/* Feedback Preview */}
+                          {report.feedback &&
+                            report.feedback !== "not inserted yet" && (
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-gray-700 mb-1">
+                                  Instructor Feedback:
+                                </p>
+                                <p className="text-sm text-gray-600 line-clamp-2">
+                                  {report.feedback}
+                                </p>
+                              </div>
+                            )}
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 mt-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => setSelectedReport(report)}
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              View Full Report
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSendMessage()}
+                            >
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Message Instructor
+                            </Button>
+                          </div>
+
+                          {/* Timestamps */}
+                          <div className="mt-4 pt-4 border-t flex justify-between text-xs text-gray-500">
+                            <span>
+                              Created:{" "}
+                              {new Date(report.created_at).toLocaleDateString()}
+                            </span>
+                            {report.updated_at && (
+                              <span>
+                                Updated:{" "}
+                                {new Date(
+                                  report.updated_at
+                                ).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Available Courses from API */}
             <Card className="mb-12">
@@ -901,7 +1248,167 @@ export default function StudentDashboard() {
         </DialogContent>
       </Dialog>
 
-      <Footer />
+      {/* Progress Report Details Dialog */}
+      <Dialog
+        open={!!selectedReport}
+        onOpenChange={() => setSelectedReport(null)}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Progress Report Details
+            </DialogTitle>
+            <DialogDescription>
+              Detailed view of your learning progress
+            </DialogDescription>
+          </DialogHeader>
+          {selectedReport && (
+            <div className="space-y-6">
+              {/* Header Info */}
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-1">
+                      {getCourseName(selectedReport.course_id)}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Report ID: #{selectedReport.id}
+                    </p>
+                  </div>
+                  <div
+                    className={`px-4 py-2 rounded-full ${
+                      getStatusConfig(selectedReport.status).color
+                    }`}
+                  >
+                    <span className="font-semibold">
+                      {getStatusConfig(selectedReport.status).label}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress Circle/Bar */}
+                <div className="bg-white p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-gray-700">
+                      Overall Progress
+                    </span>
+                    <span className="text-2xl font-bold text-blue-600">
+                      {selectedReport.progress_percentage}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                      style={{
+                        width: `${selectedReport.progress_percentage}%`,
+                      }}
+                    >
+                      {selectedReport.progress_percentage > 10 && (
+                        <TrendingUp className="h-3 w-3 text-white" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Feedback Section */}
+              <div>
+                <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  Instructor Feedback
+                </h4>
+                <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedReport.feedback &&
+                    selectedReport.feedback !== "not inserted yet"
+                      ? selectedReport.feedback
+                      : "No feedback provided yet. Your instructor will add feedback as you progress through the course."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Remarks Section */}
+              <div>
+                <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  Additional Remarks
+                </h4>
+                <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedReport.remarks &&
+                    selectedReport.remarks !== "not inserted yet"
+                      ? selectedReport.remarks
+                      : "No additional remarks at this time."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Details Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 mb-1">
+                    Student ID
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {selectedReport.user_id}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 mb-1">
+                    Course ID
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {selectedReport.course_id}
+                  </p>
+                </div>
+              </div>
+
+              {/* Timestamps */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 mb-1">
+                    Report Created
+                  </p>
+                  <p className="text-sm font-semibold flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-400" />
+                    {new Date(selectedReport.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 mb-1">
+                    Last Updated
+                  </p>
+                  <p className="text-sm font-semibold flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4 text-gray-400" />
+                    {selectedReport.updated_at
+                      ? new Date(selectedReport.updated_at).toLocaleString()
+                      : "Not updated"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleSendMessage()}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Message Instructor
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => setSelectedReport(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
