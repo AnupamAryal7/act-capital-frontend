@@ -93,6 +93,18 @@ interface Review {
   date: string;
 }
 
+interface ProgressReport {
+  id: number;
+  user_id: number;
+  course_id: number;
+  progress_percentage: number;
+  status: string;
+  feedback: string;
+  remarks: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 
 export default function StudentDashboard() {
