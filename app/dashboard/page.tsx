@@ -402,9 +402,7 @@ export default function StudentDashboard() {
       });
 
       if (response.ok) {
-        alert(
-          "Thank you for your review! It will be published after approval."
-        );
+        alert("Thank you for your review! It is published.");
         setReviewRating(0);
         setReviewComment("");
       } else {
