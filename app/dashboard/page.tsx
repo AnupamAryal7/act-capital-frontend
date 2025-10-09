@@ -139,6 +139,9 @@ export default function StudentDashboard() {
   const [user, setUser] = useState<Student | null>(null);
   const [message, setMessage] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [availableCourses, setAvailableCourses] = useState<APICourse[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
@@ -365,6 +368,59 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleReviewSubmit = async () => {
+    if (!user) {
+      alert("Please login to submit a review");
+      return;
+    }
+
+    if (reviewRating === 0) {
+      alert("Please select a rating");
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      alert("Please enter a comment");
+      return;
+    }
+
+    try {
+      setReviewSubmitting(true);
+      const response = await fetch(`${API_BASE_URL}/reviews/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_name: user.full_name,
+          email: user.email,
+          rating: reviewRating,
+          comment: reviewComment.trim(),
+          course_title: "",
+          is_approved: false,
+        }),
+      });
+
+      if (response.ok) {
+        alert(
+          "Thank you for your review! It will be published after approval."
+        );
+        setReviewRating(0);
+        setReviewComment("");
+      } else {
+        const errorData = await response.json();
+        alert(
+          `Failed to submit review: ${errorData.detail || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Failed to submit review. Please try again later.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
   const handleEnrollCourse = (courseId: number) => {
     const userData = localStorage.getItem("user");
 
@@ -450,7 +506,7 @@ export default function StudentDashboard() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {recentBookings.slice(0, 4).map((booking) => (
+                        {recentBookings.slice(0, 3).map((booking) => (
                           <div
                             key={booking.id}
                             className="p-4 border rounded-lg bg-gray-50"
@@ -1072,6 +1128,123 @@ export default function StudentDashboard() {
                         <Send className="h-4 w-4 mr-2" />
                         Submit Feedback
                       </Button>
+                    </div>
+
+                    {/* Review Section */}
+                    <div className="mt-8">
+                      <h3 className="text-lg font-semibold mb-4">Review Us</h3>
+                      <div className="space-y-4">
+                        {/* Star Rating */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Your Rating
+                          </label>
+                          <div className="flex items-center gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setReviewRating(star)}
+                                onMouseEnter={(e) => {
+                                  const stars =
+                                    e.currentTarget.parentElement?.querySelectorAll(
+                                      "button"
+                                    );
+                                  stars?.forEach((s, i) => {
+                                    const starIcon = s.querySelector("svg");
+                                    if (starIcon && i < star) {
+                                      starIcon.classList.add(
+                                        "text-yellow-400",
+                                        "fill-current"
+                                      );
+                                      starIcon.classList.remove(
+                                        "text-gray-300"
+                                      );
+                                    }
+                                  });
+                                }}
+                                onMouseLeave={(e) => {
+                                  const stars =
+                                    e.currentTarget.parentElement?.querySelectorAll(
+                                      "button"
+                                    );
+                                  stars?.forEach((s, i) => {
+                                    const starIcon = s.querySelector("svg");
+                                    if (starIcon) {
+                                      if (i < reviewRating) {
+                                        starIcon.classList.add(
+                                          "text-yellow-400",
+                                          "fill-current"
+                                        );
+                                        starIcon.classList.remove(
+                                          "text-gray-300"
+                                        );
+                                      } else {
+                                        starIcon.classList.add("text-gray-300");
+                                        starIcon.classList.remove(
+                                          "text-yellow-400",
+                                          "fill-current"
+                                        );
+                                      }
+                                    }
+                                  });
+                                }}
+                                className="focus:outline-none transition-transform hover:scale-110"
+                              >
+                                <Star
+                                  className={`h-8 w-8 ${
+                                    star <= reviewRating
+                                      ? "text-yellow-400 fill-current"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-600">
+                              {reviewRating > 0
+                                ? `${reviewRating} star${
+                                    reviewRating > 1 ? "s" : ""
+                                  }`
+                                : "Select rating"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Review Comment */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Your Review
+                          </label>
+                          <Textarea
+                            placeholder="Tell us what you think about our driving school..."
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            rows={4}
+                          />
+                        </div>
+
+                        <Button
+                          onClick={handleReviewSubmit}
+                          className="w-full"
+                          disabled={
+                            reviewSubmitting ||
+                            reviewRating === 0 ||
+                            !reviewComment.trim()
+                          }
+                        >
+                          {reviewSubmitting ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              <Star className="h-4 w-4 mr-2" />
+                              Submit Review
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
