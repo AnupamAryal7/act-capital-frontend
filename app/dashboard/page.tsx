@@ -397,7 +397,7 @@ export default function StudentDashboard() {
           rating: reviewRating,
           comment: reviewComment.trim(),
           course_title: "",
-          is_approved: false,
+          is_approved: true,
         }),
       });
 
