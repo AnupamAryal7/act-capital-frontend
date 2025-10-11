@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Lock, Mail, User, Loader2, Phone } from "lucide-react";
 
 // API endpoints
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+const API_BASE_URL = "https://act-driving-backend.onrender.com/api/v1";
 const CREATE_USER_URL = `${API_BASE_URL}/`;
 
 export default function LoginPage() {

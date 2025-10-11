@@ -110,7 +110,7 @@ interface EnrolledCourse {
   updated_at: string | null;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
+const API_BASE_URL = "https://act-driving-backend.onrender.com/api/v1";
 
 const STATUS_CONFIG = {
   not_started: {
@@ -397,14 +397,12 @@ export default function StudentDashboard() {
           rating: reviewRating,
           comment: reviewComment.trim(),
           course_title: "",
-          is_approved: false,
+          is_approved: true,
         }),
       });
 
       if (response.ok) {
-        alert(
-          "Thank you for your review! It will be published after approval."
-        );
+        alert("Thank you for your review! It is published.");
         setReviewRating(0);
         setReviewComment("");
       } else {
