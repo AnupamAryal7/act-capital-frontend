@@ -28,7 +28,7 @@ interface Course {
   created_at: string;
   updated_at: string;
 }
-
+// api base url
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export function PopularCoursesSection() {
