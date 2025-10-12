@@ -75,7 +75,7 @@ interface FAQFormData {
   answer: string;
 }
 
-const API_BASE_URL = "https://act-driving-backend.onrender.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function AdminFAQPage() {
   const [faqCategories, setFaqCategories] = useState<

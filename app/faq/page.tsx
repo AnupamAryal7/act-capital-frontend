@@ -35,7 +35,7 @@ interface FAQCategoryWithQuestions {
   questions: FAQ[];
 }
 
-const API_BASE_URL = "https://act-driving-backend.onrender.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function FAQPage() {
   const [faqCategories, setFaqCategories] = useState<

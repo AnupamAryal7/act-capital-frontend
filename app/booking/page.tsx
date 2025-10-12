@@ -66,10 +66,7 @@ interface BookingData {
   additionalMessage: string;
 }
 
-// Use env var if available, otherwise fallback to localhost
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://act-driving-backend.onrender.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Static instructor data (as requested)
 const STATIC_INSTRUCTOR = {
