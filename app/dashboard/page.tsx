@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Navigation } from "@/components/navigation";
+
 import {
   Dialog,
   DialogContent,
@@ -461,6 +463,9 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
+      <div>
+        <Navigation />
+      </div>
       <section className="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
