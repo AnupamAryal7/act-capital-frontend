@@ -39,18 +39,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     setIsLoading(false);
   }, []);
-
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       // Fixed endpoint URL (removed "/users")
-      const response = await fetch(
-        "https://act-driving-backend.onrender.com/api/v1/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       if (response.ok) {
         const data = await response.json();
