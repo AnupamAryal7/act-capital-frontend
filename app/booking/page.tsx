@@ -107,15 +107,30 @@ const TIME_SLOTS = [
   "4:00 PM",
 ];
 
-// Duration options (in minutes)
+// Duration options (in minutes, but displayed in hours)
 const DURATION_OPTIONS = [
-  { value: "60", label: "1 hour" },
-  { value: "90", label: "1.5 hours" },
-  { value: "120", label: "2 hours" },
+  { value: "60", label: "1 hour", minutes: 60 },
+  { value: "90", label: "1.5 hours", minutes: 90 },
+  { value: "120", label: "2 hours", minutes: 120 },
 ];
 
 function combineDateAndTime(dateStr: string, timeStr: string) {
-  const combined = new Date(`${dateStr} ${timeStr}`);
+  // Parse the date string (YYYY-MM-DD)
+  const [year, month, day] = dateStr.split("-").map(Number);
+
+  // Parse the time string (e.g., "9:00 AM" or "1:00 PM")
+  const [time, period] = timeStr.split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  // Convert to 24-hour format
+  if (period === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (period === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  // Create date with proper timezone handling
+  const combined = new Date(year, month - 1, day, hours, minutes || 0, 0);
   return combined.toISOString();
 }
 
@@ -391,10 +406,15 @@ export default function BookingPage(): JSX.Element {
           bookingData.time
         );
 
-        // Parse duration from course or use selected duration
-        const durationMinutes = selectedCourse
-          ? parseDuration(selectedCourse.duration)
-          : parseInt(bookingData.duration);
+        // Get duration in minutes from the selected value
+        const durationMinutes = parseInt(bookingData.duration);
+
+        console.log("Creating session with:", {
+          date_time,
+          duration: durationMinutes,
+          course_id: bookingData.courseId,
+          instructor_id: bookingData.instructorId,
+        });
 
         const sessionResponse = await fetch(`${API_BASE_URL}/class_sessions/`, {
           method: "POST",
@@ -902,7 +922,7 @@ export default function BookingPage(): JSX.Element {
                             DURATION_OPTIONS.find(
                               (d) => d.value === bookingData.duration
                             )?.label
-                          }`}
+                          } (${bookingData.duration} minutes)`}
                       </span>
                     </div>
                   </CardContent>
