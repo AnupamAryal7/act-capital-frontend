@@ -53,6 +53,17 @@ interface AvailableSession {
   course_title: string;
 }
 
+interface ClassSession {
+  id: number;
+  course_id: number;
+  instructor_id: number;
+  date_time: string;
+  duration: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string | null;
+}
+
 interface BookingData {
   bookingType: "browse" | "create";
   courseId: number;
@@ -64,6 +75,12 @@ interface BookingData {
   phoneNumber: string;
   suburb: string;
   additionalMessage: string;
+}
+
+interface TimeSlotAvailability {
+  time: string;
+  isBooked: boolean;
+  sessions: ClassSession[];
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -111,6 +128,34 @@ function parseDuration(durationStr: string): number {
   return 60; // default to 60 minutes
 }
 
+function convertTo24Hour(time12h: string): number {
+  const [time, period] = time12h.split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  if (period === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (period === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  return hours + (minutes || 0) / 60;
+}
+
+function checkTimeSlotConflict(
+  slotTime: string,
+  sessionDateTime: string,
+  sessionDurationMinutes: number
+): boolean {
+  const sessionDate = new Date(sessionDateTime);
+  const sessionHour = sessionDate.getHours() + sessionDate.getMinutes() / 60;
+  const sessionEndHour = sessionHour + sessionDurationMinutes / 60;
+
+  const slotHour = convertTo24Hour(slotTime);
+
+  // Check if the slot overlaps with the session
+  return slotHour >= sessionHour && slotHour < sessionEndHour;
+}
+
 export default function BookingPage(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
@@ -119,6 +164,10 @@ export default function BookingPage(): JSX.Element {
     AvailableSession[]
   >([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [allClassSessions, setAllClassSessions] = useState<ClassSession[]>([]);
+  const [timeSlotAvailability, setTimeSlotAvailability] = useState<
+    TimeSlotAvailability[]
+  >([]);
 
   const [bookingData, setBookingData] = useState<BookingData>({
     bookingType: "browse",
@@ -132,6 +181,61 @@ export default function BookingPage(): JSX.Element {
     suburb: "",
     additionalMessage: "",
   });
+
+  // Fetch all active class sessions
+  const fetchAllClassSessions = async () => {
+    try {
+      const resp = await fetch(
+        `${API_BASE_URL}/class_sessions/?is_active=true&limit=200`
+      );
+      if (!resp.ok) return setAllClassSessions([]);
+      const data = await resp.json();
+      setAllClassSessions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error fetching class sessions:", err);
+      setAllClassSessions([]);
+    }
+  };
+
+  // Calculate time slot availability based on selected date and instructor
+  const calculateTimeSlotAvailability = () => {
+    if (!bookingData.date || bookingData.bookingType !== "create") {
+      setTimeSlotAvailability([]);
+      return;
+    }
+
+    const selectedDate = new Date(bookingData.date);
+    const selectedDateStr = selectedDate.toISOString().split("T")[0];
+
+    const availability: TimeSlotAvailability[] = TIME_SLOTS.map((time) => {
+      // Filter sessions for the selected date and instructor
+      const conflictingSessions = allClassSessions.filter((session) => {
+        const sessionDate = new Date(session.date_time);
+        const sessionDateStr = sessionDate.toISOString().split("T")[0];
+
+        // Check if session is on the same date and with the same instructor
+        if (
+          sessionDateStr === selectedDateStr &&
+          session.instructor_id === bookingData.instructorId
+        ) {
+          return checkTimeSlotConflict(
+            time,
+            session.date_time,
+            session.duration
+          );
+        }
+        return false;
+      });
+
+      return {
+        time,
+        isBooked: conflictingSessions.length > 0,
+        sessions: conflictingSessions,
+      };
+    });
+
+    setTimeSlotAvailability(availability);
+  };
 
   // Fetch available class sessions (optional course filter)
   const fetchAvailableSessions = async (courseId?: number) => {
@@ -190,6 +294,7 @@ export default function BookingPage(): JSX.Element {
 
   useEffect(() => {
     fetchCourses();
+    fetchAllClassSessions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -200,6 +305,12 @@ export default function BookingPage(): JSX.Element {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCourse, bookingData.bookingType]);
+
+  // Recalculate time slot availability when date or sessions change
+  useEffect(() => {
+    calculateTimeSlotAvailability();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingData.date, allClassSessions, bookingData.bookingType]);
 
   const handleCourseChange = (courseIdString: string) => {
     const id = parseInt(courseIdString, 10);
@@ -217,10 +328,14 @@ export default function BookingPage(): JSX.Element {
   };
 
   const handleDateChange = (date: string) => {
-    setBookingData((prev) => ({ ...prev, date }));
+    setBookingData((prev) => ({ ...prev, date, time: "" }));
   };
 
-  const handleTimeSelect = (time: string) => {
+  const handleTimeSelect = (time: string, isBooked: boolean) => {
+    if (isBooked) {
+      alert("This time slot is already booked. Please select another time.");
+      return;
+    }
     setBookingData((prev) => ({ ...prev, time }));
   };
 
@@ -305,7 +420,7 @@ export default function BookingPage(): JSX.Element {
         console.log("New class session created:", sessionData);
       }
 
-      // Create booking with the class session ID - FIXED: use 'subrub' instead of 'suburb'
+      // Create booking with the class session ID
       const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -313,7 +428,7 @@ export default function BookingPage(): JSX.Element {
           student_id: user.id,
           class_id: classSessionId,
           phone_no: bookingData.phoneNumber,
-          suburb: bookingData.suburb, // CHANGED: suburb -> subrub
+          suburb: bookingData.suburb,
           additional_message: bookingData.additionalMessage,
           status: "pending",
           remarks: "pending",
@@ -700,20 +815,57 @@ export default function BookingPage(): JSX.Element {
 
               <div>
                 <Label>Select Time</Label>
+                {bookingData.bookingType === "create" && (
+                  <div className="flex items-center gap-2 mb-2 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-green-500 rounded" />
+                      <span>Available</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-red-500 rounded" />
+                      <span>Booked</span>
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                  {TIME_SLOTS.map((time) => (
-                    <Button
-                      key={time}
-                      variant={
-                        bookingData.time === time ? "default" : "outline"
-                      }
-                      onClick={() => handleTimeSelect(time)}
-                      className="h-12"
-                    >
-                      <Clock className="h-4 w-4 mr-2" />
-                      {time}
-                    </Button>
-                  ))}
+                  {bookingData.bookingType === "create"
+                    ? timeSlotAvailability.map((slot) => (
+                        <Button
+                          key={slot.time}
+                          variant={
+                            bookingData.time === slot.time
+                              ? "default"
+                              : "outline"
+                          }
+                          onClick={() =>
+                            handleTimeSelect(slot.time, slot.isBooked)
+                          }
+                          disabled={slot.isBooked}
+                          className={`h-12 ${
+                            slot.isBooked
+                              ? "bg-red-100 border-red-300 text-red-700 hover:bg-red-100 cursor-not-allowed"
+                              : bookingData.time === slot.time
+                              ? ""
+                              : "bg-green-50 border-green-300 hover:bg-green-100"
+                          }`}
+                        >
+                          <Clock className="h-4 w-4 mr-2" />
+                          {slot.time}
+                        </Button>
+                      ))
+                    : TIME_SLOTS.map((time) => (
+                        <Button
+                          key={time}
+                          variant={
+                            bookingData.time === time ? "default" : "outline"
+                          }
+                          onClick={() => handleTimeSelect(time, false)}
+                          className="h-12"
+                        >
+                          <Clock className="h-4 w-4 mr-2" />
+                          {time}
+                        </Button>
+                      ))}
                 </div>
               </div>
 
