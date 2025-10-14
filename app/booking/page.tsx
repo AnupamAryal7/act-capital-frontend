@@ -380,31 +380,60 @@ export default function BookingPage(): JSX.Element {
         // Get duration in minutes from the selected value
         const durationMinutes = parseInt(bookingData.duration);
 
-        console.log("Creating session with:", {
-          date_time,
-          duration: durationMinutes,
+        const sessionPayload = {
           course_id: bookingData.courseId,
           instructor_id: bookingData.instructorId,
-          raw_date: bookingData.date,
-          raw_time: bookingData.time,
+          date_time: date_time,
+          duration: durationMinutes,
+          is_active: true,
+        };
+
+        console.log("=== SESSION CREATION DEBUG ===");
+        console.log("Raw inputs:", {
+          date: bookingData.date,
+          time: bookingData.time,
+          duration: bookingData.duration,
         });
+        console.log("Payload being sent to API:", sessionPayload);
+        console.log("Duration is in MINUTES:", durationMinutes);
+        console.log(
+          "Expected end time:",
+          new Date(
+            new Date(date_time).getTime() + durationMinutes * 60000
+          ).toISOString()
+        );
 
         const sessionResponse = await fetch(`${API_BASE_URL}/class_sessions/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            course_id: bookingData.courseId,
-            instructor_id: bookingData.instructorId,
-            date_time: date_time,
-            duration: durationMinutes,
-            is_active: true,
-          }),
+          body: JSON.stringify(sessionPayload),
         });
 
         if (!sessionResponse.ok) {
-          const err = await sessionResponse.text();
-          console.error("Session creation failed:", err);
-          alert("Failed to create class session. Please try again.");
+          const errorData = await sessionResponse.json();
+          console.error("Session creation failed:", errorData);
+
+          // Better error messages for users
+          let errorMessage = "Failed to create class session. ";
+
+          if (errorData.detail) {
+            if (errorData.detail.includes("already has a class")) {
+              errorMessage =
+                "This time slot conflicts with an existing booking. Please choose a different time.";
+            } else if (
+              errorData.detail.includes("SSL connection") ||
+              errorData.detail.includes("database")
+            ) {
+              errorMessage =
+                "Server connection error. Please try again in a moment.";
+            } else if (errorData.detail.includes("OperationalError")) {
+              errorMessage = "Database connection lost. Please try again.";
+            } else {
+              errorMessage += errorData.detail;
+            }
+          }
+
+          alert(errorMessage);
           return;
         }
 
