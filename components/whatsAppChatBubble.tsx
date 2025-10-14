@@ -6,26 +6,47 @@ import { MessageCircle, X } from "lucide-react";
 export function WhatsAppChatBubble() {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({
-    x: window.innerWidth - 100,
-    y: window.innerHeight - 100,
-  });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(true);
 
   const bubbleRef = useRef<HTMLDivElement>(null);
+  const hasMoved = useRef(false);
 
-  const phoneNumber = "+61420991533";
+  const phoneNumber = "+61042099533";
   const message = "Hi! I need help with my driving lessons.";
+
+  // Initialize position after component mounts
+  useEffect(() => {
+    setPosition({
+      x: window.innerWidth - 100,
+      y: window.innerHeight - 100,
+    });
+  }, []);
 
   // Handle mouse down for dragging
   const handleMouseDown = (e: React.MouseEvent) => {
     if (bubbleRef.current) {
       setIsDragging(true);
+      hasMoved.current = false;
       const rect = bubbleRef.current.getBoundingClientRect();
       setDragOffset({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
+      });
+    }
+  };
+
+  // Handle touch start for dragging
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (bubbleRef.current) {
+      setIsDragging(true);
+      hasMoved.current = false;
+      const touch = e.touches[0];
+      const rect = bubbleRef.current.getBoundingClientRect();
+      setDragOffset({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
       });
     }
   };
@@ -37,9 +58,42 @@ export function WhatsAppChatBubble() {
     const newX = e.clientX - dragOffset.x;
     const newY = e.clientY - dragOffset.y;
 
+    // Check if we've moved significantly (more than 5px)
+    const movedDistance = Math.sqrt(
+      Math.pow(newX - position.x, 2) + Math.pow(newY - position.y, 2)
+    );
+
+    if (movedDistance > 5) {
+      hasMoved.current = true;
+    }
+
     // Constrain to viewport boundaries
-    const constrainedX = Math.max(0, Math.min(window.innerWidth - 64, newX));
-    const constrainedY = Math.max(0, Math.min(window.innerHeight - 64, newY));
+    const constrainedX = Math.max(10, Math.min(window.innerWidth - 74, newX));
+    const constrainedY = Math.max(10, Math.min(window.innerHeight - 74, newY));
+
+    setPosition({ x: constrainedX, y: constrainedY });
+  };
+
+  // Handle touch move for dragging
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isDragging) return;
+
+    const touch = e.touches[0];
+    const newX = touch.clientX - dragOffset.x;
+    const newY = touch.clientY - dragOffset.y;
+
+    // Check if we've moved significantly (more than 5px)
+    const movedDistance = Math.sqrt(
+      Math.pow(newX - position.x, 2) + Math.pow(newY - position.y, 2)
+    );
+
+    if (movedDistance > 5) {
+      hasMoved.current = true;
+    }
+
+    // Constrain to viewport boundaries
+    const constrainedX = Math.max(10, Math.min(window.innerWidth - 74, newX));
+    const constrainedY = Math.max(10, Math.min(window.innerHeight - 74, newY));
 
     setPosition({ x: constrainedX, y: constrainedY });
   };
@@ -49,36 +103,29 @@ export function WhatsAppChatBubble() {
     setIsDragging(false);
   };
 
-  // Handle touch events for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (bubbleRef.current) {
-      setIsDragging(true);
-      const touch = e.touches[0];
-      const rect = bubbleRef.current.getBoundingClientRect();
-      setDragOffset({
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top,
-      });
-    }
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!isDragging) return;
-
-    const touch = e.touches[0];
-    const newX = touch.clientX - dragOffset.x;
-    const newY = touch.clientY - dragOffset.y;
-
-    // Constrain to viewport boundaries
-    const constrainedX = Math.max(0, Math.min(window.innerWidth - 64, newX));
-    const constrainedY = Math.max(0, Math.min(window.innerHeight - 64, newY));
-
-    setPosition({ x: constrainedX, y: constrainedY });
-  };
-
   // Handle WhatsApp click
-  const handleWhatsAppClick = () => {
-    if (isDragging) return; // Don't open WhatsApp if we were dragging
+  const handleWhatsAppClick = (e: React.MouseEvent) => {
+    // Prevent opening WhatsApp if we were dragging
+    if (hasMoved.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
+  // Handle touch end for WhatsApp click
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    // Prevent opening WhatsApp if we were dragging
+    if (hasMoved.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
       message
@@ -112,7 +159,7 @@ export function WhatsAppChatBubble() {
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleMouseUp);
     };
-  }, [isDragging, dragOffset]);
+  }, [isDragging, dragOffset, position]);
 
   if (!isVisible) return null;
 
@@ -124,13 +171,15 @@ export function WhatsAppChatBubble() {
         left: `${position.x}px`,
         top: `${position.y}px`,
         transform: isDragging ? "scale(1.1)" : "scale(1)",
-        transition: isDragging ? "none" : "transform 0.2s ease",
+        transition: isDragging
+          ? "none"
+          : "transform 0.2s ease, left 0.2s ease, top 0.2s ease",
       }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >
       {/* Tooltip */}
-      {showTooltip && (
+      {showTooltip && !isDragging && (
         <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg whitespace-nowrap">
           Chat with instructor
           <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-800"></div>
@@ -151,6 +200,7 @@ export function WhatsAppChatBubble() {
         {/* WhatsApp button */}
         <button
           onClick={handleWhatsAppClick}
+          onTouchEnd={handleTouchEnd}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
           className={`relative group bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all duration-300 ${
@@ -174,7 +224,7 @@ export function WhatsAppChatBubble() {
         </button>
       </div>
 
-      {/* Phone number (optional - can be removed if you prefer) */}
+      {/* Phone number */}
       <p className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 text-xs text-gray-600 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full whitespace-nowrap">
         {phoneNumber}
       </p>
