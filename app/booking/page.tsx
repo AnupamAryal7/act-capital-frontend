@@ -115,17 +115,9 @@ const DURATION_OPTIONS = [
 ];
 
 function combineDateAndTime(dateStr: string, timeStr: string) {
-  // Parse the date string (YYYY-MM-DD)
-  const [year, month, day] = dateStr.split("-").map(Number);
-
-  // Parse the time string in 24-hour format (HH:MM)
-  const [hours, minutes] = timeStr.split(":").map(Number);
-
-  // Create date with proper timezone handling
-  const combined = new Date(
-    Date.UTC(year, month - 1, day, hours, minutes || 0, 0)
-  );
-  return combined.toISOString();
+  // Simply combine date and time strings in ISO format
+  // The API expects: "YYYY-MM-DDTHH:MM:SS"
+  return `${dateStr}T${timeStr}:00`;
 }
 
 function parseDuration(durationStr: string): number {
@@ -392,6 +384,8 @@ export default function BookingPage(): JSX.Element {
           duration: durationMinutes,
           course_id: bookingData.courseId,
           instructor_id: bookingData.instructorId,
+          raw_date: bookingData.date,
+          raw_time: bookingData.time,
         });
 
         const sessionResponse = await fetch(`${API_BASE_URL}/class_sessions/`, {
