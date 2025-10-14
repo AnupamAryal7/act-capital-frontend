@@ -222,8 +222,9 @@ export default function BookingPage(): JSX.Element {
     const endDate = new Date(startDate.getTime() + session.duration * 60000);
 
     const formatTime = (date: Date) => {
-      const hours = date.getHours().toString().padStart(2, "0");
-      const minutes = date.getMinutes().toString().padStart(2, "0");
+      // Get UTC hours and minutes to match the stored time
+      const hours = date.getUTCHours().toString().padStart(2, "0");
+      const minutes = date.getUTCMinutes().toString().padStart(2, "0");
       return `${hours}:${minutes}`;
     };
 
