@@ -118,19 +118,13 @@ function combineDateAndTime(dateStr: string, timeStr: string) {
   // Parse the date string (YYYY-MM-DD)
   const [year, month, day] = dateStr.split("-").map(Number);
 
-  // Parse the time string (e.g., "9:00 AM" or "1:00 PM")
-  const [time, period] = timeStr.split(" ");
-  let [hours, minutes] = time.split(":").map(Number);
-
-  // Convert to 24-hour format
-  if (period === "PM" && hours !== 12) {
-    hours += 12;
-  } else if (period === "AM" && hours === 12) {
-    hours = 0;
-  }
+  // Parse the time string in 24-hour format (HH:MM)
+  const [hours, minutes] = timeStr.split(":").map(Number);
 
   // Create date with proper timezone handling
-  const combined = new Date(year, month - 1, day, hours, minutes || 0, 0);
+  const combined = new Date(
+    Date.UTC(year, month - 1, day, hours, minutes || 0, 0)
+  );
   return combined.toISOString();
 }
 
@@ -212,44 +206,36 @@ export default function BookingPage(): JSX.Element {
     }
   };
 
-  // Calculate time slot availability based on selected date and instructor
-  const calculateTimeSlotAvailability = () => {
-    if (!bookingData.date || bookingData.bookingType !== "create") {
-      setTimeSlotAvailability([]);
-      return;
-    }
+  // Get booked sessions for the selected date
+  const getBookedSessionsForDate = (): ClassSession[] => {
+    if (!bookingData.date) return [];
 
-    const selectedDate = new Date(bookingData.date);
-    const selectedDateStr = selectedDate.toISOString().split("T")[0];
+    const selectedDateStr = bookingData.date;
 
-    const availability: TimeSlotAvailability[] = TIME_SLOTS.map((time) => {
-      // Filter sessions for the selected date and instructor
-      const conflictingSessions = allClassSessions.filter((session) => {
-        const sessionDate = new Date(session.date_time);
-        const sessionDateStr = sessionDate.toISOString().split("T")[0];
+    return allClassSessions.filter((session) => {
+      const sessionDate = new Date(session.date_time);
+      const sessionDateStr = sessionDate.toISOString().split("T")[0];
 
-        // Check if session is on the same date and with the same instructor
-        if (
-          sessionDateStr === selectedDateStr &&
-          session.instructor_id === bookingData.instructorId
-        ) {
-          return checkTimeSlotConflict(
-            time,
-            session.date_time,
-            session.duration
-          );
-        }
-        return false;
-      });
-
-      return {
-        time,
-        isBooked: conflictingSessions.length > 0,
-        sessions: conflictingSessions,
-      };
+      return (
+        sessionDateStr === selectedDateStr &&
+        session.instructor_id === bookingData.instructorId &&
+        session.is_active
+      );
     });
+  };
 
-    setTimeSlotAvailability(availability);
+  // Format time range from session
+  const formatSessionTimeRange = (session: ClassSession): string => {
+    const startDate = new Date(session.date_time);
+    const endDate = new Date(startDate.getTime() + session.duration * 60000);
+
+    const formatTime = (date: Date) => {
+      const hours = date.getHours().toString().padStart(2, "0");
+      const minutes = date.getMinutes().toString().padStart(2, "0");
+      return `${hours}:${minutes}`;
+    };
+
+    return `${formatTime(startDate)} - ${formatTime(endDate)}`;
   };
 
   // Fetch available class sessions (optional course filter)
@@ -321,11 +307,7 @@ export default function BookingPage(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCourse, bookingData.bookingType]);
 
-  // Recalculate time slot availability when date or sessions change
-  useEffect(() => {
-    calculateTimeSlotAvailability();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookingData.date, allClassSessions, bookingData.bookingType]);
+  // Removed old time slot availability calculation
 
   const handleCourseChange = (courseIdString: string) => {
     const id = parseInt(courseIdString, 10);
@@ -343,14 +325,10 @@ export default function BookingPage(): JSX.Element {
   };
 
   const handleDateChange = (date: string) => {
-    setBookingData((prev) => ({ ...prev, date, time: "" }));
+    setBookingData((prev) => ({ ...prev, date }));
   };
 
-  const handleTimeSelect = (time: string, isBooked: boolean) => {
-    if (isBooked) {
-      alert("This time slot is already booked. Please select another time.");
-      return;
-    }
+  const handleTimeSelect = (time: string) => {
     setBookingData((prev) => ({ ...prev, time }));
   };
 
@@ -811,6 +789,8 @@ export default function BookingPage(): JSX.Element {
         );
 
       case 3:
+        const bookedSessions = getBookedSessionsForDate();
+
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -833,79 +813,82 @@ export default function BookingPage(): JSX.Element {
                 />
               </div>
 
-              <div>
-                <Label>Select Time</Label>
-                {bookingData.bookingType === "create" && (
-                  <div className="flex items-center gap-2 mb-2 text-xs">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-green-500 rounded" />
-                      <span>Available</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-red-500 rounded" />
-                      <span>Booked</span>
-                    </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Side - Time Input */}
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="time">Select Time</Label>
+                    <Input
+                      id="time"
+                      type="time"
+                      value={bookingData.time}
+                      onChange={(e) => handleTimeSelect(e.target.value)}
+                      className="text-lg"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enter your preferred start time (24-hour format)
+                    </p>
                   </div>
-                )}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                  {bookingData.bookingType === "create"
-                    ? timeSlotAvailability.map((slot) => (
-                        <Button
-                          key={slot.time}
-                          variant={
-                            bookingData.time === slot.time
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            handleTimeSelect(slot.time, slot.isBooked)
-                          }
-                          disabled={slot.isBooked}
-                          className={`h-12 ${
-                            slot.isBooked
-                              ? "bg-red-100 border-red-300 text-red-700 hover:bg-red-100 cursor-not-allowed"
-                              : bookingData.time === slot.time
-                              ? ""
-                              : "bg-green-50 border-green-300 hover:bg-green-100"
-                          }`}
-                        >
-                          <Clock className="h-4 w-4 mr-2" />
-                          {slot.time}
-                        </Button>
-                      ))
-                    : TIME_SLOTS.map((time) => (
-                        <Button
-                          key={time}
-                          variant={
-                            bookingData.time === time ? "default" : "outline"
-                          }
-                          onClick={() => handleTimeSelect(time, false)}
-                          className="h-12"
-                        >
-                          <Clock className="h-4 w-4 mr-2" />
-                          {time}
-                        </Button>
-                      ))}
-                </div>
-              </div>
 
-              <div>
-                <Label htmlFor="duration">Duration</Label>
-                <Select
-                  value={bookingData.duration}
-                  onValueChange={handleDurationChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DURATION_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <div>
+                    <Label htmlFor="duration">Duration</Label>
+                    <Select
+                      value={bookingData.duration}
+                      onValueChange={handleDurationChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DURATION_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Right Side - Booked Sessions */}
+                <div>
+                  <Label>Booked Sessions for This Day</Label>
+                  <div className="mt-2 space-y-2 max-h-64 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                    {bookedSessions.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">
+                          No sessions booked for this day
+                        </p>
+                      </div>
+                    ) : (
+                      bookedSessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className="bg-red-100 border border-red-300 rounded-md p-3 text-black hover:text-yellow-800 transition-colors cursor-default"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-sm">
+                                {formatSessionTimeRange(session)}
+                              </p>
+                              <p className="text-xs opacity-75">
+                                Duration: {session.duration} minutes (
+                                {(session.duration / 60).toFixed(1)} hours)
+                              </p>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              Booked
+                            </Badge>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Avoid scheduling during these times
+                  </p>
+                </div>
               </div>
 
               {bookingData.date && bookingData.time && (
@@ -922,7 +905,7 @@ export default function BookingPage(): JSX.Element {
                             DURATION_OPTIONS.find(
                               (d) => d.value === bookingData.duration
                             )?.label
-                          } (${bookingData.duration} minutes)`}
+                          }`}
                       </span>
                     </div>
                   </CardContent>
