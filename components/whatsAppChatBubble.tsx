@@ -10,6 +10,7 @@ export function WhatsAppChatBubble() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(true);
   const [showDismissArea, setShowDismissArea] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const hasMoved = useRef(false);
@@ -17,46 +18,20 @@ export function WhatsAppChatBubble() {
   const phoneNumber = "+61042099533";
   const message = "Hi! I need help with my driving lessons.";
 
-  // Initialize position after component mounts
+  // Initialize position after component mounts on client side
   useEffect(() => {
+    setIsMounted(true);
     setPosition({
       x: window.innerWidth - 100,
       y: window.innerHeight - 150,
     });
   }, []);
 
-  // Handle mouse down for dragging
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (bubbleRef.current) {
-      setIsDragging(true);
-      hasMoved.current = false;
-      setShowDismissArea(true);
-      const rect = bubbleRef.current.getBoundingClientRect();
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    }
-  };
-
-  // Handle touch start for dragging
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (bubbleRef.current) {
-      setIsDragging(true);
-      hasMoved.current = false;
-      setShowDismissArea(true);
-      const touch = e.touches[0];
-      const rect = bubbleRef.current.getBoundingClientRect();
-      setDragOffset({
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top,
-      });
-    }
-  };
-
   // Snap to nearest edge
   const snapToEdge = (x: number, y: number) => {
-    const bubbleWidth = 64; // w-16 = 64px
+    if (typeof window === "undefined") return { x, y };
+
+    const bubbleWidth = 64;
     const bubbleHeight = 64;
     const margin = 20;
 
@@ -107,6 +82,8 @@ export function WhatsAppChatBubble() {
 
   // Check if in dismiss zone (bottom center)
   const isInDismissZone = (x: number, y: number) => {
+    if (typeof window === "undefined") return false;
+
     const bubbleWidth = 64;
     const dismissZoneWidth = 120;
     const dismissZoneTop = window.innerHeight - 100;
@@ -121,6 +98,35 @@ export function WhatsAppChatBubble() {
       bubbleCenterX >= dismissZoneLeft &&
       bubbleCenterX <= dismissZoneRight
     );
+  };
+
+  // Handle mouse down for dragging
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (bubbleRef.current) {
+      setIsDragging(true);
+      hasMoved.current = false;
+      setShowDismissArea(true);
+      const rect = bubbleRef.current.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+  };
+
+  // Handle touch start for dragging
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (bubbleRef.current) {
+      setIsDragging(true);
+      hasMoved.current = false;
+      setShowDismissArea(true);
+      const touch = e.touches[0];
+      const rect = bubbleRef.current.getBoundingClientRect();
+      setDragOffset({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+      });
+    }
   };
 
   // Handle mouse move for dragging
@@ -239,7 +245,8 @@ export function WhatsAppChatBubble() {
     };
   }, [isDragging, dragOffset, position]);
 
-  if (!isVisible) return null;
+  // Don't render anything during SSR
+  if (!isMounted || !isVisible) return null;
 
   return (
     <>
