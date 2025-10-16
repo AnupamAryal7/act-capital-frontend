@@ -32,12 +32,10 @@ interface Booking {
 
 interface Student {
   id: number;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   email: string;
   phone_number: string;
-  created_at: string;
-  updated_at: string | null;
+  role: string;
 }
 
 interface Course {
@@ -76,33 +74,33 @@ export default function SchedulePage() {
       setLoading(true);
       setError(null);
 
-      // Get current instructor ID from localStorage
-      const userData = localStorage.getItem("user");
-      if (!userData) {
-        setError("User not logged in");
-        return;
-      }
+      console.log("=== SCHEDULE FETCH START ===");
+      console.log("API_BASE_URL:", API_BASE_URL);
 
-      const user = JSON.parse(userData);
-      const instructorId = user.id;
-
-      // Fetch all active class sessions (not filtered by instructor since there's only one)
+      // Fetch all active class sessions
+      console.log("Fetching class sessions...");
       const sessionsRes = await fetch(
         `${API_BASE_URL}/class_sessions/?is_active=true&limit=200`
       );
+      console.log("Sessions response status:", sessionsRes.status);
       if (!sessionsRes.ok) throw new Error("Failed to fetch sessions");
       const sessions: ClassSession[] = await sessionsRes.json();
+      console.log("Total sessions fetched:", sessions.length);
+      console.log("All sessions:", sessions);
 
       // Fetch all bookings
+      console.log("Fetching bookings...");
       const bookingsRes = await fetch(`${API_BASE_URL}/bookings/?limit=200`);
+      console.log("Bookings response status:", bookingsRes.status);
       if (!bookingsRes.ok) throw new Error("Failed to fetch bookings");
       const bookings: Booking[] = await bookingsRes.json();
+      console.log("Total bookings fetched:", bookings.length);
+      console.log("All bookings:", bookings);
 
       // Get today's date (start of day in UTC)
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+      console.log("Today's date (UTC):", today);
 
       // Filter sessions for today
       const todaySessions = sessions.filter((session) => {
@@ -111,8 +109,12 @@ export default function SchedulePage() {
         return sessionDate.getTime() === today.getTime();
       });
 
+      console.log("Today's sessions:", todaySessions.length);
+      console.log("Today's sessions data:", todaySessions);
+
       // If no sessions today, show empty state
       if (todaySessions.length === 0) {
+        console.log("No sessions today, showing empty state");
         setTodayLessons([]);
         return;
       }
@@ -121,21 +123,57 @@ export default function SchedulePage() {
       const lessonsData: LessonData[] = [];
 
       for (const session of todaySessions) {
+        console.log(`\n--- Processing session ID: ${session.id} ---`);
+        console.log("Session details:", session);
+
         // Find booking for this session
         const booking = bookings.find((b) => b.class_id === session.id);
+        console.log("Found booking:", booking);
 
         if (booking) {
           // Fetch student data
-          const studentRes = await fetch(
-            `${API_BASE_URL}/users/${booking.student_id}`
-          );
-          const student: Student = await studentRes.json();
+          let studentName = "Unknown Student";
+          try {
+            console.log(`Fetching student data for ID: ${booking.student_id}`);
+            const studentRes = await fetch(
+              `${API_BASE_URL}/users/${booking.student_id}`
+            );
+            console.log("Student response status:", studentRes.status);
+            if (studentRes.ok) {
+              const student: Student = await studentRes.json();
+              console.log("Student data:", student);
+              studentName =
+                student.full_name || student.email || "Unknown Student";
+              console.log("Student name resolved to:", studentName);
+            } else {
+              console.error("Student response not OK:", studentRes.status);
+            }
+          } catch (err) {
+            console.error(
+              `Failed to fetch student ${booking.student_id}:`,
+              err
+            );
+          }
 
           // Fetch course data
-          const courseRes = await fetch(
-            `${API_BASE_URL}/courses/${session.course_id}`
-          );
-          const course: Course = await courseRes.json();
+          let courseTitle = "Unknown Course";
+          try {
+            console.log(`Fetching course data for ID: ${session.course_id}`);
+            const courseRes = await fetch(
+              `${API_BASE_URL}/courses/${session.course_id}`
+            );
+            console.log("Course response status:", courseRes.status);
+            if (courseRes.ok) {
+              const course: Course = await courseRes.json();
+              console.log("Course data:", course);
+              courseTitle = course.course_title;
+              console.log("Course title resolved to:", courseTitle);
+            } else {
+              console.error("Course response not OK:", courseRes.status);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch course ${session.course_id}:`, err);
+          }
 
           // Calculate times
           const startDate = new Date(session.date_time);
@@ -153,18 +191,24 @@ export default function SchedulePage() {
             id: booking.id,
             time: formatTime(startDate),
             endTime: formatTime(endDate),
-            student: `${student.first_name} ${student.last_name}`,
+            student: studentName,
             studentPhone: booking.phone_no,
-            type: course.course_title,
+            type: courseTitle,
             location: booking.suburb,
             status: booking.status,
             additionalMessage: booking.additional_message,
             duration: session.duration,
           };
 
+          console.log("Lesson item created:", lessonItem);
           lessonsData.push(lessonItem);
+        } else {
+          console.log(`No booking found for session ${session.id}`);
         }
       }
+
+      console.log("\nTotal lessons data collected:", lessonsData.length);
+      console.log("Before sorting:", lessonsData);
 
       // Sort by time
       lessonsData.sort(
@@ -173,8 +217,12 @@ export default function SchedulePage() {
           parseInt(a.time.split(":")[1]) - parseInt(b.time.split(":")[1])
       );
 
+      console.log("After sorting:", lessonsData);
+      console.log("=== SCHEDULE FETCH COMPLETE ===\n");
+
       setTodayLessons(lessonsData);
     } catch (err) {
+      console.error("=== ERROR DURING FETCH ===");
       console.error("Error fetching lessons:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch lessons");
     } finally {
