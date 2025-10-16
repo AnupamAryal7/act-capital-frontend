@@ -35,6 +35,15 @@ export default function SchedulePage() {
       phone: "+61 4XX XXX XXX",
       status: "pending",
     },
+    {
+      id: 4,
+      time: "2:00 PM",
+      student: "ALfanso Davis",
+      type: "Test Preparation",
+      location: "Woden, ACT",
+      phone: "+61 4XX XXX XXX",
+      status: "pending",
+    },
   ]);
 
   return (
