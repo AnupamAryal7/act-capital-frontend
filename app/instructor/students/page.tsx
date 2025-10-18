@@ -5,6 +5,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Mail, Phone } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Check, UserX } from "lucide-react";
+interface Booking {
+  id: number;
+  student_id: number;
+  class_id: number;
+  phone_no: string;
+  suburb: string;
+  additional_message: string;
+  status: string;
+  remarks: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+const STATUS_OPTIONS = [
+  { value: "pending", label: "Pending", icon: Clock, color: "default" },
+  {
+    value: "confirmed",
+    label: "Confirmed",
+    icon: CheckCircle,
+    color: "default",
+  },
+  {
+    value: "cancelled",
+    label: "Cancelled",
+    icon: XCircle,
+    color: "destructive",
+  },
+  { value: "attended", label: "Attended", icon: Check, color: "secondary" },
+  { value: "no_show", label: "No Show", icon: UserX, color: "destructive" },
+];
 
 export default function StudentsPage() {
   const [students] = useState([
