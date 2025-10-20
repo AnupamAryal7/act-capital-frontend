@@ -29,6 +29,16 @@ interface Student {
   remarks: string;
   created_at: string;
   class_id: number;
+  email?: string;
+  phone_number?: string;
+}
+
+interface UserDetails {
+  full_name: string;
+  email: string;
+  phone_number: string;
+  role: string;
+  id: number;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -57,58 +67,151 @@ export default function StudentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [expandedStudent, setExpandedStudent] = useState<number | null>(null);
 
-  // Fetch students from bookings endpoint
+  // Fetch user details by ID - FIXED URL CONSTRUCTION
+  const fetchUserDetails = async (
+    userId: number
+  ): Promise<UserDetails | null> => {
+    try {
+      // FIX: Remove the duplicate /api/v1 from the URL construction
+      const url = `${API_BASE_URL}/${userId}`;
+      console.log(`🔄 [DEBUG] Fetching user details from: ${url}`);
+
+      const response = await fetch(url);
+
+      console.log(`📡 [DEBUG] Response status: ${response.status}`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user details: ${response.status}`);
+      }
+
+      const userData = await response.json();
+      console.log(
+        `✅ [DEBUG] User details received for ID ${userId}:`,
+        userData
+      );
+
+      return userData;
+    } catch (err) {
+      console.error(
+        `❌ [DEBUG] Error fetching user details for ID ${userId}:`,
+        err
+      );
+      return null;
+    }
+  };
+
+  // Fetch students from bookings endpoint and enrich with user details
   const fetchStudents = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        `${API_BASE_URL}/bookings/?skip=0&limit=200`
-      );
+      console.log("🔄 [DEBUG] Starting to fetch students from bookings...");
+
+      const bookingsUrl = `${API_BASE_URL}/bookings/?skip=0&limit=200`;
+      console.log(`🔗 [DEBUG] Bookings API URL: ${bookingsUrl}`);
+
+      const response = await fetch(bookingsUrl);
+
+      console.log(`📡 [DEBUG] Bookings response status: ${response.status}`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch students: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log("📦 [DEBUG] Raw bookings data received:", data);
 
       if (Array.isArray(data)) {
-        // Transform booking data into student data and remove duplicates
-        const uniqueStudents = data
-          .map((booking: any) => ({
-            id: booking.id,
-            student_id: booking.student_id,
-            student_name: `Student ${booking.student_id}`, // Replace with actual name if available
-            phone_no: booking.phone_no,
-            suburb: booking.suburb,
-            additional_message: booking.additional_message,
-            status: booking.status,
-            remarks: booking.remarks,
-            created_at: booking.created_at,
-            class_id: booking.class_id,
-          }))
-          .filter(
-            (student: Student, index: number, self: Student[]) =>
-              index ===
-              self.findIndex(
-                (s: Student) => s.student_id === student.student_id
-              )
-          );
+        console.log(`📊 [DEBUG] Received ${data.length} bookings`);
 
-        setStudents(uniqueStudents);
+        // Get unique student IDs first
+        const uniqueStudentIds = Array.from(
+          new Set(data.map((booking: any) => booking.student_id))
+        );
+
+        console.log(
+          `👥 [DEBUG] Found ${uniqueStudentIds.length} unique students:`,
+          uniqueStudentIds
+        );
+
+        // Fetch user details for all unique students first
+        const studentDetailsPromises = uniqueStudentIds.map(
+          async (studentId) => {
+            const userDetails = await fetchUserDetails(studentId);
+            return { studentId, userDetails };
+          }
+        );
+
+        const studentDetailsResults = await Promise.all(studentDetailsPromises);
+
+        // Create a map of studentId to user details for easy lookup
+        const studentDetailsMap = new Map();
+        studentDetailsResults.forEach(({ studentId, userDetails }) => {
+          if (userDetails) {
+            studentDetailsMap.set(studentId, userDetails);
+          }
+        });
+
+        console.log("🗺️ [DEBUG] Student details map:", studentDetailsMap);
+
+        // Transform bookings to students - only include those with real names
+        const validStudents: Student[] = [];
+        const processedStudentIds = new Set();
+
+        data.forEach((booking: any) => {
+          // Skip if we've already processed this student
+          if (processedStudentIds.has(booking.student_id)) {
+            return;
+          }
+
+          const userDetails = studentDetailsMap.get(booking.student_id);
+
+          // Only include students where we successfully got their real name
+          if (userDetails) {
+            const student: Student = {
+              id: booking.id,
+              student_id: booking.student_id,
+              student_name: userDetails.full_name, // REAL NAME!
+              phone_no: booking.phone_no,
+              suburb: booking.suburb,
+              additional_message: booking.additional_message,
+              status: booking.status,
+              remarks: booking.remarks,
+              created_at: booking.created_at,
+              class_id: booking.class_id,
+              email: userDetails.email,
+              phone_number: userDetails.phone_number,
+            };
+
+            validStudents.push(student);
+            processedStudentIds.add(booking.student_id);
+          }
+        });
+
+        console.log(
+          `🎉 [DEBUG] Final students with real names: ${validStudents.length}`,
+          validStudents
+        );
+        setStudents(validStudents);
       } else {
+        console.log("❌ [DEBUG] Bookings data is not an array:", data);
         setStudents([]);
       }
     } catch (err) {
-      console.error("Error fetching students:", err);
+      console.error("❌ [DEBUG] Error in fetchStudents:", err);
       setError(err instanceof Error ? err.message : "Failed to load students");
       setStudents([]);
     } finally {
+      console.log(
+        "🏁 [DEBUG] fetchStudents completed, setting loading to false"
+      );
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("🚀 [DEBUG] Component mounted, starting initial fetch");
+    console.log(`🔗 [DEBUG] API_BASE_URL: ${API_BASE_URL}`);
     fetchStudents();
   }, []);
 
@@ -131,7 +234,7 @@ export default function StudentsPage() {
           <CardContent className="flex items-center justify-center h-64">
             <div className="flex items-center gap-2">
               <RefreshCw className="h-6 w-6 animate-spin" />
-              <span>Loading students...</span>
+              <span>Loading students with real names...</span>
             </div>
           </CardContent>
         </Card>
@@ -173,6 +276,9 @@ export default function StudentsPage() {
             <div className="text-center py-12">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">No students found</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                We only show students when we can load their real names.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -237,8 +343,16 @@ export default function StudentsPage() {
                             <div className="space-y-3">
                               <div className="flex items-center text-sm">
                                 <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                                <span>{student.phone_no}</span>
+                                <span>
+                                  {student.phone_number || student.phone_no}
+                                </span>
                               </div>
+                              {student.email && (
+                                <div className="flex items-center text-sm">
+                                  <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                                  <span>{student.email}</span>
+                                </div>
+                              )}
                               <div className="flex items-center text-sm">
                                 <MapPin className="h-4 w-4 mr-2 text-gray-500" />
                                 <span>{student.suburb}</span>
