@@ -560,7 +560,7 @@ export default function InstructorBookings() {
                             return (
                               <tr key={booking.id} className="hover:bg-gray-50">
                                 <td className="px-4 py-4 text-sm font-medium">
-                                  #{booking.id}
+                                  {booking.id}
                                 </td>
                                 <td className="px-4 py-4 text-sm font-medium">
                                   <div className="flex items-center gap-2">
