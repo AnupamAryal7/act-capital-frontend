@@ -36,6 +36,7 @@ import {
   XCircle,
   UserX,
   FileText,
+  User,
 } from "lucide-react";
 
 interface Booking {
@@ -49,6 +50,14 @@ interface Booking {
   remarks: string;
   created_at: string;
   updated_at: string | null;
+}
+
+interface Student {
+  id: number;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  role: string;
 }
 
 interface UpdateBookingData {
@@ -82,6 +91,9 @@ const STATUS_OPTIONS = [
 export default function InstructorBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+  const [studentNames, setStudentNames] = useState<Map<number, string>>(
+    new Map()
+  );
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -103,6 +115,38 @@ export default function InstructorBookings() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
+  // Fetch student name by ID
+  const fetchStudentName = async (userId: number): Promise<string> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${userId}`);
+      if (response.ok) {
+        const student: Student = await response.json();
+        return student.full_name || student.email || `Student ${userId}`;
+      }
+      return `Student ${userId}`;
+    } catch (error) {
+      console.error(`Error fetching student ${userId}:`, error);
+      return `Student ${userId}`;
+    }
+  };
+
+  // Fetch all student names for the bookings
+  const fetchStudentNames = async (bookings: Booking[]) => {
+    const uniqueUserIds = Array.from(
+      new Set(bookings.map((booking) => booking.student_id))
+    );
+    const namesMap = new Map<number, string>();
+
+    // Fetch all student names in parallel
+    const promises = uniqueUserIds.map(async (userId) => {
+      const name = await fetchStudentName(userId);
+      namesMap.set(userId, name);
+    });
+
+    await Promise.all(promises);
+    setStudentNames(namesMap);
+  };
+
   // Fetch all bookings
   const fetchBookings = async () => {
     try {
@@ -112,8 +156,12 @@ export default function InstructorBookings() {
       );
       if (response.ok) {
         const data = await response.json();
-        setBookings(Array.isArray(data) ? data : []);
-        setFilteredBookings(Array.isArray(data) ? data : []);
+        const bookingsData = Array.isArray(data) ? data : [];
+        setBookings(bookingsData);
+        setFilteredBookings(bookingsData);
+
+        // Fetch student names after getting bookings
+        await fetchStudentNames(bookingsData);
       } else {
         console.error("Failed to fetch bookings");
         setBookings([]);
@@ -245,7 +293,7 @@ export default function InstructorBookings() {
       filtered = filtered.filter((booking) => booking.status === statusFilter);
     }
 
-    // Search filter (search in multiple fields)
+    // Search filter (search in multiple fields including student names)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -253,13 +301,15 @@ export default function InstructorBookings() {
           booking.phone_no.toLowerCase().includes(query) ||
           booking.suburb.toLowerCase().includes(query) ||
           booking.id.toString().includes(query) ||
-          booking.student_id.toString().includes(query)
+          booking.student_id.toString().includes(query) ||
+          studentNames.get(booking.student_id)?.toLowerCase().includes(query) ||
+          false
       );
     }
 
     setFilteredBookings(filtered);
     setCurrentPage(1);
-  }, [statusFilter, searchQuery, bookings]);
+  }, [statusFilter, searchQuery, bookings, studentNames]);
 
   useEffect(() => {
     fetchBookings();
@@ -395,7 +445,7 @@ export default function InstructorBookings() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
-                        placeholder="Search by phone, suburb, booking ID, or student ID..."
+                        placeholder="Search by student name, phone, suburb, booking ID, or student ID..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
@@ -474,6 +524,9 @@ export default function InstructorBookings() {
                               ID
                             </th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              Student Name
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                               Student ID
                             </th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -500,10 +553,20 @@ export default function InstructorBookings() {
                           {currentBookings.map((booking) => {
                             const statusInfo = getStatusBadge(booking.status);
                             const StatusIcon = statusInfo.icon;
+                            const studentName =
+                              studentNames.get(booking.student_id) ||
+                              `Student ${booking.student_id}`;
+
                             return (
                               <tr key={booking.id} className="hover:bg-gray-50">
                                 <td className="px-4 py-4 text-sm font-medium">
-                                  #{booking.id}
+                                  {booking.id}
+                                </td>
+                                <td className="px-4 py-4 text-sm font-medium">
+                                  <div className="flex items-center gap-2">
+                                    <User className="h-4 w-4 text-gray-400" />
+                                    {studentName}
+                                  </div>
                                 </td>
                                 <td className="px-4 py-4 text-sm">
                                   {booking.student_id}
@@ -589,6 +652,10 @@ export default function InstructorBookings() {
                       {currentBookings.map((booking) => {
                         const statusInfo = getStatusBadge(booking.status);
                         const StatusIcon = statusInfo.icon;
+                        const studentName =
+                          studentNames.get(booking.student_id) ||
+                          `Student ${booking.student_id}`;
+
                         return (
                           <Card key={booking.id}>
                             <CardContent className="p-4">
@@ -597,8 +664,12 @@ export default function InstructorBookings() {
                                   <p className="font-semibold">
                                     Booking #{booking.id}
                                   </p>
+                                  <p className="text-sm font-medium text-gray-800 mb-1 flex items-center gap-1">
+                                    <User className="h-3 w-3" />
+                                    {studentName}
+                                  </p>
                                   <p className="text-sm text-gray-600">
-                                    Student: {booking.student_id} | Class:{" "}
+                                    Student ID: {booking.student_id} | Class ID:{" "}
                                     {booking.class_id}
                                   </p>
                                 </div>

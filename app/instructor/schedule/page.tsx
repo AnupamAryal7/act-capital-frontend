@@ -131,12 +131,14 @@ export default function SchedulePage() {
         console.log("Found booking:", booking);
 
         if (booking) {
-          // Fetch student data
+          // Fetch student data - FIXED URL
           let studentName = "Unknown Student";
+          let studentPhone = booking.phone_no;
           try {
             console.log(`Fetching student data for ID: ${booking.student_id}`);
+            // FIX: Use the correct API endpoint format
             const studentRes = await fetch(
-              `${API_BASE_URL}/users/${booking.student_id}`
+              `${API_BASE_URL}/${booking.student_id}`
             );
             console.log("Student response status:", studentRes.status);
             if (studentRes.ok) {
@@ -144,15 +146,22 @@ export default function SchedulePage() {
               console.log("Student data:", student);
               studentName =
                 student.full_name || student.email || "Unknown Student";
+              // Use the phone number from student details if available
+              studentPhone = student.phone_number || booking.phone_no;
               console.log("Student name resolved to:", studentName);
+              console.log("Student phone resolved to:", studentPhone);
             } else {
               console.error("Student response not OK:", studentRes.status);
+              // If student fetch fails, try to use a fallback
+              studentName = `Student ${booking.student_id}`;
             }
           } catch (err) {
             console.error(
               `Failed to fetch student ${booking.student_id}:`,
               err
             );
+            // Fallback if student fetch completely fails
+            studentName = `Student ${booking.student_id}`;
           }
 
           // Fetch course data
@@ -192,7 +201,7 @@ export default function SchedulePage() {
             time: formatTime(startDate),
             endTime: formatTime(endDate),
             student: studentName,
-            studentPhone: booking.phone_no,
+            studentPhone: studentPhone,
             type: courseTitle,
             location: booking.suburb,
             status: booking.status,

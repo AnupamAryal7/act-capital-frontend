@@ -52,6 +52,14 @@ interface ProgressReport {
   updated_at: string | null;
 }
 
+interface Student {
+  id: number;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  role: string;
+}
+
 interface CreateReportData {
   user_id: number;
   course_id: number;
@@ -88,6 +96,9 @@ const STATUS_OPTIONS = [
 export default function ProgressReports() {
   const [reports, setReports] = useState<ProgressReport[]>([]);
   const [filteredReports, setFilteredReports] = useState<ProgressReport[]>([]);
+  const [studentNames, setStudentNames] = useState<Map<number, string>>(
+    new Map()
+  );
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -119,6 +130,38 @@ export default function ProgressReports() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
 
+  // Fetch student name by ID
+  const fetchStudentName = async (userId: number): Promise<string> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${userId}`);
+      if (response.ok) {
+        const student: Student = await response.json();
+        return student.full_name || student.email || `Student ${userId}`;
+      }
+      return `Student ${userId}`;
+    } catch (error) {
+      console.error(`Error fetching student ${userId}:`, error);
+      return `Student ${userId}`;
+    }
+  };
+
+  // Fetch all student names for the reports
+  const fetchStudentNames = async (reports: ProgressReport[]) => {
+    const uniqueUserIds = Array.from(
+      new Set(reports.map((report) => report.user_id))
+    );
+    const namesMap = new Map<number, string>();
+
+    // Fetch all student names in parallel
+    const promises = uniqueUserIds.map(async (userId) => {
+      const name = await fetchStudentName(userId);
+      namesMap.set(userId, name);
+    });
+
+    await Promise.all(promises);
+    setStudentNames(namesMap);
+  };
+
   const fetchReports = async () => {
     try {
       setLoading(true);
@@ -127,8 +170,12 @@ export default function ProgressReports() {
       );
       if (response.ok) {
         const data = await response.json();
-        setReports(Array.isArray(data) ? data : []);
-        setFilteredReports(Array.isArray(data) ? data : []);
+        const reportsData = Array.isArray(data) ? data : [];
+        setReports(reportsData);
+        setFilteredReports(reportsData);
+
+        // Fetch student names after getting reports
+        await fetchStudentNames(reportsData);
       } else {
         console.error("Failed to fetch reports");
         setReports([]);
@@ -258,13 +305,15 @@ export default function ProgressReports() {
           report.course_id.toString().includes(query) ||
           report.id.toString().includes(query) ||
           report.feedback.toLowerCase().includes(query) ||
-          report.remarks.toLowerCase().includes(query)
+          report.remarks.toLowerCase().includes(query) ||
+          studentNames.get(report.user_id)?.toLowerCase().includes(query) ||
+          false
       );
     }
 
     setFilteredReports(filtered);
     setCurrentPage(1);
-  }, [statusFilter, searchQuery, reports]);
+  }, [statusFilter, searchQuery, reports, studentNames]);
 
   useEffect(() => {
     fetchReports();
@@ -449,7 +498,7 @@ export default function ProgressReports() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
-                        placeholder="Search by user ID, course ID, report ID, feedback..."
+                        placeholder="Search by student name, user ID, course ID, report ID, feedback..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
@@ -526,6 +575,10 @@ export default function ProgressReports() {
                     {currentReports.map((report) => {
                       const statusInfo = getStatusInfo(report.status);
                       const StatusIcon = statusInfo.icon;
+                      const studentName =
+                        studentNames.get(report.user_id) ||
+                        `Student ${report.user_id}`;
+
                       return (
                         <Card
                           key={report.id}
@@ -533,13 +586,16 @@ export default function ProgressReports() {
                         >
                           <CardHeader className="pb-3">
                             <div className="flex justify-between items-start">
-                              <div>
-                                <CardTitle className="text-lg">
+                              <div className="flex-1">
+                                {/* Student Name in Large Bold Text */}
+                                <h3 className="text-xl font-bold mb-1 line-clamp-1">
+                                  {studentName}
+                                </h3>
+                                {/* Report ID in Small Text */}
+                                <p className="text-sm text-gray-600">
                                   Report #{report.id}
-                                </CardTitle>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  <User className="h-3 w-3 inline mr-1" />
-                                  User: {report.user_id} |{" "}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
                                   <BookOpen className="h-3 w-3 inline mr-1" />
                                   Course: {report.course_id}
                                 </p>
