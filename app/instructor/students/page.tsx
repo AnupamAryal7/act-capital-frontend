@@ -321,6 +321,7 @@ export default function StudentsPage() {
                             onClick={() => toggleStudentExpansion(student.id)}
                             className="p-2"
                           >
+                            View Details
                             {isExpanded ? (
                               <ChevronUp className="h-4 w-4" />
                             ) : (
