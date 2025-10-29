@@ -17,6 +17,7 @@ import {
   DollarSign,
   FileText,
   CalendarCheck,
+  MessageSquarePlus,
 } from "lucide-react";
 
 interface InstructorUser {
@@ -64,6 +65,11 @@ function InstructorDashboard({ children }: { children: React.ReactNode }) {
       label: "New Bookings",
       path: "/instructor/bookings",
       icon: CalendarCheck,
+    },
+    {
+      label: "Add FAQs",
+      path: "/instructor/add_faqs",
+      icon: MessageSquarePlus,
     },
   ];
 
@@ -140,7 +146,7 @@ function InstructorDashboard({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="grid w-full grid-cols-4 bg-muted p-1 rounded-lg mb-6">
+          <div className="grid w-full grid-cols-5 bg-muted p-1 rounded-lg mb-6">
             {navItems.map((item) => {
               const IconComponent = item.icon;
               return (
