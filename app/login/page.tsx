@@ -12,6 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Lock, Mail, User, Loader2, Phone } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // API endpoints
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -296,21 +303,34 @@ export default function LoginPage() {
                         </div>
                       </div>
 
+                      {/* ✅ Updated Account Type Selection with Lucide Locks */}
                       <div className="space-y-2">
                         <Label htmlFor="role">Account Type *</Label>
-                        <select
-                          id="role"
+                        <Select
                           value={formData.role}
-                          onChange={(e) =>
-                            handleInputChange("role", e.target.value)
+                          onValueChange={(value) =>
+                            handleInputChange("role", value)
                           }
-                          className="w-full p-3 border border-gray-300 rounded-md bg-background"
-                          required
                         >
-                          <option value="student">Student</option>
-                          <option value="instructor">Instructor</option>
-                          <option value="admin">Admin</option>
-                        </select>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="student">Student</SelectItem>
+                            <SelectItem value="instructor" disabled>
+                              <div className="flex items-center text-gray-400 gap-2">
+                                <Lock size={14} />
+                                Instructor
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="admin" disabled>
+                              <div className="flex items-center text-gray-400 gap-2">
+                                <Lock size={14} />
+                                Admin
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </>
                   )}
