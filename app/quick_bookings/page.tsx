@@ -67,7 +67,7 @@ interface BookingData {
 // Static instructor data
 const STATIC_INSTRUCTOR = {
   id: 1,
-  name: "Jeevan Pandey",
+  name: "Jeevan Bilash Pandey",
   experience: "8+ years",
   specialization: "Beginner & Advanced Courses",
   image: "/instructors/jan_jeevan.png",

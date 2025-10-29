@@ -88,7 +88,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 // Static instructor data (as requested)
 const STATIC_INSTRUCTOR = {
   id: 1,
-  name: "Jeevan Pandey",
+  name: "Jeevan Bilash Pandey",
   experience: "8+ years",
   specialization: "Beginner & Advanced Courses",
   image: "/instructors/jan_jeevan.png",
