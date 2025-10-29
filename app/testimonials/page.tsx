@@ -1,14 +1,23 @@
-"use client"
+"use client";
 
-import Link from "next/link"
+import Link from "next/link";
+import { useState } from "react";
+import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Star,
+  Quote,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+} from "lucide-react";
 
-import { useState } from "react"
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react"
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 const testimonials = [
   {
@@ -71,11 +80,18 @@ const testimonials = [
     image: "/middle-aged-hispanic-man-smiling.jpg",
     date: "January 2024",
   },
-]
+];
 
 export default function TestimonialsPage() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [selectedCourse, setSelectedCourse] = useState("All")
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedCourse, setSelectedCourse] = useState("All");
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+
+  // You'll need to get the user from your auth context/provider
+  // Replace with your actual user state/context
+  const [user, setUser] = useState<any>(null);
 
   const courses = [
     "All",
@@ -84,18 +100,74 @@ export default function TestimonialsPage() {
     "Test Preparation",
     "Defensive Driving",
     "Highway Driving Course",
-  ]
+  ];
 
   const filteredTestimonials =
-    selectedCourse === "All" ? testimonials : testimonials.filter((t) => t.course === selectedCourse)
+    selectedCourse === "All"
+      ? testimonials
+      : testimonials.filter((t) => t.course === selectedCourse);
 
   const nextTestimonial = () => {
-    setCurrentIndex((prev) => (prev + 1) % filteredTestimonials.length)
-  }
+    setCurrentIndex((prev) => (prev + 1) % filteredTestimonials.length);
+  };
 
   const prevTestimonial = () => {
-    setCurrentIndex((prev) => (prev - 1 + filteredTestimonials.length) % filteredTestimonials.length)
-  }
+    setCurrentIndex(
+      (prev) =>
+        (prev - 1 + filteredTestimonials.length) % filteredTestimonials.length
+    );
+  };
+
+  const handleReviewSubmit = async () => {
+    if (!user) {
+      alert("Please login to submit a review");
+      return;
+    }
+
+    if (reviewRating === 0) {
+      alert("Please select a rating");
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      alert("Please enter a comment");
+      return;
+    }
+
+    try {
+      setReviewSubmitting(true);
+      const response = await fetch(`${API_BASE_URL}/reviews/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_name: user.full_name,
+          email: user.email,
+          rating: reviewRating,
+          comment: reviewComment.trim(),
+          course_title: "",
+          is_approved: true,
+        }),
+      });
+
+      if (response.ok) {
+        alert("Thank you for your review! It is published.");
+        setReviewRating(0);
+        setReviewComment("");
+      } else {
+        const errorData = await response.json();
+        alert(
+          `Failed to submit review: ${errorData.detail || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Failed to submit review. Please try again later.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -108,11 +180,145 @@ export default function TestimonialsPage() {
               <Badge variant="secondary" className="mb-4">
                 Student Success Stories
               </Badge>
-              <h1 className="text-4xl lg:text-5xl font-bold text-balance">What Our Students Say</h1>
+              <h1 className="text-4xl lg:text-5xl font-bold text-balance">
+                What Our Students Say
+              </h1>
               <p className="text-xl text-muted-foreground text-pretty">
-                Don't just take our word for it. Here's what our successful students have to say about their experience
-                with ACT Capital Driving School.
+                Don't just take our word for it. Here's what our successful
+                students have to say about their experience with ACT Capital
+                Driving School.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Review Us Section */}
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl mx-auto">
+              <Card>
+                <CardContent className="p-8">
+                  <h2 className="text-2xl font-bold mb-6 text-center">
+                    Leave a Review
+                  </h2>
+
+                  <div className="space-y-6">
+                    {/* Star Rating */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Your Rating
+                      </label>
+                      <div className="flex items-center gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setReviewRating(star)}
+                            onMouseEnter={(e) => {
+                              const stars =
+                                e.currentTarget.parentElement?.querySelectorAll(
+                                  "button"
+                                );
+                              stars?.forEach((s, i) => {
+                                const starIcon = s.querySelector("svg");
+                                if (starIcon && i < star) {
+                                  starIcon.classList.add(
+                                    "text-yellow-400",
+                                    "fill-current"
+                                  );
+                                  starIcon.classList.remove("text-gray-300");
+                                }
+                              });
+                            }}
+                            onMouseLeave={(e) => {
+                              const stars =
+                                e.currentTarget.parentElement?.querySelectorAll(
+                                  "button"
+                                );
+                              stars?.forEach((s, i) => {
+                                const starIcon = s.querySelector("svg");
+                                if (starIcon) {
+                                  if (i < reviewRating) {
+                                    starIcon.classList.add(
+                                      "text-yellow-400",
+                                      "fill-current"
+                                    );
+                                    starIcon.classList.remove("text-gray-300");
+                                  } else {
+                                    starIcon.classList.add("text-gray-300");
+                                    starIcon.classList.remove(
+                                      "text-yellow-400",
+                                      "fill-current"
+                                    );
+                                  }
+                                }
+                              });
+                            }}
+                            className="focus:outline-none transition-transform hover:scale-110"
+                          >
+                            <Star
+                              className={`h-8 w-8 ${
+                                star <= reviewRating
+                                  ? "text-yellow-400 fill-current"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          </button>
+                        ))}
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          {reviewRating > 0
+                            ? `${reviewRating} star${
+                                reviewRating > 1 ? "s" : ""
+                              }`
+                            : "Select rating"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Review Comment */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Your Review
+                      </label>
+                      <Textarea
+                        placeholder="Tell us what you think about our driving school..."
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        rows={4}
+                        className="resize-none"
+                      />
+                    </div>
+
+                    <Button
+                      onClick={handleReviewSubmit}
+                      className="w-full"
+                      disabled={
+                        reviewSubmitting ||
+                        reviewRating === 0 ||
+                        !reviewComment.trim()
+                      }
+                    >
+                      {reviewSubmitting ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Star className="h-4 w-4 mr-2" />
+                          Submit Review
+                        </>
+                      )}
+                    </Button>
+
+                    {!user && (
+                      <p className="text-sm text-muted-foreground text-center">
+                        Please login to submit a review
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -127,8 +333,8 @@ export default function TestimonialsPage() {
                   variant={selectedCourse === course ? "default" : "outline"}
                   size="sm"
                   onClick={() => {
-                    setSelectedCourse(course)
-                    setCurrentIndex(0)
+                    setSelectedCourse(course);
+                    setCurrentIndex(0);
                   }}
                   className={selectedCourse !== course ? "bg-transparent" : ""}
                 >
@@ -154,21 +360,35 @@ export default function TestimonialsPage() {
                       </blockquote>
 
                       <div className="flex justify-center space-x-1">
-                        {[...Array(filteredTestimonials[currentIndex].rating)].map((_, i) => (
-                          <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                        {[
+                          ...Array(filteredTestimonials[currentIndex].rating),
+                        ].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                          />
                         ))}
                       </div>
 
                       <div className="flex items-center justify-center space-x-4">
                         <img
-                          src={filteredTestimonials[currentIndex].image || "/placeholder.svg"}
+                          src={
+                            filteredTestimonials[currentIndex].image ||
+                            "/placeholder.svg"
+                          }
                           alt={filteredTestimonials[currentIndex].name}
                           className="w-16 h-16 rounded-full object-cover"
                         />
                         <div className="text-left">
-                          <div className="font-semibold text-lg">{filteredTestimonials[currentIndex].name}</div>
-                          <div className="text-muted-foreground">Age {filteredTestimonials[currentIndex].age}</div>
-                          <div className="text-sm text-primary">{filteredTestimonials[currentIndex].course}</div>
+                          <div className="font-semibold text-lg">
+                            {filteredTestimonials[currentIndex].name}
+                          </div>
+                          <div className="text-muted-foreground">
+                            Age {filteredTestimonials[currentIndex].age}
+                          </div>
+                          <div className="text-sm text-primary">
+                            {filteredTestimonials[currentIndex].course}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -187,7 +407,9 @@ export default function TestimonialsPage() {
                       <button
                         key={index}
                         className={`w-2 h-2 rounded-full transition-colors ${
-                          index === currentIndex ? "bg-primary" : "bg-muted-foreground/30"
+                          index === currentIndex
+                            ? "bg-primary"
+                            : "bg-muted-foreground/30"
                         }`}
                         onClick={() => setCurrentIndex(index)}
                       />
@@ -206,15 +428,23 @@ export default function TestimonialsPage() {
         {/* All Testimonials Grid */}
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">All Reviews</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">
+              All Reviews
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredTestimonials.map((testimonial) => (
-                <Card key={testimonial.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                <Card
+                  key={testimonial.id}
+                  className="border-0 shadow-sm hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-6 space-y-4">
                     <div className="flex justify-between items-start">
                       <div className="flex space-x-1">
                         {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star
+                            key={i}
+                            className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                          />
                         ))}
                       </div>
                       <Badge variant="outline" className="text-xs">
@@ -222,7 +452,9 @@ export default function TestimonialsPage() {
                       </Badge>
                     </div>
 
-                    <blockquote className="text-sm text-muted-foreground italic">"{testimonial.text}"</blockquote>
+                    <blockquote className="text-sm text-muted-foreground italic">
+                      "{testimonial.text}"
+                    </blockquote>
 
                     <div className="flex items-center space-x-3 pt-4 border-t border-border">
                       <img
@@ -231,7 +463,9 @@ export default function TestimonialsPage() {
                         className="w-10 h-10 rounded-full object-cover"
                       />
                       <div>
-                        <div className="font-semibold text-sm">{testimonial.name}</div>
+                        <div className="font-semibold text-sm">
+                          {testimonial.name}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           Age {testimonial.age} • {testimonial.date}
                         </div>
@@ -247,9 +481,12 @@ export default function TestimonialsPage() {
         {/* CTA Section */}
         <section className="py-20 bg-primary text-primary-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-            <h2 className="text-3xl lg:text-4xl font-bold">Ready to Join Our Success Stories?</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold">
+              Ready to Join Our Success Stories?
+            </h2>
             <p className="text-xl opacity-90 max-w-2xl mx-auto">
-              Start your driving journey today and become our next success story.
+              Start your driving journey today and become our next success
+              story.
             </p>
             <Button size="lg" variant="secondary" asChild>
               <Link href="/booking">Book Your First Lesson</Link>
@@ -259,5 +496,5 @@ export default function TestimonialsPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
