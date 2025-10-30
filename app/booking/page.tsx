@@ -43,16 +43,6 @@ interface Course {
   bullet_pt3?: string;
 }
 
-interface AvailableSession {
-  id: number;
-  course_id: number;
-  instructor_id: number;
-  instructor_name: string;
-  date_time: string;
-  suburb: string;
-  course_title: string;
-}
-
 interface ClassSession {
   id: number;
   course_id: number;
@@ -65,22 +55,14 @@ interface ClassSession {
 }
 
 interface BookingData {
-  bookingType: "browse" | "create";
   courseId: number;
   instructorId: number;
-  selectedSessionId: number | null;
   date: string;
   time: string;
   duration: string;
   phoneNumber: string;
   suburb: string;
   additionalMessage: string;
-}
-
-interface TimeSlotAvailability {
-  time: string;
-  isBooked: boolean;
-  sessions: ClassSession[];
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -96,17 +78,6 @@ const STATIC_INSTRUCTOR = {
   email: "jeevan.pandey68@gmail.com",
 };
 
-// Available time slots
-const TIME_SLOTS = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-];
-
 // Duration options (in minutes, but displayed in hours)
 const DURATION_OPTIONS = [
   { value: "60", label: "1 hour", minutes: 60 },
@@ -115,66 +86,19 @@ const DURATION_OPTIONS = [
 ];
 
 function combineDateAndTime(dateStr: string, timeStr: string) {
-  // Simply combine date and time strings in ISO format
-  // The API expects: "YYYY-MM-DDTHH:MM:SS"
   return `${dateStr}T${timeStr}:00`;
-}
-
-function parseDuration(durationStr: string): number {
-  // Convert duration string like "2 hours" to minutes
-  const hoursMatch = durationStr.match(/(\d+)\s*hour/);
-  if (hoursMatch) {
-    return parseInt(hoursMatch[1]) * 60;
-  }
-  return 60; // default to 60 minutes
-}
-
-function convertTo24Hour(time12h: string): number {
-  const [time, period] = time12h.split(" ");
-  let [hours, minutes] = time.split(":").map(Number);
-
-  if (period === "PM" && hours !== 12) {
-    hours += 12;
-  } else if (period === "AM" && hours === 12) {
-    hours = 0;
-  }
-
-  return hours + (minutes || 0) / 60;
-}
-
-function checkTimeSlotConflict(
-  slotTime: string,
-  sessionDateTime: string,
-  sessionDurationMinutes: number
-): boolean {
-  const sessionDate = new Date(sessionDateTime);
-  const sessionHour = sessionDate.getHours() + sessionDate.getMinutes() / 60;
-  const sessionEndHour = sessionHour + sessionDurationMinutes / 60;
-
-  const slotHour = convertTo24Hour(slotTime);
-
-  // Check if the slot overlaps with the session
-  return slotHour >= sessionHour && slotHour < sessionEndHour;
 }
 
 export default function BookingPage(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [availableSessions, setAvailableSessions] = useState<
-    AvailableSession[]
-  >([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [allClassSessions, setAllClassSessions] = useState<ClassSession[]>([]);
-  const [timeSlotAvailability, setTimeSlotAvailability] = useState<
-    TimeSlotAvailability[]
-  >([]);
 
   const [bookingData, setBookingData] = useState<BookingData>({
-    bookingType: "browse",
     courseId: 0,
     instructorId: STATIC_INSTRUCTOR.id,
-    selectedSessionId: null,
     date: new Date().toISOString().split("T")[0], // today's date
     time: "",
     duration: "60", // default to 60 minutes
@@ -222,30 +146,12 @@ export default function BookingPage(): JSX.Element {
     const endDate = new Date(startDate.getTime() + session.duration * 60000);
 
     const formatTime = (date: Date) => {
-      // Get UTC hours and minutes to match the stored time
       const hours = date.getUTCHours().toString().padStart(2, "0");
       const minutes = date.getUTCMinutes().toString().padStart(2, "0");
       return `${hours}:${minutes}`;
     };
 
     return `${formatTime(startDate)} - ${formatTime(endDate)}`;
-  };
-
-  // Fetch available class sessions (optional course filter)
-  const fetchAvailableSessions = async (courseId?: number) => {
-    try {
-      const url = courseId
-        ? `${API_BASE_URL}/class_sessions/?course_id=${courseId}`
-        : `${API_BASE_URL}/class_sessions/`;
-
-      const resp = await fetch(url);
-      if (!resp.ok) return setAvailableSessions([]);
-      const data = await resp.json();
-      setAvailableSessions(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error fetching available sessions:", err);
-      setAvailableSessions([]);
-    }
   };
 
   // Fetch courses and try to pre-select from URL params if present
@@ -258,7 +164,7 @@ export default function BookingPage(): JSX.Element {
       const list = Array.isArray(data) ? data : [];
       setCourses(list);
 
-      // Pre-select course from URL parameter if available (runs in browser)
+      // Pre-select course from URL parameter if available
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const courseIdParam =
@@ -270,14 +176,10 @@ export default function BookingPage(): JSX.Element {
           if (preSelected) {
             setSelectedCourse(preSelected);
             setBookingData((prev) => ({ ...prev, courseId: courseId }));
-            // fetch sessions for this course if browsing
-            if (bookingData.bookingType === "browse") {
-              fetchAvailableSessions(courseId);
-            }
           }
         }
       } catch (err) {
-        // ignore window parsing errors on serverside (but useEffect ensures client-only)
+        // ignore window parsing errors on serverside
       }
     } catch (err) {
       console.error("Error fetching courses:", err);
@@ -292,16 +194,6 @@ export default function BookingPage(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When the selected course or booking type changes, refresh sessions if needed
-  useEffect(() => {
-    if (selectedCourse && bookingData.bookingType === "browse") {
-      fetchAvailableSessions(selectedCourse.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCourse, bookingData.bookingType]);
-
-  // Removed old time slot availability calculation
-
   const handleCourseChange = (courseIdString: string) => {
     const id = parseInt(courseIdString, 10);
     const course = courses.find((c) => c.id === id) || null;
@@ -309,12 +201,7 @@ export default function BookingPage(): JSX.Element {
     setBookingData((prev) => ({
       ...prev,
       courseId: id,
-      selectedSessionId: null,
     }));
-    // fetch sessions if browsing
-    if (bookingData.bookingType === "browse") {
-      fetchAvailableSessions(id);
-    }
   };
 
   const handleDateChange = (date: string) => {
@@ -355,92 +242,76 @@ export default function BookingPage(): JSX.Element {
         return;
       }
 
-      let classSessionId: number | null = null;
-
-      if (bookingData.bookingType === "browse") {
-        if (!bookingData.selectedSessionId) {
-          alert("Please select a session first");
-          return;
-        }
-        classSessionId = bookingData.selectedSessionId;
-      } else {
-        // create a new class session
-        if (!bookingData.date || !bookingData.time || !bookingData.duration) {
-          alert(
-            "Please select date, time and duration for your custom session."
-          );
-          return;
-        }
-
-        const date_time = combineDateAndTime(
-          bookingData.date,
-          bookingData.time
-        );
-
-        // Get duration in minutes from the selected value
-        const durationMinutes = parseInt(bookingData.duration);
-
-        const sessionPayload = {
-          course_id: bookingData.courseId,
-          instructor_id: bookingData.instructorId,
-          date_time: date_time,
-          duration: durationMinutes,
-          is_active: true,
-        };
-
-        console.log("=== SESSION CREATION DEBUG ===");
-        console.log("Raw inputs:", {
-          date: bookingData.date,
-          time: bookingData.time,
-          duration: bookingData.duration,
-        });
-        console.log("Payload being sent to API:", sessionPayload);
-        console.log("Duration is in MINUTES:", durationMinutes);
-        console.log(
-          "Expected end time:",
-          new Date(
-            new Date(date_time).getTime() + durationMinutes * 60000
-          ).toISOString()
-        );
-
-        const sessionResponse = await fetch(`${API_BASE_URL}/class_sessions/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sessionPayload),
-        });
-
-        if (!sessionResponse.ok) {
-          const errorData = await sessionResponse.json();
-          console.error("Session creation failed:", errorData);
-
-          // Better error messages for users
-          let errorMessage = "Failed to create class session. ";
-
-          if (errorData.detail) {
-            if (errorData.detail.includes("already has a class")) {
-              errorMessage =
-                "This time slot conflicts with an existing booking. Please choose a different time.";
-            } else if (
-              errorData.detail.includes("SSL connection") ||
-              errorData.detail.includes("database")
-            ) {
-              errorMessage =
-                "Server connection error. Please try again in a moment.";
-            } else if (errorData.detail.includes("OperationalError")) {
-              errorMessage = "Database connection lost. Please try again.";
-            } else {
-              errorMessage += errorData.detail;
-            }
-          }
-
-          alert(errorMessage);
-          return;
-        }
-
-        const sessionData = await sessionResponse.json();
-        classSessionId = sessionData.id;
-        console.log("New class session created:", sessionData);
+      if (!bookingData.date || !bookingData.time || !bookingData.duration) {
+        alert("Please select date, time and duration for your session.");
+        return;
       }
+
+      // Always create a new class session (custom session)
+      const date_time = combineDateAndTime(bookingData.date, bookingData.time);
+
+      // Get duration in minutes from the selected value
+      const durationMinutes = parseInt(bookingData.duration);
+
+      const sessionPayload = {
+        course_id: bookingData.courseId,
+        instructor_id: bookingData.instructorId,
+        date_time: date_time,
+        duration: durationMinutes,
+        is_active: true,
+      };
+
+      console.log("=== SESSION CREATION DEBUG ===");
+      console.log("Raw inputs:", {
+        date: bookingData.date,
+        time: bookingData.time,
+        duration: bookingData.duration,
+      });
+      console.log("Payload being sent to API:", sessionPayload);
+      console.log("Duration is in MINUTES:", durationMinutes);
+      console.log(
+        "Expected end time:",
+        new Date(
+          new Date(date_time).getTime() + durationMinutes * 60000
+        ).toISOString()
+      );
+
+      const sessionResponse = await fetch(`${API_BASE_URL}/class_sessions/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sessionPayload),
+      });
+
+      if (!sessionResponse.ok) {
+        const errorData = await sessionResponse.json();
+        console.error("Session creation failed:", errorData);
+
+        let errorMessage = "Failed to create class session. ";
+
+        if (errorData.detail) {
+          if (errorData.detail.includes("already has a class")) {
+            errorMessage =
+              "This time slot conflicts with an existing booking. Please choose a different time.";
+          } else if (
+            errorData.detail.includes("SSL connection") ||
+            errorData.detail.includes("database")
+          ) {
+            errorMessage =
+              "Server connection error. Please try again in a moment.";
+          } else if (errorData.detail.includes("OperationalError")) {
+            errorMessage = "Database connection lost. Please try again.";
+          } else {
+            errorMessage += errorData.detail;
+          }
+        }
+
+        alert(errorMessage);
+        return;
+      }
+
+      const sessionData = await sessionResponse.json();
+      const classSessionId = sessionData.id;
+      console.log("New class session created:", sessionData);
 
       // Create booking with the class session ID
       const bookingResponse = await fetch(`${API_BASE_URL}/bookings/`, {
@@ -461,11 +332,7 @@ export default function BookingPage(): JSX.Element {
         const bookingResult = await bookingResponse.json();
         console.log("Booking created successfully:", bookingResult);
         alert(
-          `Booking created successfully! ${
-            bookingData.bookingType === "browse"
-              ? "You have booked an existing session."
-              : "A new session was created for you."
-          } Your booking is pending confirmation.`
+          "Booking created successfully! A new session was created for you. Your booking is pending confirmation."
         );
         window.location.href = "/dashboard";
       } else {
@@ -486,11 +353,8 @@ export default function BookingPage(): JSX.Element {
       case 1:
         return bookingData.courseId > 0;
       case 2:
-        if (bookingData.bookingType === "browse")
-          return bookingData.selectedSessionId !== null;
         return bookingData.instructorId > 0;
       case 3:
-        if (bookingData.bookingType === "browse") return true; // session already chosen
         return Boolean(
           bookingData.date && bookingData.time && bookingData.duration
         );
@@ -513,66 +377,10 @@ export default function BookingPage(): JSX.Element {
           <div className="space-y-6">
             <div className="text-center">
               <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Choose Booking Method</h2>
+              <h2 className="text-2xl font-bold mb-2">Choose Your Course</h2>
               <p className="text-muted-foreground">
-                Select how you'd like to book your lesson
+                Select the course you want to book
               </p>
-            </div>
-
-            {/* Booking Type Selection */}
-            <div className="space-y-4">
-              <Label>Booking Method</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card
-                  className={`cursor-pointer transition-colors ${
-                    bookingData.bookingType === "browse"
-                      ? "border-primary bg-primary/5"
-                      : "hover:border-primary/50"
-                  }`}
-                  onClick={() =>
-                    setBookingData((prev) => ({
-                      ...prev,
-                      bookingType: "browse",
-                    }))
-                  }
-                >
-                  <CardContent className="p-6">
-                    <div className="text-center space-y-2">
-                      <Calendar className="h-8 w-8 text-primary mx-auto" />
-                      <h3 className="font-semibold">
-                        Browse Available Sessions
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Choose from pre-scheduled time slots
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card
-                  className={`cursor-pointer transition-colors ${
-                    bookingData.bookingType === "create"
-                      ? "border-primary bg-primary/5"
-                      : "hover:border-primary/50"
-                  }`}
-                  onClick={() =>
-                    setBookingData((prev) => ({
-                      ...prev,
-                      bookingType: "create",
-                    }))
-                  }
-                >
-                  <CardContent className="p-6">
-                    <div className="text-center space-y-2">
-                      <Plus className="h-8 w-8 text-primary mx-auto" />
-                      <h3 className="font-semibold">Create Custom Session</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Schedule your preferred time
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
 
             {/* Course Selection */}
@@ -666,82 +474,6 @@ export default function BookingPage(): JSX.Element {
         );
 
       case 2:
-        if (bookingData.bookingType === "browse") {
-          return (
-            <div className="space-y-6">
-              <div className="text-center">
-                <Calendar className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h2 className="text-2xl font-bold mb-2">
-                  Browse Available Sessions
-                </h2>
-                <p className="text-muted-foreground">
-                  Select from pre-scheduled driving lesson slots
-                </p>
-              </div>
-
-              {availableSessions.length === 0 ? (
-                <div className="text-center py-8">
-                  <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-4">
-                    No available sessions found for this course.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setBookingData((prev) => ({
-                        ...prev,
-                        bookingType: "create",
-                      }))
-                    }
-                  >
-                    Create Custom Session Instead
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Label>Available Sessions</Label>
-                  {availableSessions.map((session) => (
-                    <Card
-                      key={session.id}
-                      className={`cursor-pointer transition-colors ${
-                        bookingData.selectedSessionId === session.id
-                          ? "border-primary bg-primary/5"
-                          : "hover:border-primary/50"
-                      }`}
-                      onClick={() =>
-                        setBookingData((prev) => ({
-                          ...prev,
-                          selectedSessionId: session.id,
-                        }))
-                      }
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h3 className="font-semibold">
-                              {session.course_title}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              Instructor: {session.instructor_name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(session.date_time).toLocaleString()} -{" "}
-                              {session.suburb}
-                            </p>
-                          </div>
-                          {bookingData.selectedSessionId === session.id && (
-                            <Badge variant="default">Selected</Badge>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        }
-
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -924,12 +656,11 @@ export default function BookingPage(): JSX.Element {
                         Scheduled for{" "}
                         {new Date(bookingData.date).toLocaleDateString()} at{" "}
                         {bookingData.time}
-                        {bookingData.bookingType === "create" &&
-                          ` for ${
-                            DURATION_OPTIONS.find(
-                              (d) => d.value === bookingData.duration
-                            )?.label
-                          }`}
+                        {` for ${
+                          DURATION_OPTIONS.find(
+                            (d) => d.value === bookingData.duration
+                          )?.label
+                        }`}
                       </span>
                     </div>
                   </CardContent>
@@ -1038,23 +769,19 @@ export default function BookingPage(): JSX.Element {
                     <span className="text-sm font-medium">Time:</span>
                     <p className="text-sm">{bookingData.time}</p>
                   </div>
-                  {bookingData.bookingType === "create" && (
-                    <div>
-                      <span className="text-sm font-medium">Duration:</span>
-                      <p className="text-sm">
-                        {
-                          DURATION_OPTIONS.find(
-                            (d) => d.value === bookingData.duration
-                          )?.label
-                        }
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <span className="text-sm font-medium">Duration:</span>
+                    <p className="text-sm">
+                      {
+                        DURATION_OPTIONS.find(
+                          (d) => d.value === bookingData.duration
+                        )?.label
+                      }
+                    </p>
+                  </div>
                   <div>
                     <span className="text-sm font-medium">Booking Type:</span>
-                    <p className="text-sm capitalize">
-                      {bookingData.bookingType}
-                    </p>
+                    <p className="text-sm capitalize">Custom Session</p>
                   </div>
                 </div>
 
