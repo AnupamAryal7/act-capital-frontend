@@ -774,7 +774,16 @@ export default function BookingPage(): JSX.Element {
                     <p className="text-sm">{bookingData.time}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium">Duration:</span>
+                    <span className="text-sm font-medium">
+                      {" "}
+                      Total Duration:
+                    </span>
+                    <p className="text-sm">{selectedCourse?.duration}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium">
+                      Duration(per day):
+                    </span>
                     <p className="text-sm">
                       {
                         DURATION_OPTIONS.find(
