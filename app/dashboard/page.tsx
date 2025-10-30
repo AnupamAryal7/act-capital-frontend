@@ -436,7 +436,7 @@ export default function StudentDashboard() {
   };
 
   const handleBookLesson = () => {
-    window.location.href = "/booking";
+    window.location.href = "/quick_bookings";
   };
 
   const getStatusConfig = (status: string) => {
