@@ -83,6 +83,10 @@ const DURATION_OPTIONS = [
   { value: "60", label: "1 hour", minutes: 60 },
   { value: "90", label: "1.5 hours", minutes: 90 },
   { value: "120", label: "2 hours", minutes: 120 },
+  { value: "150", label: "2.5 hours", minutes: 150 },
+  { value: "180", label: "3 hours", minutes: 180 },
+  { value: "210", label: "3.5 hours", minutes: 210 },
+  { value: "240", label: "4 hours", minutes: 240 },
 ];
 
 function combineDateAndTime(dateStr: string, timeStr: string) {
