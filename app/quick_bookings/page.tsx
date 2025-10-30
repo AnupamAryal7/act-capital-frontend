@@ -120,6 +120,21 @@ function formatSessionTimeRange(session: ClassSession): string {
   return `${formatTime(startDate)} - ${formatTime(endDate)}`;
 }
 
+// Calculate price based on duration
+function calculatePrice(duration: string): {
+  total: number;
+  discounted: number;
+} {
+  const durationHours = parseInt(duration) / 60;
+  const baseTotalPrice = DEFAULT_COURSE.total_price;
+  const baseDiscountedPrice = DEFAULT_COURSE.discounted_price || baseTotalPrice;
+
+  return {
+    total: baseTotalPrice * durationHours,
+    discounted: baseDiscountedPrice * durationHours,
+  };
+}
+
 export default function QuickBookingPage(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
@@ -135,6 +150,9 @@ export default function QuickBookingPage(): JSX.Element {
     suburb: "",
     additionalMessage: "",
   });
+
+  // Calculate prices based on current duration
+  const currentPrices = calculatePrice(bookingData.duration);
 
   // Fetch all active class sessions
   const fetchAllClassSessions = async () => {
@@ -627,13 +645,40 @@ export default function QuickBookingPage(): JSX.Element {
                 )}
 
                 <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold">Total Amount:</span>
-                    <span className="text-2xl font-bold text-primary">
-                      $
-                      {DEFAULT_COURSE.discounted_price ??
-                        DEFAULT_COURSE.total_price}
-                    </span>
+                  <div className="flex flex-col items-end space-y-2">
+                    {/* Original Total Price */}
+                    {currentPrices.total !== currentPrices.discounted && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-medium text-gray-900">
+                          Total:
+                        </span>
+                        <span className="text-xl line-through text-gray-500">
+                          ${currentPrices.total.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Discounted Price */}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg font-medium text-gray-900">
+                        {currentPrices.total !== currentPrices.discounted
+                          ? "Discounted:"
+                          : "Total:"}
+                      </span>
+                      <span className="text-2xl font-bold text-green-600">
+                        ${currentPrices.discounted.toFixed(2)}
+                      </span>
+                    </div>
+
+                    {/* Savings Display */}
+                    {currentPrices.total !== currentPrices.discounted && (
+                      <div className="text-sm text-green-600 font-medium">
+                        You save: $
+                        {(
+                          currentPrices.total - currentPrices.discounted
+                        ).toFixed(2)}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
