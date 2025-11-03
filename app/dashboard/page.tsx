@@ -620,12 +620,6 @@ export default function StudentDashboard() {
                         </span>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      className="w-full mt-4 bg-transparent"
-                    >
-                      Edit Profile
-                    </Button>
                   </CardContent>
                 </Card>
 
