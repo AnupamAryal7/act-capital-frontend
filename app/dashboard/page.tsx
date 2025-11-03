@@ -439,6 +439,10 @@ export default function StudentDashboard() {
     window.location.href = "/quick_bookings";
   };
 
+  const handleReview = () => {
+    window.location.href = "/testimonials";
+  };
+
   const getStatusConfig = (status: string) => {
     return (
       STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ||
