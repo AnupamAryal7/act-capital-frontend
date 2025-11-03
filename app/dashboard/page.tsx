@@ -619,14 +619,6 @@ export default function StudentDashboard() {
                           {user.phone || "Not provided"}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-600">
-                          License:
-                        </span>
-                        <span className="text-sm">
-                          {user.license_number || "In Progress"}
-                        </span>
-                      </div>
                     </div>
                     <Button
                       variant="outline"
