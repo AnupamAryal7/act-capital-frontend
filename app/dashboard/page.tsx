@@ -788,6 +788,7 @@ export default function StudentDashboard() {
                       <Button
                         variant="outline"
                         className="w-full mt-4 bg-transparent"
+                        onClick={handleReview}
                       >
                         <Star className="h-4 w-4 mr-2" />
                         Write a Review
