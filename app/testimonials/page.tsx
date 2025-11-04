@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -98,10 +98,7 @@ export default function TestimonialsPage() {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
-
-  // You'll need to get the user from your auth context/provider
-  // Replace with your actual user state/context
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<Student | null>(null);
 
   const courses = [
     "All",
@@ -111,6 +108,34 @@ export default function TestimonialsPage() {
     "Defensive Driving",
     "Highway Driving Course",
   ];
+
+  // Fetch user data from localStorage on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        if (parsedUser.id && parsedUser.email) {
+          const dashboardUser: Student = {
+            id: parsedUser.id?.toString() || "1",
+            full_name:
+              parsedUser.full_name ||
+              parsedUser.name ||
+              parsedUser.email.split("@")[0] ||
+              "User",
+            email: parsedUser.email || "",
+            role: parsedUser.role || "student",
+            phone: parsedUser.phone_number || parsedUser.phone || undefined,
+            address: parsedUser.address || undefined,
+            license_number: parsedUser.license_number || undefined,
+          };
+          setUser(dashboardUser);
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
 
   const filteredTestimonials =
     selectedCourse === "All"
@@ -146,37 +171,86 @@ export default function TestimonialsPage() {
 
     try {
       setReviewSubmitting(true);
+
+      // Prepare the review data
+      const reviewData = {
+        user_name: user.full_name,
+        email: user.email,
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+        course_title: "", // You can modify this to capture the course if needed
+        is_approved: false, // Set to false for admin approval, or true for auto-publish
+      };
+
+      console.log("Submitting review:", reviewData);
+
       const response = await fetch(`${API_BASE_URL}/reviews/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          user_name: user.full_name,
-          email: user.email,
-          rating: reviewRating,
-          comment: reviewComment.trim(),
-          course_title: "",
-          is_approved: true,
-        }),
+        body: JSON.stringify(reviewData),
       });
 
       if (response.ok) {
-        alert("Thank you for your review! It is published.");
+        const result = await response.json();
+        console.log("Review submitted successfully:", result);
+        alert("Thank you for your review! It has been submitted successfully.");
         setReviewRating(0);
         setReviewComment("");
+
+        // Optional: Refresh the page or update testimonials list
+        // window.location.reload();
       } else {
         const errorData = await response.json();
+        console.error("Failed to submit review:", errorData);
         alert(
-          `Failed to submit review: ${errorData.detail || "Unknown error"}`
+          `Failed to submit review: ${
+            errorData.detail || errorData.message || "Unknown error"
+          }`
         );
       }
     } catch (error) {
       console.error("Error submitting review:", error);
-      alert("Failed to submit review. Please try again later.");
+      alert(
+        "Failed to submit review. Please check your connection and try again."
+      );
     } finally {
       setReviewSubmitting(false);
     }
+  };
+
+  // Enhanced star rating hover effect
+  const handleStarHover = (hoverRating: number) => {
+    const stars = document.querySelectorAll(".star-rating button");
+    stars.forEach((star, index) => {
+      const starIcon = star.querySelector("svg");
+      if (starIcon) {
+        if (index < hoverRating) {
+          starIcon.classList.add("text-yellow-400", "fill-current");
+          starIcon.classList.remove("text-gray-300");
+        } else {
+          starIcon.classList.add("text-gray-300");
+          starIcon.classList.remove("text-yellow-400", "fill-current");
+        }
+      }
+    });
+  };
+
+  const handleStarLeave = () => {
+    const stars = document.querySelectorAll(".star-rating button");
+    stars.forEach((star, index) => {
+      const starIcon = star.querySelector("svg");
+      if (starIcon) {
+        if (index < reviewRating) {
+          starIcon.classList.add("text-yellow-400", "fill-current");
+          starIcon.classList.remove("text-gray-300");
+        } else {
+          starIcon.classList.add("text-gray-300");
+          starIcon.classList.remove("text-yellow-400", "fill-current");
+        }
+      }
+    });
   };
 
   return (
@@ -218,52 +292,14 @@ export default function TestimonialsPage() {
                       <label className="block text-sm font-medium mb-2">
                         Your Rating
                       </label>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 star-rating">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
                             type="button"
                             onClick={() => setReviewRating(star)}
-                            onMouseEnter={(e) => {
-                              const stars =
-                                e.currentTarget.parentElement?.querySelectorAll(
-                                  "button"
-                                );
-                              stars?.forEach((s, i) => {
-                                const starIcon = s.querySelector("svg");
-                                if (starIcon && i < star) {
-                                  starIcon.classList.add(
-                                    "text-yellow-400",
-                                    "fill-current"
-                                  );
-                                  starIcon.classList.remove("text-gray-300");
-                                }
-                              });
-                            }}
-                            onMouseLeave={(e) => {
-                              const stars =
-                                e.currentTarget.parentElement?.querySelectorAll(
-                                  "button"
-                                );
-                              stars?.forEach((s, i) => {
-                                const starIcon = s.querySelector("svg");
-                                if (starIcon) {
-                                  if (i < reviewRating) {
-                                    starIcon.classList.add(
-                                      "text-yellow-400",
-                                      "fill-current"
-                                    );
-                                    starIcon.classList.remove("text-gray-300");
-                                  } else {
-                                    starIcon.classList.add("text-gray-300");
-                                    starIcon.classList.remove(
-                                      "text-yellow-400",
-                                      "fill-current"
-                                    );
-                                  }
-                                }
-                              });
-                            }}
+                            onMouseEnter={() => handleStarHover(star)}
+                            onMouseLeave={handleStarLeave}
                             className="focus:outline-none transition-transform hover:scale-110"
                           >
                             <Star
@@ -291,12 +327,15 @@ export default function TestimonialsPage() {
                         Your Review
                       </label>
                       <Textarea
-                        placeholder="Tell us what you think about our driving school..."
+                        placeholder="Tell us what you think about our driving school. What did you like? How was your instructor? Would you recommend us to others?"
                         value={reviewComment}
                         onChange={(e) => setReviewComment(e.target.value)}
                         rows={4}
                         className="resize-none"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {reviewComment.length}/500 characters
+                      </p>
                     </div>
 
                     <Button
@@ -305,7 +344,8 @@ export default function TestimonialsPage() {
                       disabled={
                         reviewSubmitting ||
                         reviewRating === 0 ||
-                        !reviewComment.trim()
+                        !reviewComment.trim() ||
+                        reviewComment.length > 500
                       }
                     >
                       {reviewSubmitting ? (
@@ -323,7 +363,11 @@ export default function TestimonialsPage() {
 
                     {!user && (
                       <p className="text-sm text-muted-foreground text-center">
-                        Please login to submit a review
+                        Please{" "}
+                        <Link href="/login" className="text-primary underline">
+                          login
+                        </Link>{" "}
+                        to submit a review
                       </p>
                     )}
                   </div>
