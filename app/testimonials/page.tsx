@@ -16,6 +16,16 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+interface Student {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  phone?: string;
+  address?: string;
+  license_number?: string;
+}
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
