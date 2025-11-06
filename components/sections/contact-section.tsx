@@ -75,7 +75,9 @@ export function ContactSection() {
             </div>
 
             <div className="text-center space-y-4">
-              <div className="flex justify-center gap-4">
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                {" "}
+                {/* Column on mobile, row on sm+ */}
                 <Button size="lg" className="text-lg px-8" asChild>
                   <Link href="/booking">Book Your Lesson Now</Link>
                 </Button>
