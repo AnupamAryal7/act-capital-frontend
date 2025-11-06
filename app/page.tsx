@@ -11,13 +11,25 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navigation />
       <main className="flex-1">
-        <HeroSection />
-        <WhyChooseUsSection />
-        <PopularCoursesSection />
-        <TestimonialsSection />
-        <ContactSection />
+        <div className="border-2 border-green-500">
+          <HeroSection />
+        </div>
+        <div className="border-2 border-blue-500">
+          <WhyChooseUsSection />
+        </div>
+        <div className="border-2 border-yellow-500">
+          <PopularCoursesSection />
+        </div>
+        <div className="border-2 border-green-500">
+          <TestimonialsSection />
+        </div>
+        <div className="border-2 border-blue-500">
+          <ContactSection />
+        </div>
       </main>
-      <Footer />
+      <div className="border-2 border-yellow-500">
+        <Footer />
+      </div>
     </div>
   );
 }
