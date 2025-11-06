@@ -17,7 +17,6 @@ import {
   RefreshCw,
   Calendar,
   BookOpen,
-  Filter,
   MessageSquare,
   ThumbsUp,
   Award,
@@ -53,7 +52,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function TestimonialsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedCourse, setSelectedCourse] = useState("All");
+  const [showMyReviews, setShowMyReviews] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -61,18 +60,12 @@ export default function TestimonialsPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [user, setUser] = useState<Student | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [userReviewsLoading, setUserReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [userReviewsError, setUserReviewsError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const courses = [
-    "All",
-    "Beginner Driver Course",
-    "Refresher Course",
-    "Test Preparation",
-    "Defensive Driving",
-    "Highway Driving Course",
-  ];
 
   // Fetch user data from localStorage on component mount
   useEffect(() => {
@@ -102,7 +95,7 @@ export default function TestimonialsPage() {
     }
   }, []);
 
-  // Fetch approved reviews from API - FIXED ENDPOINT
+  // Fetch approved reviews from API
   const fetchReviews = async (showRefresh = false) => {
     try {
       if (showRefresh) {
@@ -112,7 +105,6 @@ export default function TestimonialsPage() {
       }
       setReviewsError(null);
 
-      // Use the correct approved endpoint
       const endpoint = `${API_BASE_URL}/reviews/approved?skip=0&limit=100`;
       console.log("Fetching approved reviews from:", endpoint);
 
@@ -132,7 +124,6 @@ export default function TestimonialsPage() {
       const data = await response.json();
       console.log("Received reviews data:", data);
 
-      // Data is already approved, just sort by date
       const sortedReviews = Array.isArray(data)
         ? data.sort(
             (a: Review, b: Review) =>
@@ -156,22 +147,77 @@ export default function TestimonialsPage() {
     }
   };
 
+  // Fetch user's reviews
+  const fetchUserReviews = async () => {
+    if (!user?.id) {
+      setUserReviewsError("User not found. Please login again.");
+      return;
+    }
+
+    try {
+      setUserReviewsLoading(true);
+      setUserReviewsError(null);
+
+      const endpoint = `${API_BASE_URL}/reviews/user/${user.id}?skip=0&limit=100`;
+      console.log("Fetching user reviews from:", endpoint);
+
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch user reviews: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Received user reviews data:", data);
+
+      const sortedReviews = Array.isArray(data)
+        ? data.sort(
+            (a: Review, b: Review) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          )
+        : [];
+
+      setUserReviews(sortedReviews);
+    } catch (error) {
+      console.error("Error fetching user reviews:", error);
+      setUserReviewsError(
+        error instanceof Error
+          ? error.message
+          : "Unable to load your reviews. Please check your connection and try again."
+      );
+      setUserReviews([]);
+    } finally {
+      setUserReviewsLoading(false);
+    }
+  };
+
   // Fetch reviews on component mount
   useEffect(() => {
     fetchReviews();
   }, []);
 
-  const featuredReviews = reviews.slice(0, 3); // Top 3 reviews for featured section
+  // Fetch user reviews when showMyReviews changes
+  useEffect(() => {
+    if (showMyReviews && user?.id) {
+      fetchUserReviews();
+    }
+  }, [showMyReviews, user?.id]);
 
-  const filteredReviews =
-    selectedCourse === "All"
-      ? reviews
-      : reviews.filter((review) => {
-          if (!review.course_title) return selectedCourse === "All";
-          return review.course_title
-            .toLowerCase()
-            .includes(selectedCourse.toLowerCase());
-        });
+  const featuredReviews = reviews.slice(0, 3);
+
+  const displayedReviews = showMyReviews ? userReviews : reviews;
+  const displayedReviewsLoading = showMyReviews
+    ? userReviewsLoading
+    : reviewsLoading;
+  const displayedReviewsError = showMyReviews ? userReviewsError : reviewsError;
 
   const nextTestimonial = () => {
     if (featuredReviews.length > 0) {
@@ -239,7 +285,6 @@ export default function TestimonialsPage() {
         setReviewRating(0);
         setReviewComment("");
 
-        // Refresh the reviews list after a short delay
         setTimeout(() => {
           fetchReviews(true);
           setSubmitSuccess(false);
@@ -316,13 +361,6 @@ export default function TestimonialsPage() {
       .join("")
       .toUpperCase()
       .slice(0, 2);
-  };
-
-  // Get color based on rating
-  const getRatingColor = (rating: number) => {
-    if (rating >= 4) return "text-green-600";
-    if (rating >= 3) return "text-yellow-600";
-    return "text-red-600";
   };
 
   // Get badge color based on rating
@@ -737,9 +775,13 @@ export default function TestimonialsPage() {
             {/* Header with Stats */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-6">
               <div>
-                <h2 className="text-3xl font-bold mb-2">All Student Reviews</h2>
+                <h2 className="text-3xl font-bold mb-2">
+                  {showMyReviews ? "My Reviews" : "All Student Reviews"}
+                </h2>
                 <p className="text-lg text-muted-foreground">
-                  Real experiences from our driving school community
+                  {showMyReviews
+                    ? "Your submitted reviews and ratings"
+                    : "Real experiences from our driving school community"}
                 </p>
               </div>
 
@@ -747,70 +789,54 @@ export default function TestimonialsPage() {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    <span>{reviews.length} reviews</span>
+                    <span>{displayedReviews.length} reviews</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span>{averageRating} average</span>
-                  </div>
+                  {!showMyReviews && (
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                      <span>{averageRating} average</span>
+                    </div>
+                  )}
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={() => fetchReviews(true)}
-                  disabled={reviewsLoading || isRefreshing}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                >
-                  <RefreshCw
-                    className={`h-4 w-4 mr-2 ${
-                      isRefreshing ? "animate-spin" : ""
-                    }`}
-                  />
-                  Refresh
-                </Button>
-              </div>
-            </div>
+                <div className="flex gap-2">
+                  {user && (
+                    <Button
+                      variant={showMyReviews ? "default" : "outline"}
+                      onClick={() => {
+                        setShowMyReviews(!showMyReviews);
+                        setCurrentIndex(0);
+                      }}
+                      className={
+                        showMyReviews
+                          ? "bg-blue-600 hover:bg-blue-700"
+                          : "border-blue-300 text-blue-600 hover:bg-blue-50"
+                      }
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      {showMyReviews ? "All Reviews" : "My Reviews"}
+                    </Button>
+                  )}
 
-            {/* Course Filter */}
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-4">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  Filter by course:
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {courses.map((course) => (
                   <Button
-                    key={course}
-                    variant={selectedCourse === course ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setSelectedCourse(course);
-                      setCurrentIndex(0);
-                    }}
-                    className={
-                      selectedCourse === course
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : "bg-transparent border-gray-300 hover:border-blue-300 hover:bg-blue-50"
-                    }
+                    variant="outline"
+                    onClick={() => fetchReviews(true)}
+                    disabled={displayedReviewsLoading || isRefreshing}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
                   >
-                    {course}
-                    {selectedCourse === course && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-white/20 text-white border-none text-xs"
-                      >
-                        {filteredReviews.length}
-                      </Badge>
-                    )}
+                    <RefreshCw
+                      className={`h-4 w-4 mr-2 ${
+                        isRefreshing ? "animate-spin" : ""
+                      }`}
+                    />
+                    Refresh
                   </Button>
-                ))}
+                </div>
               </div>
             </div>
 
             {/* Reviews Grid */}
-            {reviewsLoading ? (
+            {displayedReviewsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="border-0 shadow-sm">
@@ -832,7 +858,7 @@ export default function TestimonialsPage() {
                   </Card>
                 ))}
               </div>
-            ) : reviewsError ? (
+            ) : displayedReviewsError ? (
               <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                 <div className="text-red-500 mb-4">
                   <AlertCircle className="h-16 w-16 mx-auto opacity-50" />
@@ -841,28 +867,30 @@ export default function TestimonialsPage() {
                   Unable to Load Reviews
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  {reviewsError}
+                  {displayedReviewsError}
                 </p>
                 <Button
-                  onClick={() => fetchReviews()}
+                  onClick={() =>
+                    showMyReviews ? fetchUserReviews() : fetchReviews()
+                  }
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again
                 </Button>
               </div>
-            ) : filteredReviews.length === 0 ? (
+            ) : displayedReviews.length === 0 ? (
               <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border-2 border-dashed border-gray-300">
                 <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {selectedCourse === "All"
-                    ? "No reviews yet"
-                    : `No reviews for ${selectedCourse} yet`}
+                  {showMyReviews
+                    ? "You haven't submitted any reviews yet"
+                    : "No reviews yet"}
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {selectedCourse === "All"
-                    ? "Be the first to share your experience!"
-                    : "Be the first to review this course!"}
+                  {showMyReviews
+                    ? "Share your experience and help other students!"
+                    : "Be the first to share your experience!"}
                 </p>
                 {user ? (
                   <Button
@@ -884,7 +912,7 @@ export default function TestimonialsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredReviews.map((review) => (
+                {displayedReviews.map((review) => (
                   <Card
                     key={review.id}
                     className="border-0 shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-200 hover:-translate-y-1 group"
@@ -954,14 +982,16 @@ export default function TestimonialsPage() {
             )}
 
             {/* Pagination info */}
-            {!reviewsLoading && !reviewsError && filteredReviews.length > 0 && (
-              <div className="mt-12 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Showing {filteredReviews.length} of {reviews.length} reviews
-                  {selectedCourse !== "All" && ` for ${selectedCourse}`}
-                </p>
-              </div>
-            )}
+            {!displayedReviewsLoading &&
+              !displayedReviewsError &&
+              displayedReviews.length > 0 && (
+                <div className="mt-12 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {displayedReviews.length}{" "}
+                    {showMyReviews ? "of your" : ""} reviews
+                  </p>
+                </div>
+              )}
           </div>
         </section>
 
