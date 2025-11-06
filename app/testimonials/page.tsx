@@ -15,7 +15,6 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
-  User,
   Calendar,
   BookOpen,
   Filter,
@@ -23,6 +22,9 @@ import {
   ThumbsUp,
   Award,
   Users,
+  CheckCircle,
+  AlertCircle,
+  TrendingUp,
 } from "lucide-react";
 
 interface Student {
@@ -47,9 +49,7 @@ interface Review {
   updated_at: string | null;
 }
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://act-driving-backend.onrender.com";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function TestimonialsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,6 +57,8 @@ export default function TestimonialsPage() {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [user, setUser] = useState<Student | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -100,7 +102,7 @@ export default function TestimonialsPage() {
     }
   }, []);
 
-  // Fetch reviews from API
+  // Fetch approved reviews from API - FIXED ENDPOINT
   const fetchReviews = async (showRefresh = false) => {
     try {
       if (showRefresh) {
@@ -110,20 +112,16 @@ export default function TestimonialsPage() {
       }
       setReviewsError(null);
 
-      console.log(
-        "Fetching reviews from:",
-        `${API_BASE_URL}/api/v1/reviews/?skip=0&limit=100`
-      );
+      // Use the correct approved endpoint
+      const endpoint = `${API_BASE_URL}/reviews/approved?skip=0&limit=100`;
+      console.log("Fetching approved reviews from:", endpoint);
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/reviews/?skip=0&limit=100`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error(
@@ -134,18 +132,16 @@ export default function TestimonialsPage() {
       const data = await response.json();
       console.log("Received reviews data:", data);
 
-      // Filter only approved reviews and sort by creation date (newest first)
-      const approvedReviews = Array.isArray(data)
-        ? data
-            .filter((review: Review) => review.is_approved)
-            .sort(
-              (a: Review, b: Review) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime()
-            )
+      // Data is already approved, just sort by date
+      const sortedReviews = Array.isArray(data)
+        ? data.sort(
+            (a: Review, b: Review) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          )
         : [];
 
-      setReviews(approvedReviews);
+      setReviews(sortedReviews);
     } catch (error) {
       console.error("Error fetching reviews:", error);
       setReviewsError(
@@ -165,18 +161,17 @@ export default function TestimonialsPage() {
     fetchReviews();
   }, []);
 
-  const approvedReviews = reviews.filter((review) => review.is_approved);
-  const featuredReviews = approvedReviews.slice(0, 3); // Top 3 reviews for featured section
+  const featuredReviews = reviews.slice(0, 3); // Top 3 reviews for featured section
 
   const filteredReviews =
     selectedCourse === "All"
-      ? approvedReviews
-      : approvedReviews.filter(
-          (review) =>
-            review.course_title
-              ?.toLowerCase()
-              .includes(selectedCourse.toLowerCase()) || !review.course_title
-        );
+      ? reviews
+      : reviews.filter((review) => {
+          if (!review.course_title) return selectedCourse === "All";
+          return review.course_title
+            .toLowerCase()
+            .includes(selectedCourse.toLowerCase());
+        });
 
   const nextTestimonial = () => {
     if (featuredReviews.length > 0) {
@@ -194,22 +189,29 @@ export default function TestimonialsPage() {
 
   const handleReviewSubmit = async () => {
     if (!user) {
-      alert("Please login to submit a review");
+      setSubmitError("Please login to submit a review");
       return;
     }
 
     if (reviewRating === 0) {
-      alert("Please select a rating");
+      setSubmitError("Please select a rating");
       return;
     }
 
     if (!reviewComment.trim()) {
-      alert("Please enter a comment");
+      setSubmitError("Please enter a comment");
+      return;
+    }
+
+    if (reviewComment.length > 500) {
+      setSubmitError("Comment must be 500 characters or less");
       return;
     }
 
     try {
       setReviewSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
 
       const reviewData = {
         user_name: user.full_name,
@@ -233,24 +235,25 @@ export default function TestimonialsPage() {
       if (response.ok) {
         const result = await response.json();
         console.log("Review submitted successfully:", result);
-        alert("Thank you for your review! It has been submitted for approval.");
+        setSubmitSuccess(true);
         setReviewRating(0);
         setReviewComment("");
 
-        // Refresh the reviews list
-        fetchReviews(true);
+        // Refresh the reviews list after a short delay
+        setTimeout(() => {
+          fetchReviews(true);
+          setSubmitSuccess(false);
+        }, 3000);
       } else {
         const errorData = await response.json();
         console.error("Failed to submit review:", errorData);
-        alert(
-          `Failed to submit review: ${
-            errorData.detail || errorData.message || "Unknown error"
-          }`
+        setSubmitError(
+          errorData.detail || errorData.message || "Failed to submit review"
         );
       }
     } catch (error) {
       console.error("Error submitting review:", error);
-      alert(
+      setSubmitError(
         "Failed to submit review. Please check your connection and try again."
       );
     } finally {
@@ -293,12 +296,16 @@ export default function TestimonialsPage() {
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "Recently";
+    }
   };
 
   // Get initials for avatar
@@ -318,26 +325,46 @@ export default function TestimonialsPage() {
     return "text-red-600";
   };
 
+  // Get badge color based on rating
+  const getRatingBadgeColor = (rating: number) => {
+    if (rating >= 4) return "bg-green-100 text-green-700 border-green-200";
+    if (rating >= 3) return "bg-yellow-100 text-yellow-700 border-yellow-200";
+    return "bg-red-100 text-red-700 border-red-200";
+  };
+
   // Calculate average rating
   const averageRating =
-    approvedReviews.length > 0
+    reviews.length > 0
       ? (
-          approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
-          approvedReviews.length
+          reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
         ).toFixed(1)
       : "0.0";
+
+  // Calculate rating distribution
+  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
+    const count = reviews.filter((r) => r.rating === rating).length;
+    const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+    return { rating, count, percentage };
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-20 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-300 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center space-y-6">
               <Badge
                 variant="secondary"
-                className="mb-4 bg-white/20 text-white border-none"
+                className="mb-4 bg-white/20 text-white border-none backdrop-blur-sm"
               >
                 <Award className="h-3 w-3 mr-1" />
                 Student Success Stories
@@ -350,30 +377,41 @@ export default function TestimonialsPage() {
                 successful students.
               </p>
 
-              {/* Rating Summary */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-8">
+              {/* Enhanced Rating Summary */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mt-8">
                 <div className="text-center">
-                  <div className="text-4xl font-bold">{averageRating}</div>
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="text-5xl font-bold mb-2">{averageRating}</div>
+                  <div className="flex items-center justify-center gap-1 mb-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`h-4 w-4 ${
+                        className={`h-5 w-5 ${
                           star <= Math.round(parseFloat(averageRating))
                             ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
+                            : "text-white/30"
                         }`}
                       />
                     ))}
                   </div>
-                  <div className="text-sm text-blue-200 mt-1">
-                    {approvedReviews.length} reviews
+                  <div className="text-sm text-blue-200">
+                    Based on {reviews.length}{" "}
+                    {reviews.length === 1 ? "review" : "reviews"}
                   </div>
                 </div>
-                <div className="h-12 w-px bg-blue-400 hidden sm:block"></div>
-                <div className="flex items-center gap-2 text-blue-100">
-                  <ThumbsUp className="h-5 w-5" />
-                  <span>98% Success Rate</span>
+                <div className="h-16 w-px bg-blue-400/50 hidden sm:block"></div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-blue-100">
+                    <ThumbsUp className="h-5 w-5" />
+                    <span>98% Success Rate</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-blue-100">
+                    <Users className="h-5 w-5" />
+                    <span>500+ Happy Students</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-blue-100">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>15+ Years Experience</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -381,10 +419,10 @@ export default function TestimonialsPage() {
         </section>
 
         {/* Review Us Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white" id="review-section">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto">
-              <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-xl">
                 <CardContent className="p-8">
                   <div className="text-center mb-6">
                     <MessageSquare className="h-12 w-12 text-blue-600 mx-auto mb-4" />
@@ -396,11 +434,37 @@ export default function TestimonialsPage() {
                     </p>
                   </div>
 
+                  {submitSuccess && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-green-800">
+                        <p className="font-semibold">
+                          Review Submitted Successfully!
+                        </p>
+                        <p className="mt-1">
+                          Thank you for your feedback. Your review has been
+                          submitted for approval and will be visible once
+                          approved by our team.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {submitError && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-red-800">
+                        <p className="font-semibold">Error</p>
+                        <p className="mt-1">{submitError}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-6">
                     {/* Star Rating */}
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        How would you rate your experience?
+                        How would you rate your experience? *
                       </label>
                       <div className="flex items-center gap-2 star-rating">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -410,10 +474,11 @@ export default function TestimonialsPage() {
                             onClick={() => setReviewRating(star)}
                             onMouseEnter={() => handleStarHover(star)}
                             onMouseLeave={handleStarLeave}
-                            className="focus:outline-none transition-transform hover:scale-110"
+                            className="focus:outline-none transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+                            aria-label={`Rate ${star} stars`}
                           >
                             <Star
-                              className={`h-10 w-10 ${
+                              className={`h-10 w-10 transition-colors ${
                                 star <= reviewRating
                                   ? "text-yellow-400 fill-current"
                                   : "text-gray-300"
@@ -421,7 +486,7 @@ export default function TestimonialsPage() {
                             />
                           </button>
                         ))}
-                        <span className="ml-2 text-sm text-muted-foreground">
+                        <span className="ml-2 text-sm text-muted-foreground font-medium">
                           {reviewRating > 0
                             ? `${reviewRating} star${
                                 reviewRating > 1 ? "s" : ""
@@ -434,30 +499,43 @@ export default function TestimonialsPage() {
                     {/* Review Comment */}
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Your Review
+                        Your Review *
                       </label>
                       <Textarea
                         placeholder="Tell us about your experience... What did you like? How was your instructor? Would you recommend us to others?"
                         value={reviewComment}
-                        onChange={(e) => setReviewComment(e.target.value)}
+                        onChange={(e) => {
+                          setReviewComment(e.target.value);
+                          setSubmitError(null);
+                        }}
                         rows={5}
+                        maxLength={500}
                         className="resize-none border-gray-300 focus:border-blue-500"
                       />
                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
                         <span>Share your honest experience</span>
-                        <span>{reviewComment.length}/500</span>
+                        <span
+                          className={
+                            reviewComment.length > 500
+                              ? "text-red-600 font-semibold"
+                              : ""
+                          }
+                        >
+                          {reviewComment.length}/500
+                        </span>
                       </div>
                     </div>
 
                     <Button
                       onClick={handleReviewSubmit}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full bg-blue-600 hover:bg-blue-700 transition-all"
                       size="lg"
                       disabled={
                         reviewSubmitting ||
                         reviewRating === 0 ||
                         !reviewComment.trim() ||
-                        reviewComment.length > 500
+                        reviewComment.length > 500 ||
+                        !user
                       }
                     >
                       {reviewSubmitting ? (
@@ -478,7 +556,7 @@ export default function TestimonialsPage() {
                         Please{" "}
                         <Link
                           href="/login"
-                          className="text-blue-600 underline font-medium"
+                          className="text-blue-600 underline font-medium hover:text-blue-700"
                         >
                           login
                         </Link>{" "}
@@ -516,18 +594,20 @@ export default function TestimonialsPage() {
                       </blockquote>
 
                       <div className="flex justify-center space-x-1">
-                        {[...Array(featuredReviews[currentIndex].rating)].map(
-                          (_, i) => (
-                            <Star
-                              key={i}
-                              className="h-6 w-6 fill-yellow-400 text-yellow-400"
-                            />
-                          )
-                        )}
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-6 w-6 ${
+                              i < featuredReviews[currentIndex].rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
                       </div>
 
                       <div className="flex items-center justify-center space-x-4">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
                           {getInitials(featuredReviews[currentIndex].user_name)}
                         </div>
                         <div className="text-left">
@@ -535,7 +615,8 @@ export default function TestimonialsPage() {
                             {featuredReviews[currentIndex].user_name}
                           </div>
                           {featuredReviews[currentIndex].course_title && (
-                            <div className="text-sm text-blue-600">
+                            <div className="text-sm text-blue-600 flex items-center gap-1">
+                              <BookOpen className="h-3 w-3" />
                               {featuredReviews[currentIndex].course_title}
                             </div>
                           )}
@@ -558,6 +639,7 @@ export default function TestimonialsPage() {
                       size="sm"
                       onClick={prevTestimonial}
                       className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                      aria-label="Previous testimonial"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -569,9 +651,10 @@ export default function TestimonialsPage() {
                           className={`w-3 h-3 rounded-full transition-all ${
                             index === currentIndex
                               ? "bg-blue-600 scale-125"
-                              : "bg-blue-300"
+                              : "bg-blue-300 hover:bg-blue-400"
                           }`}
                           onClick={() => setCurrentIndex(index)}
+                          aria-label={`Go to testimonial ${index + 1}`}
                         />
                       ))}
                     </div>
@@ -581,11 +664,68 @@ export default function TestimonialsPage() {
                       size="sm"
                       onClick={nextTestimonial}
                       className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                      aria-label="Next testimonial"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Rating Distribution Section */}
+        {reviews.length > 0 && (
+          <section className="py-12 bg-gray-50">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="max-w-4xl mx-auto">
+                <h3 className="text-2xl font-bold text-center mb-8">
+                  Rating Distribution
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    {ratingDistribution.map(({ rating, count, percentage }) => (
+                      <div key={rating} className="flex items-center gap-4">
+                        <div className="flex items-center gap-1 w-20">
+                          <span className="text-sm font-medium">{rating}</span>
+                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        </div>
+                        <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-600 w-12 text-right">
+                          {count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-6xl font-bold text-blue-600 mb-2">
+                        {averageRating}
+                      </div>
+                      <div className="flex justify-center gap-1 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-5 w-5 ${
+                              star <= Math.round(parseFloat(averageRating))
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Average from {reviews.length} reviews
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -607,7 +747,7 @@ export default function TestimonialsPage() {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    <span>{approvedReviews.length} reviews</span>
+                    <span>{reviews.length} reviews</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="h-4 w-4 text-yellow-400 fill-current" />
@@ -652,10 +792,18 @@ export default function TestimonialsPage() {
                     className={
                       selectedCourse === course
                         ? "bg-blue-600 hover:bg-blue-700"
-                        : "bg-transparent border-gray-300 hover:border-blue-300"
+                        : "bg-transparent border-gray-300 hover:border-blue-300 hover:bg-blue-50"
                     }
                   >
                     {course}
+                    {selectedCourse === course && (
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-white/20 text-white border-none text-xs"
+                      >
+                        {filteredReviews.length}
+                      </Badge>
+                    )}
                   </Button>
                 ))}
               </div>
@@ -667,7 +815,11 @@ export default function TestimonialsPage() {
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="border-0 shadow-sm">
                     <CardContent className="p-6 space-y-4">
-                      <Skeleton className="h-4 w-20" />
+                      <div className="flex justify-between items-start">
+                        <Skeleton className="h-8 w-12" />
+                        <Skeleton className="h-5 w-24" />
+                      </div>
+                      <Skeleton className="h-4 w-32" />
                       <Skeleton className="h-20 w-full" />
                       <div className="flex items-center space-x-3 pt-4">
                         <Skeleton className="h-10 w-10 rounded-full" />
@@ -683,7 +835,7 @@ export default function TestimonialsPage() {
             ) : reviewsError ? (
               <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                 <div className="text-red-500 mb-4">
-                  <MessageSquare className="h-16 w-16 mx-auto opacity-50" />
+                  <AlertCircle className="h-16 w-16 mx-auto opacity-50" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   Unable to Load Reviews
@@ -700,7 +852,7 @@ export default function TestimonialsPage() {
                 </Button>
               </div>
             ) : filteredReviews.length === 0 ? (
-              <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border-2 border-dashed border-gray-300">
                 <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {selectedCourse === "All"
@@ -712,7 +864,7 @@ export default function TestimonialsPage() {
                     ? "Be the first to share your experience!"
                     : "Be the first to review this course!"}
                 </p>
-                {user && (
+                {user ? (
                   <Button
                     onClick={() =>
                       document
@@ -721,7 +873,12 @@ export default function TestimonialsPage() {
                     }
                     className="bg-blue-600 hover:bg-blue-700"
                   >
+                    <Star className="h-4 w-4 mr-2" />
                     Write First Review
+                  </Button>
+                ) : (
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                    <Link href="/login">Login to Write Review</Link>
                   </Button>
                 )}
               </div>
@@ -730,18 +887,19 @@ export default function TestimonialsPage() {
                 {filteredReviews.map((review) => (
                   <Card
                     key={review.id}
-                    className="border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-blue-200 group"
+                    className="border-0 shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-200 hover:-translate-y-1 group"
                   >
                     <CardContent className="p-6 space-y-4">
                       {/* Rating and Course */}
                       <div className="flex justify-between items-start">
-                        <div
-                          className={`text-2xl font-bold ${getRatingColor(
+                        <Badge
+                          variant="outline"
+                          className={`text-lg font-bold px-3 py-1 ${getRatingBadgeColor(
                             review.rating
                           )}`}
                         >
                           {review.rating}.0
-                        </div>
+                        </Badge>
                         {review.course_title && (
                           <Badge
                             variant="outline"
@@ -758,7 +916,7 @@ export default function TestimonialsPage() {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-4 w-4 ${
+                            className={`h-5 w-5 transition-all ${
                               i < review.rating
                                 ? "text-yellow-400 fill-current"
                                 : "text-gray-300"
@@ -768,22 +926,24 @@ export default function TestimonialsPage() {
                       </div>
 
                       {/* Comment */}
-                      <blockquote className="text-sm text-gray-700 italic leading-relaxed group-hover:text-gray-900 transition-colors">
+                      <blockquote className="text-sm text-gray-700 italic leading-relaxed group-hover:text-gray-900 transition-colors min-h-[80px]">
                         "{review.comment}"
                       </blockquote>
 
                       {/* Author and Date */}
-                      <div className="flex items-center space-x-3 pt-4 border-t border-gray-100 group-hover:border-gray-200 transition-colors">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm group-hover:scale-105 transition-transform">
+                      <div className="flex items-center space-x-3 pt-4 border-t border-gray-100 group-hover:border-blue-200 transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm group-hover:scale-110 transition-transform shadow-md">
                           {getInitials(review.user_name)}
                         </div>
-                        <div>
-                          <div className="font-semibold text-sm text-gray-900">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm text-gray-900 truncate">
                             {review.user_name}
                           </div>
                           <div className="text-xs text-gray-500 flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(review.created_at)}
+                            <Calendar className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">
+                              {formatDate(review.created_at)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -792,12 +952,28 @@ export default function TestimonialsPage() {
                 ))}
               </div>
             )}
+
+            {/* Pagination info */}
+            {!reviewsLoading && !reviewsError && filteredReviews.length > 0 && (
+              <div className="mt-12 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Showing {filteredReviews.length} of {reviews.length} reviews
+                  {selectedCourse !== "All" && ` for ${selectedCourse}`}
+                </p>
+              </div>
+            )}
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+        <section className="py-20 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <div className="absolute top-10 right-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+            <div className="absolute bottom-10 left-10 w-96 h-96 bg-blue-300 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
             <Award className="h-16 w-16 mx-auto text-blue-200" />
             <h2 className="text-3xl lg:text-4xl font-bold">
               Ready to Create Your Success Story?
@@ -806,12 +982,12 @@ export default function TestimonialsPage() {
               Join hundreds of successful students who passed their driving test
               with confidence.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button
                 size="lg"
                 variant="secondary"
                 asChild
-                className="bg-white text-blue-600 hover:bg-gray-100"
+                className="bg-white text-blue-600 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all"
               >
                 <Link href="/booking">Book Your First Lesson</Link>
               </Button>
@@ -819,7 +995,7 @@ export default function TestimonialsPage() {
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-white text-white hover:bg-white hover:text-blue-600"
+                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all"
               >
                 <Link href="/courses">View All Courses</Link>
               </Button>
