@@ -117,6 +117,9 @@ export function WhatsAppChatBubble() {
   // Handle touch start for dragging
   const handleTouchStart = (e: React.TouchEvent) => {
     if (bubbleRef.current) {
+      // Prevent default touch behavior to stop page scrolling
+      e.preventDefault();
+
       setIsDragging(true);
       hasMoved.current = false;
       setShowDismissArea(true);
@@ -126,6 +129,9 @@ export function WhatsAppChatBubble() {
         x: touch.clientX - rect.left,
         y: touch.clientY - rect.top,
       });
+
+      // Disable body scroll during drag
+      document.body.style.overflow = "hidden";
     }
   };
 
@@ -155,6 +161,9 @@ export function WhatsAppChatBubble() {
   // Handle touch move for dragging
   const handleTouchMove = (e: TouchEvent) => {
     if (!isDragging) return;
+
+    // Prevent default behavior to stop page scrolling
+    e.preventDefault();
 
     const touch = e.touches[0];
     const newX = touch.clientX - dragOffset.x;
@@ -190,6 +199,9 @@ export function WhatsAppChatBubble() {
 
       setIsDragging(false);
       setShowDismissArea(false);
+
+      // Re-enable body scroll
+      document.body.style.overflow = "";
     }
   };
 
@@ -228,7 +240,9 @@ export function WhatsAppChatBubble() {
     if (isDragging) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
       document.addEventListener("touchend", handleMouseUp);
     } else {
       document.removeEventListener("mousemove", handleMouseMove);
@@ -242,6 +256,9 @@ export function WhatsAppChatBubble() {
       document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleMouseUp);
+
+      // Cleanup: restore body scroll
+      document.body.style.overflow = "";
     };
   }, [isDragging, dragOffset, position]);
 
@@ -263,7 +280,7 @@ export function WhatsAppChatBubble() {
       {/* WhatsApp Chat Head */}
       <div
         ref={bubbleRef}
-        className="fixed z-50 cursor-move select-none"
+        className="fixed z-50 cursor-move select-none touch-none"
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
