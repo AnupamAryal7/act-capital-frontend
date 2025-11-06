@@ -1,10 +1,10 @@
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
-import { HeroSection } from "@/components/sections/hero-section"
-import { WhyChooseUsSection } from "@/components/sections/why-choose-us-section"
-import { PopularCoursesSection } from "@/components/sections/popular-courses-section"
-import { TestimonialsSection } from "@/components/sections/testimonials-section"
-import { ContactSection } from "@/components/sections/contact-section"
+import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
+import { HeroSection } from "@/components/sections/hero-section";
+import { WhyChooseUsSection } from "@/components/sections/why-choose-us-section";
+import { PopularCoursesSection } from "@/components/sections/popular-courses-section";
+import { TestimonialsSection } from "@/components/sections/testimonials-section";
+import { ContactSection } from "@/components/sections/contact-section";
 
 export default function HomePage() {
   return (
@@ -19,5 +19,5 @@ export default function HomePage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
