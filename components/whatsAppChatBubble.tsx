@@ -15,7 +15,7 @@ export function WhatsAppChatBubble() {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const hasMoved = useRef(false);
 
-  const phoneNumber = "+61042099533";
+  const phoneNumber = "+610420991533";
   const message = "Hi! I need help with my driving lessons.";
 
   // Initialize position after component mounts on client side
