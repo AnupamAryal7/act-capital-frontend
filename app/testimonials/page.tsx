@@ -1019,13 +1019,13 @@ export default function TestimonialsPage() {
                 asChild
                 className="bg-white text-blue-600 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all"
               >
-                <Link href="/booking">Book Your First Lesson</Link>
+                <Link href="/booking">Book Your Lesson</Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all"
+                className="text-blue-700"
               >
                 <Link href="/courses">View All Courses</Link>
               </Button>
