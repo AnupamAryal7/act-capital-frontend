@@ -264,8 +264,8 @@ export default function TestimonialsPage() {
         email: user.email,
         rating: reviewRating,
         comment: reviewComment.trim(),
-        course_title: "",
-        is_approved: false,
+        course_title: "general",
+        is_approved: true,
       };
 
       console.log("Submitting review:", reviewData);
