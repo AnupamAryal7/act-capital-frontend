@@ -371,25 +371,6 @@ export default function LoginPage() {
                     </button>
                   </p>
                 </div>
-
-                {isLogin && (
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">
-                      Demo Credentials
-                    </h4>
-                    <div className="text-sm text-blue-800 space-y-1">
-                      <p>
-                        <strong>Student:</strong> student@gmail.com
-                      </p>
-                      <p>
-                        <strong>Password:</strong> student123
-                      </p>
-                      <p className="text-xs text-blue-600 mt-2">
-                        Use these credentials to test the login functionality
-                      </p>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
