@@ -270,7 +270,7 @@ export default function TestimonialsPage() {
 
       console.log("Submitting review:", reviewData);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/reviews/`, {
+      const response = await fetch(`${API_BASE_URL}/reviews/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
