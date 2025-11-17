@@ -260,6 +260,7 @@ export default function TestimonialsPage() {
       setSubmitSuccess(false);
 
       const reviewData = {
+        user_id: user.id,
         user_name: user.full_name,
         email: user.email,
         rating: reviewRating,
