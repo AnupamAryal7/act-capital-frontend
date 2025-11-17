@@ -260,17 +260,18 @@ export default function TestimonialsPage() {
       setSubmitSuccess(false);
 
       const reviewData = {
+        user_id: user.id,
         user_name: user.full_name,
         email: user.email,
         rating: reviewRating,
         comment: reviewComment.trim(),
-        course_title: "",
-        is_approved: false,
+        course_title: "general",
+        is_approved: true,
       };
 
       console.log("Submitting review:", reviewData);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/reviews/`, {
+      const response = await fetch(`${API_BASE_URL}/reviews/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
