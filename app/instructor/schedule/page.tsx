@@ -354,7 +354,9 @@ export default function SchedulePage() {
                     >
                       Contact
                     </Button>
-                    <Button size="sm">Start Lesson</Button>
+                    <Button variant="outline" size="sm">
+                      {lesson.location}
+                    </Button>
                   </div>
                 </div>
               ))}
