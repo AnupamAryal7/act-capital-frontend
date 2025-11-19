@@ -389,7 +389,7 @@ export default function ProgressReports() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navigation />
+      {/* <Navigation /> */}
 
       <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
