@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { initializeServiceWorker } from "./serviceWorker";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,6 +16,9 @@ export const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Cloud Messaging and get a reference to the service
 export const messaging = getMessaging(app);
+
+// Initialize service worker
+export const initServiceWorker = initializeServiceWorker;
 
 // Handle foreground messages
 export const onMessageListener = () => {
