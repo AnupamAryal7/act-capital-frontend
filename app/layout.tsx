@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { AuthProvider } from "@/components/auth-provider";
 import { WhatsAppChatBubble } from "@/components/whatsAppChatBubble";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import "./globals.css";
 import ThemeWrapper from "./ThemeWrapper";
 
@@ -26,6 +27,27 @@ export const metadata: Metadata = {
   },
 };
 
+// Handle foreground notifications
+const handleForegroundNotification = (payload: any) => {
+  console.log("Foreground notification received:", payload);
+
+  // You can integrate with your toast system here
+  if (payload.notification && typeof window !== "undefined") {
+    const { title, body } = payload.notification;
+
+    // Show browser notification if permitted
+    if (Notification.permission === "granted") {
+      new Notification(title, {
+        body,
+        icon: "/icons/icon-192x192.png",
+      });
+    }
+
+    // TODO: Integrate with your toast notification system
+    // Example: showToast({ title, message: body, type: 'info' });
+  }
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,7 +58,11 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <ThemeWrapper>
           <AuthProvider>
-            <Suspense fallback={null}>{children}</Suspense>
+            <NotificationProvider
+              onForegroundMessage={handleForegroundNotification}
+            >
+              <Suspense fallback={null}>{children}</Suspense>
+            </NotificationProvider>
             <WhatsAppChatBubble />
           </AuthProvider>
           <Analytics />
