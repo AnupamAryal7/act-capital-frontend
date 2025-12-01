@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNotification } from "@/contexts/NotificationContext";
 
-export const NotificationTester: React.FC = () => {
+const NotificationTester: React.FC = () => {
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<string>("");
   const { token, hasPermission } = useNotification();
@@ -189,3 +189,5 @@ export const NotificationTester: React.FC = () => {
     </div>
   );
 };
+
+export default NotificationTester;
