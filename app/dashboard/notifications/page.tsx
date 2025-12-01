@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { NotificationStatusCard } from "@/components/dashboard/NotificationStatusCard";
+import NotificationStatusCard from "@/components/dashboard/NotificationStatusCard";
 import { NotificationPrompt } from "@/components/ui/NotificationPrompt";
 import { NotificationTester } from "@/components/dashboard/NotificationTester";
 
