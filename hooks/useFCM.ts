@@ -28,6 +28,11 @@ export const useFCM = () => {
 
   // Initialize FCM
   const initialize = useCallback(async (): Promise<string | null> => {
+    // Skip if not in browser
+    if (typeof window === "undefined") {
+      return null;
+    }
+
     try {
       setState((prev) => ({ ...prev, error: null }));
 
@@ -88,6 +93,10 @@ export const useFCM = () => {
 
   // Request notification permission manually
   const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      return false;
+    }
+
     try {
       const permission = await Notification.requestPermission();
       setState((prev) => ({ ...prev, permission }));
@@ -117,6 +126,10 @@ export const useFCM = () => {
 
   // Get current token (if already initialized)
   const refreshToken = useCallback(async (): Promise<string | null> => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
     try {
       const token = await getFCMToken();
       setState((prev) => ({ ...prev, token }));
@@ -131,6 +144,10 @@ export const useFCM = () => {
 
   // Cleanup FCM (call on logout)
   const cleanup = useCallback(async (): Promise<void> => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     try {
       await cleanupFCM(state.token || undefined);
       setState({
@@ -148,7 +165,9 @@ export const useFCM = () => {
   // Listen for foreground messages
   const setupForegroundListener = useCallback(
     (callback: (payload: any) => void) => {
-      if (!state.isSupported) return;
+      if (typeof window === "undefined" || !state.isSupported) {
+        return;
+      }
 
       const setupListener = async () => {
         try {
@@ -159,8 +178,7 @@ export const useFCM = () => {
         }
       };
 
-      // Set up periodic checking or use the promise-based listener
-      // For now, we'll rely on the onMessageListener promise
+      setupListener();
     },
     [state.isSupported]
   );

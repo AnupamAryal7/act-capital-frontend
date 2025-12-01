@@ -58,9 +58,7 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <ThemeWrapper>
           <AuthProvider>
-            <NotificationProvider
-              onForegroundMessage={handleForegroundNotification}
-            >
+            <NotificationProvider>
               <Suspense fallback={null}>{children}</Suspense>
             </NotificationProvider>
             <WhatsAppChatBubble />

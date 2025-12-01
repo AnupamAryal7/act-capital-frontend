@@ -1,5 +1,10 @@
-import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import {
+  getMessaging,
+  getToken,
+  onMessage,
+  type Messaging,
+} from "firebase/messaging";
 import { initializeServiceWorker } from "./serviceWorker";
 
 const firebaseConfig = {
@@ -12,18 +17,48 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-export const app = initializeApp(firebaseConfig);
+export const app =
+  getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firebase Cloud Messaging and get a reference to the service
-export const messaging = getMessaging(app);
+// Initialize messaging only on client side
+let messagingInstance: Messaging | null = null;
+
+export const getMessagingInstance = (): Messaging | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  if (messagingInstance) {
+    return messagingInstance;
+  }
+
+  try {
+    messagingInstance = getMessaging(app);
+    return messagingInstance;
+  } catch (error) {
+    console.error("Failed to initialize messaging:", error);
+    return null;
+  }
+};
+
+// Export messaging getter for backward compatibility
+export const messaging =
+  typeof window !== "undefined" ? getMessagingInstance() : null;
 
 // Initialize service worker
 export const initServiceWorker = initializeServiceWorker;
 
 // Handle foreground messages
 export const onMessageListener = () => {
-  return new Promise((resolve) => {
-    onMessage(messaging, (payload) => {
+  return new Promise((resolve, reject) => {
+    const messagingInstance = getMessagingInstance();
+
+    if (!messagingInstance) {
+      reject(new Error("Messaging not supported"));
+      return;
+    }
+
+    onMessage(messagingInstance, (payload) => {
       resolve(payload);
     });
   });
@@ -31,6 +66,10 @@ export const onMessageListener = () => {
 
 // Request notification permission
 export const requestNotificationPermission = async (): Promise<boolean> => {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return false;
+  }
+
   try {
     const permission = await Notification.requestPermission();
     return permission === "granted";
@@ -42,7 +81,18 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 
 // Get FCM token
 export const getFCMToken = async (): Promise<string | null> => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   try {
+    const messagingInstance = getMessagingInstance();
+
+    if (!messagingInstance) {
+      console.warn("Messaging not supported");
+      return null;
+    }
+
     // Check if service worker is supported and registered
     if (!("serviceWorker" in navigator)) {
       console.warn("Service Worker not supported");
@@ -51,7 +101,7 @@ export const getFCMToken = async (): Promise<string | null> => {
 
     const registration = await navigator.serviceWorker.ready;
 
-    const currentToken = await getToken(messaging, {
+    const currentToken = await getToken(messagingInstance, {
       vapidKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
       serviceWorkerRegistration: registration,
     });
