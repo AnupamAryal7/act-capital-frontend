@@ -4,6 +4,7 @@ import React from "react";
 import NotificationStatusCard from "@/components/dashboard/NotificationStatusCard";
 import NotificationPrompt from "@/components/ui/NotificationPrompt";
 import NotificationTester from "@/components/dashboard/NotificationTester";
+import DebugFirebaseConfig from "@/components/DebugFIrebaseConfig";
 
 export default function NotificationsPage() {
   return (
@@ -15,6 +16,11 @@ export default function NotificationsPage() {
             Manage your notification preferences and stay updated with your
             driving lessons.
           </p>
+        </div>
+
+        {/* Debug prompt */}
+        <div className="mb-6">
+          <DebugFirebaseConfig />
         </div>
 
         {/* Notification Prompt */}
