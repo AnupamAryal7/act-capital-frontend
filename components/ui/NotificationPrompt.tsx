@@ -3,7 +3,7 @@
 import React from "react";
 import { useNotification } from "@/contexts/NotificationContext";
 
-export const NotificationPrompt: React.FC = () => {
+const NotificationPrompt: React.FC = () => {
   const {
     canRequestPermission,
     isPermissionDenied,
@@ -149,3 +149,5 @@ export const NotificationStatus: React.FC = () => {
     </span>
   );
 };
+
+export default NotificationPrompt;
