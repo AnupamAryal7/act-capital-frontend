@@ -1,11 +1,34 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
+import TextType from "../TextType";
+import SplitText from "../SplitText";
+
+const handleAnimationComplete = () => {
+  console.log("All letters have animated!");
+};
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background to-muted/20 py-20 lg:py-32">
+    <section className="relative overflow-hidden bg-gradient-to-br from-background to-muted/20 py-20 lg:py-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
+          <SplitText
+            text="Welcome To ACT Capital Driving School!!!"
+            className="text-primary text-7xl font-semibold text-center"
+            delay={100}
+            duration={0.6}
+            ease="power3.out"
+            splitType="chars"
+            from={{ opacity: 0, y: 40 }}
+            to={{ opacity: 1, y: 0 }}
+            threshold={0.1}
+            rootMargin="-100px"
+            textAlign="center"
+            onLetterAnimationComplete={handleAnimationComplete}
+          />
+        </h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Left Content */}
           <div className="space-y-8">
