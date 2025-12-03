@@ -69,16 +69,31 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="text-lg px-8" asChild>
-                <Link href="/quick_bookings">
-                  Quick Book
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
+              <Button
+                size="lg"
+                className="
+                px-8 py-2 rounded-md text-white font-light transition duration-200 ease-linear
+                bg-[#0070f3]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgba(0,118,255,0.95)]
+                button-pulse
+              "
+                asChild
+              >
+                <Link href="/quick_bookings">Quick Book</Link>
               </Button>
               <Button
-                variant="outline"
                 size="lg"
-                className="text-lg px-8 bg-transparent"
+                className="
+                px-8 py-2 rounded-md text-white font-light transition duration-200 ease-linear
+                bg-[#2da848]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgb(130,236,104)]
+                hover:text-black
+                button-pulse
+              "
                 asChild
               >
                 <Link href="/courses">View Our Courses</Link>
