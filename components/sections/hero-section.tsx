@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
-import TextType from "../TextType";
 import SplitText from "../SplitText";
+import CountUp from "../CountUp";
 
 const handleAnimationComplete = () => {
   console.log("All letters have animated!");
@@ -103,17 +103,47 @@ export function HeroSection() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 pt-8 border-t border-border">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">500+</div>
+                <div className="text-2xl font-bold text-primary">
+                  <CountUp
+                    from={0}
+                    to={24}
+                    separator=","
+                    direction="up"
+                    duration={1}
+                    className="count-up-text"
+                  />
+                  +
+                </div>
                 <div className="text-sm text-muted-foreground">
                   Students Taught
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">95%</div>
+                <div className="text-2xl font-bold text-primary">
+                  <CountUp
+                    from={0}
+                    to={98}
+                    separator=","
+                    direction="up"
+                    duration={1}
+                    className="count-up-text"
+                  />
+                  %
+                </div>
                 <div className="text-sm text-muted-foreground">Pass Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">10+</div>
+                <div className="text-2xl font-bold text-primary">
+                  <CountUp
+                    from={0}
+                    to={2}
+                    separator=","
+                    direction="up"
+                    duration={1}
+                    className="count-up-text"
+                  />
+                  +
+                </div>
                 <div className="text-sm text-muted-foreground">
                   Years Experience
                 </div>
