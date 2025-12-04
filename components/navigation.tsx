@@ -84,17 +84,19 @@ export function Navigation() {
         <div className="flex h-20 items-center justify-between">
           <div className="">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="flex h-16 w-16 items-center justify-center  overflow-hidden ">
                 <Image
                   src="/act-logo-transparent.png"
                   alt="ACT Capital Logo"
                   height={200}
                   width={200}
+                  className="h-full w-full object-contain p-1"
+                  priority
                 />
               </div>
-              <span className="text-xl font-bold text-foreground">
-                ACT Capital Driving School
+              <span className="text-3xl text-blue-800 font-bold">
+                ᗩᑕT ᑕᗩᑭITᗩᒪ
               </span>
             </Link>
           </div>
