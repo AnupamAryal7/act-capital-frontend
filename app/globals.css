@@ -140,3 +140,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes buttonPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+.button-pulse {
+  animation: buttonPulse 1.8s ease-in-out infinite;
+}
