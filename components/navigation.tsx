@@ -81,21 +81,23 @@ export function Navigation() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
-              <Image
-                src="/act-capital-logo.png"
-                alt="ACT Capital Logo"
-                height={200}
-                width={200}
-              />
-            </div>
-            <span className="text-xl font-bold text-foreground">
-              ACT Capital Driving School
-            </span>
-          </Link>
+        <div className="flex h-20 items-center justify-between">
+          <div className="">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
+                <Image
+                  src="/act-logo-transparent.png"
+                  alt="ACT Capital Logo"
+                  height={200}
+                  width={200}
+                />
+              </div>
+              <span className="text-xl font-bold text-foreground">
+                ACT Capital Driving School
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
@@ -103,7 +105,7 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                className="text-sm font-bold text-muted-foreground transition-colors hover:text-primary"
               >
                 {item.name}
               </Link>
