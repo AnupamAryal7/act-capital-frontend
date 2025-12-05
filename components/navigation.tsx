@@ -107,7 +107,7 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-bold text-muted-foreground transition-colors hover:text-primary"
+                className="text-xl font-bold text-muted-foreground transition-colors hover:text-primary"
               >
                 {item.name}
               </Link>
@@ -118,7 +118,16 @@ export function Navigation() {
               <>
                 {isAdmin && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 ease-linear
+                bg-[#0070f3]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgba(0,118,255,0.95)]
+                button-pulse"
+                    >
                       <Shield className="h-4 w-4" />
                       Admin
                     </Button>
@@ -127,7 +136,16 @@ export function Navigation() {
 
                 {isInstructor && (
                   <Link href="/instructor">
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 ease-linear
+                bg-[#0070f3]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgba(0,118,255,0.95)]
+                button-pulse"
+                    >
                       <GraduationCap className="h-4 w-4" />
                       Instructor
                     </Button>
@@ -136,7 +154,16 @@ export function Navigation() {
 
                 {isStudent && (
                   <Link href="/dashboard">
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 ease-linear
+                bg-[#0070f3]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgba(0,118,255,0.95)]
+                button-pulse"
+                    >
                       <BookOpen className="h-4 w-4" />
                       Student
                     </Button>
