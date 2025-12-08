@@ -81,21 +81,25 @@ export function Navigation() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
-              <Image
-                src="/act-capital-logo.png"
-                alt="ACT Capital Logo"
-                height={200}
-                width={200}
-              />
-            </div>
-            <span className="text-xl font-bold text-foreground">
-              ACT Capital Driving School
-            </span>
-          </Link>
+        <div className="flex h-20 items-center justify-between">
+          <div className="">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="flex h-16 w-16 items-center justify-center  overflow-hidden ">
+                <Image
+                  src="/act-logo-transparent.png"
+                  alt="ACT Capital Logo"
+                  height={200}
+                  width={200}
+                  className="h-full w-full object-contain p-1"
+                  priority
+                />
+              </div>
+              <span className="text-3xl text-blue-800 font-bold">
+                ᗩᑕT ᑕᗩᑭITᗩᒪ
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
@@ -103,7 +107,7 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                className="text-xl font-bold text-muted-foreground transition-colors hover:text-primary"
               >
                 {item.name}
               </Link>
@@ -114,7 +118,16 @@ export function Navigation() {
               <>
                 {isAdmin && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 ease-linear
+                bg-[#0070f3]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgba(0,118,255,0.95)]
+                button-pulse"
+                    >
                       <Shield className="h-4 w-4" />
                       Admin
                     </Button>
@@ -123,7 +136,16 @@ export function Navigation() {
 
                 {isInstructor && (
                   <Link href="/instructor">
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 ease-linear
+                bg-[#0070f3]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgba(0,118,255,0.95)]
+                button-pulse"
+                    >
                       <GraduationCap className="h-4 w-4" />
                       Instructor
                     </Button>
@@ -132,7 +154,16 @@ export function Navigation() {
 
                 {isStudent && (
                   <Link href="/dashboard">
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 ease-linear
+                bg-[#0070f3]
+                shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                hover:bg-[rgba(0,118,255,0.95)]
+                button-pulse"
+                    >
                       <BookOpen className="h-4 w-4" />
                       Student
                     </Button>
