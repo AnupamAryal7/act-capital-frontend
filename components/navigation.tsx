@@ -1,19 +1,12 @@
 // components/navigation.tsx
 "use client";
-
+import { CircleUser } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import {
   Menu,
   Car,
@@ -85,7 +78,7 @@ export function Navigation() {
           <div className="ml-6">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3">
-              <div className="flex h-[85px] w-[300px] items-center justify-center  overflow-hidden ">
+              <div className="flex h-[80px] w-[200px] items-center justify-center  overflow-hidden ">
                 <Image
                   src="/act_capital_logo_transparent.png"
                   alt="ACT Capital Logo"
@@ -95,7 +88,7 @@ export function Navigation() {
                   priority
                 />
               </div>
-              {/* <span className="text-3xl text-blue-800 font-bold"></span> */}
+              <span className="text-3xl text-blue-800 font-bold"></span>
             </Link>
           </div>
 
@@ -105,9 +98,10 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-lg font-bold text-muted-foreground transition-all duration-300 ease-in-out hover:text-primary hover:underline"
+                className="relative group inline-block text-lg font-bold text-muted-foreground transition-colors duration-300 ease-in-out hover:text-primary"
               >
-                {item.name}
+                <span className="relative z-10">{item.name}</span>
+                <span className="absolute left-0 -bottom-1 h-0.5 w-0 bg-primary transition-all duration-300 ease-in-out group-hover:w-full" />
               </Link>
             ))}
 
@@ -175,9 +169,6 @@ export function Navigation() {
           <div className="hidden md:flex items-center space-x-4 mr-6">
             {isLoggedIn ? (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" className="p-2">
-                  <User className="h-4 w-4" />
-                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -192,11 +183,10 @@ export function Navigation() {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" className="p-2" asChild>
-                  <Link href="/login">
-                    <User className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <Link href="/login">
+                  <CircleUser />
+                </Link>
+                <h1 className="text-2xl">|</h1>
                 <Button size="sm" asChild>
                   <Link href="/booking">Book Session</Link>
                 </Button>
@@ -306,7 +296,7 @@ export function Navigation() {
                     >
                       <Link href="/login" onClick={() => setIsOpen(false)}>
                         <div className="flex items-center justify-center gap-2">
-                          <User className="h-4 w-4" />
+                          <CircleUser />
                           <span>Login</span>
                         </div>
                       </Link>
