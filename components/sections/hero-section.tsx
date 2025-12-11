@@ -11,7 +11,7 @@ const handleAnimationComplete = () => {
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background to-muted/20 py-20 lg:py-10">
+    <section className="relative overflow-hidden bg-linear-to-br from-background to-muted/20 -mt-8 sm:-mt-12 md:-mt-16 lg:-mt-12 z-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
           <SplitText
@@ -31,7 +31,7 @@ export function HeroSection() {
         </h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Left Content */}
-          <div className="space-y-8">
+          <div className="space-y-8 px-4 sm:px-6 lg:px-6">
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
                 Your Journey to{" "}
@@ -72,13 +72,14 @@ export function HeroSection() {
               <Button
                 size="lg"
                 className="
-                px-8 py-2 rounded-md text-white font-light transition duration-200 ease-linear
-                bg-[#0070f3]
-                shadow-[0_0_10px_rgba(0,118,255,0.6)]
-                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
-                hover:bg-[rgba(0,118,255,0.95)]
-                button-pulse
-              "
+                  w-full sm:w-auto mx-auto sm:mx-0 px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
+                  bg-[#0070f3]
+                  shadow-[0_0_10px_rgba(0,118,255,0.6)]
+                  hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
+                  hover:bg-[rgba(0,118,255,0.95)]
+                  focus:outline-none focus-visible:ring-4 focus-visible:ring-[#0070f3]/20
+                  button-pulse
+                "
                 asChild
               >
                 <Link href="/quick_bookings">Quick Book</Link>
@@ -86,14 +87,15 @@ export function HeroSection() {
               <Button
                 size="lg"
                 className="
-                px-8 py-2 rounded-md text-white font-light transition duration-200 ease-linear
-                bg-[#2da848]
-                shadow-[0_0_10px_rgba(0,118,255,0.6)]
-                hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
-                hover:bg-[rgb(130,236,104)]
-                hover:text-black
-                button-pulse
-              "
+                  w-full sm:w-auto mx-auto sm:mx-0 px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
+                  bg-[#2da848]
+                   shadow-[0_0_10px_rgba(45,168,72,0.25)]
+                  hover:shadow-[0_0_25px_rgba(45,168,72,0.4),0_0_50px_rgba(45,168,72,0.25)]
+                  hover:bg-[rgb(130,236,104)]
+                  hover:text-black
+                  focus:outline-none focus-visible:ring-4 focus-visible:ring-[#2da848]/20
+                  button-pulse
+                "
                 asChild
               >
                 <Link href="/courses">View Our Courses</Link>
@@ -101,7 +103,7 @@ export function HeroSection() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 pt-8 border-t border-border">
+            <div className="grid grid-cols-3 gap-8 pt-6 mb-6 border-t border-border">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
                   <CountUp
@@ -152,7 +154,7 @@ export function HeroSection() {
           </div>
 
           {/* Right Content - Image and Quick Booking */}
-          <div className="space-y-8">
+          <div className="space-y-8 px-4 sm:px-6 lg:px-8">
             {/* Main Image */}
             <div className="relative">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted">
