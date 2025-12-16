@@ -11,9 +11,9 @@ const handleAnimationComplete = () => {
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-linear-to-br from-background to-muted/20 -mt-8 sm:-mt-12 md:-mt-16 lg:-mt-12 z-10">
+    <section className="relative overflow-hidden bg-linear-to-br from-background to-muted/20 -mt-8 sm:-mt-12 md:-mt-16 lg:mt-0 z-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
+        {/* <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
           <SplitText
             text="Welcome To ACT Capital Driving School!!!"
             className="text-primary text-7xl font-semibold text-center"
@@ -28,7 +28,7 @@ export function HeroSection() {
             textAlign="center"
             onLetterAnimationComplete={handleAnimationComplete}
           />
-        </h1>
+        </h1> */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Left Content */}
           <div className="space-y-8 px-4 sm:px-6 lg:px-6">
@@ -38,7 +38,7 @@ export function HeroSection() {
                 <span className="text-primary">Confident Driving</span> Starts
                 Here
               </h1>
-              <p className="text-xl text-muted-foreground text-pretty max-w-2xl">
+              <p className="text-xl text-muted-foreground text-pretty max-w-2xl font-semibold">
                 Learn to drive with ACT Capital's experienced instructors,
                 modern vehicles, and flexible scheduling. Join thousands of
                 successful students in Canberra.
