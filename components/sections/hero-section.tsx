@@ -33,21 +33,20 @@ export function HeroSection() {
           {/* Left Content */}
           <div className="space-y-8 px-4 sm:px-6 lg:px-6">
             <div className="space-y-4">
-              <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
+              <h1 className="font-poppins text-4xl lg:text-7xl font-bold text-balance leading-tight">
                 Your Journey to{" "}
                 <span className="text-primary">Confident Driving</span> Starts
                 Here
               </h1>
-              <p className="text-xl text-muted-foreground text-pretty max-w-2xl font-semibold">
+              <p className="font-inter font-semibold text-xl text-pretty max-w-2xl text-gray-600">
                 Learn to drive with ACT Capital's experienced instructors,
                 modern vehicles, and flexible scheduling. Join thousands of
                 successful students in Canberra.
               </p>
             </div>
-
             {/* Key Benefits */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-2">
+              <div className="flex font-inter items-center space-x-2">
                 <CheckCircle className="h-5 w-5 text-secondary" />
                 <span className="text-sm font-medium">
                   Professional Instructors
