@@ -13,11 +13,15 @@ import ThemeWrapper from "./ThemeWrapper";
 
 const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-inter", // Add this
+  display: "swap",
 });
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "800"],
+  variable: "--font-poppins", // Add this
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -66,7 +70,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${poppins.className}`}
+        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${inter.variable} ${poppins.variable}`}
       >
         <ThemeWrapper>
           <AuthProvider>

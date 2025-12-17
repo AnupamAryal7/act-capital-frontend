@@ -4,8 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        inter: ["Inter", "sans-serif"],
-        poppins: ["Poppins", "sans-serif"],
+        sans: ["var(--font-geist-sans)", "sans-serif"], // Update this if needed
+        inter: ["var(--font-inter)", "sans-serif"],
+        poppins: ["var(--font-poppins)", "sans-serif"],
       },
     },
   },
