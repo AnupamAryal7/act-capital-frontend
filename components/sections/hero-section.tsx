@@ -27,9 +27,9 @@ export function HeroSection() {
                   Driving School
                 </h1>
                 <p className="font-inter font-semibold text-xl text-pretty max-w-2xl text-gray-600">
-                  Learn to drive with ACT Capital's experienced instructors,
-                  modern vehicles, and flexible scheduling. Join thousands of
-                  successful students in Canberra.
+                  Learn to drive with us and build the skills you need to get
+                  licensed. We offer excellent driving lessons, supportive
+                  instructors, and flexible scheduling to fit your lifestyle.
                 </p>
               </div>
               <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted -mt-3.5">
