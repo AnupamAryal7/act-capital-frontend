@@ -20,8 +20,8 @@ export function HeroSection() {
             <div className="space-y-8 px-4 sm:px-6 lg:px-6">
               <div className="space-y-4">
                 <h1 className="font-poppins text-4xl lg:text-7xl font-bold text-balance leading-tight">
-                  Your Journey to{" "}
-                  <span className="text-primary">Hello World</span> Starts Here
+                  Welcome to <span className="text-primary">ACT Capital</span>{" "}
+                  Driving School
                 </h1>
                 <p className="font-inter font-semibold text-xl text-pretty max-w-2xl text-gray-600">
                   Learn to drive with ACT Capital's experienced instructors,
@@ -29,36 +29,20 @@ export function HeroSection() {
                   successful students in Canberra.
                 </p>
               </div>
-              {/* Key Benefits */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex font-inter items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-secondary" />
-                  <span className="text-sm font-medium">
-                    Professional Instructors
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-secondary" />
-                  <span className="text-sm font-medium">Modern Vehicles</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-secondary" />
-                  <span className="text-sm font-medium">
-                    Flexible Scheduling
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-secondary" />
-                  <span className="text-sm font-medium">High Pass Rates</span>
-                </div>
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted -mt-3.5">
+                <img
+                  src="/professional-driving-instructor-teaching-student-i.jpg"
+                  alt="Professional driving instructor teaching a student in a modern car"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex gap-4">
                 <Button
                   size="lg"
                   className="
-                  w-full sm:w-auto mx-auto sm:mx-0 px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
+                  w-50 sm:w-auto mx-auto px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
                   bg-[#0070f3]
                   shadow-[0_0_10px_rgba(0,118,255,0.6)]
                   hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
@@ -73,7 +57,7 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   className="
-                  w-full sm:w-auto mx-auto sm:mx-0 px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
+                  w-50 sm:w-auto mx-auto sm:mx-0 px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
                   bg-[#2da848]
                    shadow-[0_0_10px_rgba(45,168,72,0.25)]
                   hover:shadow-[0_0_25px_rgba(45,168,72,0.4),0_0_50px_rgba(45,168,72,0.25)]
