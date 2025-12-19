@@ -43,6 +43,8 @@ export function HeroSection() {
                 modern vehicles, and flexible scheduling. Join thousands of
                 successful students in Canberra.
               </p>
+              <p className="font-poppins">This is poppins font</p>
+              <p className="font-inter">This is inter fontT</p>
             </div>
             {/* Key Benefits */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
