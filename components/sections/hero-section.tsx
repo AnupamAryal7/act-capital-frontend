@@ -19,8 +19,11 @@ export function HeroSection() {
             {/* Left Content */}
             <div className="space-y-8 px-4 sm:px-6 lg:px-6">
               <div className="space-y-4">
-                <h1 className="font-poppins text-4xl lg:text-7xl font-bold text-balance leading-tight">
-                  Welcome to <span className="text-primary">ACT Capital</span>{" "}
+                <h1 className="font-poppins text-4xl  font-bold text-balance leading-tight">
+                  Welcome to{" "}
+                  <span className="text-primary font-extrabold">
+                    ACT Capital
+                  </span>{" "}
                   Driving School
                 </h1>
                 <p className="font-inter font-semibold text-xl text-pretty max-w-2xl text-gray-600">
@@ -73,7 +76,7 @@ export function HeroSection() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-8 pt-6 mb-6 border-t border-border">
+              <div className="grid grid-cols-3 -mt-5 gap-8 pt-6 mb-6 border-t border-border">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">
                     <CountUp
@@ -118,34 +121,6 @@ export function HeroSection() {
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Years Experience
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Content - Image and Quick Booking */}
-            <div className="space-y-8 px-4 sm:px-6 lg:px-8">
-              {/* Main Image */}
-              <div className="relative">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted">
-                  <img
-                    src="/professional-driving-instructor-teaching-student-i.jpg"
-                    alt="Professional driving instructor teaching a student in a modern car"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {/* Floating Card */}
-                <div className="absolute -bottom-6 -left-6 bg-card border border-border rounded-xl p-6 shadow-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-6 w-6 text-secondary-foreground" />
-                    </div>
-                    <div>
-                      <div className="font-semibold">Licensed & Insured</div>
-                      <div className="text-sm text-muted-foreground">
-                        Fully qualified instructors
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
