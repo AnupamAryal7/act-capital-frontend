@@ -11,7 +11,7 @@ const handleAnimationComplete = () => {
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-linear-to-br from-background to-muted/20 -mt-8 sm:-mt-12 md:-mt-16 lg:mt-0 z-10">
+    <section className="relative overflow-hidden bg-linear-to-br from-background to-muted/20 -mt-8 sm:-mt-0 md:-mt-0 lg:mt-0 z-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
           <SplitText

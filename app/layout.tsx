@@ -1,24 +1,12 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { AuthProvider } from "@/components/auth-provider";
 import { WhatsAppChatBubble } from "@/components/whatsAppChatBubble";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import "./globals.css";
-import { Inter, Poppins } from "next/font/google";
 import ThemeWrapper from "./ThemeWrapper";
-
-const inter = Inter({
-  subsets: ["latin"],
-});
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "800"],
-});
 
 export const metadata: Metadata = {
   title:
@@ -65,9 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${inter.className} ${poppins.className}`}
-      >
+      <body>
         <ThemeWrapper>
           <AuthProvider>
             <NotificationProvider>
