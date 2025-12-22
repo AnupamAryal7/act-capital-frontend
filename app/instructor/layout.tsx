@@ -151,7 +151,7 @@ function InstructorDashboard({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="grid w-full grid-cols-6 bg-muted p-1 rounded-lg mb-6">
+          <div className="hidden md:grid w-full grid-cols-6 bg-muted p-1 rounded-lg mb-6">
             {navItems.map((item) => {
               const IconComponent = item.icon;
               return (
@@ -169,6 +169,30 @@ function InstructorDashboard({ children }: { children: React.ReactNode }) {
                 >
                   <IconComponent className="h-4 w-4" />
                   {item.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden grid grid-cols-2 gap-3 mb-6">
+            {navItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`
+                    p-3 text-sm font-medium rounded-lg text-center transition-colors flex flex-col items-center gap-2 min-h-[80px] justify-center
+                    ${
+                      isActive(item.path)
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                    }
+                  `}
+                >
+                  <IconComponent className="h-5 w-5" />
+                  <span className="text-xs leading-tight">{item.label}</span>
                 </Link>
               );
             })}
