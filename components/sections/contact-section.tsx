@@ -86,7 +86,7 @@ export function ContactSection() {
                 {
                   icon: Mail,
                   title: "Email Us",
-                  content: "info@actcapitaldriving.com.au",
+                  content: "Jeevan.pandey68@gmail.com",
                   color: "from-blue-500 to-blue-600",
                   bgColor: "bg-blue-50 dark:bg-blue-950/20",
                   iconColor: "text-blue-600",
@@ -210,6 +210,7 @@ export function ContactSection() {
           </div>
 
           {/* Map Section */}
+
           <div
             className={`relative transform transition-all duration-1000 delay-500 ${
               isVisible
@@ -218,48 +219,18 @@ export function ContactSection() {
             }`}
           >
             <div className="relative">
-              <div className="aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 shadow-2xl">
-                <img
-                  src="/map-of-lort-place-chisholm-act-australia-with-loca.jpg"
-                  alt="Map showing ACT Capital Driving School location in Lort Place, Chisholm, ACT"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+              <div className="aspect-[4/4] lg:aspect-[3/3] rounded-3xl overflow-hidden shadow-2xl">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d149.1153875!3d-35.4208918!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b164bda5d8a8031%3A0x6e141b9bf6b2fdb8!2sACT%20Capital%20Driving%20School!5e0!3m2!1sen!2sau!4v1691234567890!5m2!1sen!2sau"
+                  width="100%"
+                  height="80%"
+                  style={{ border: 0 }}
+                  allowFullScreen={true}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
               </div>
-
-              {/* Location Card */}
-              <Card className="absolute bottom-6 left-6 right-6 lg:bottom-8 lg:left-8 lg:right-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-0 shadow-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-red-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-                        ACT Capital Driving School
-                      </h3>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">
-                        Lort Place, Chisholm, ACT 2905
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          Mon-Sun: 7AM-7PM
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" />
-                          Easy Parking
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
-
-            {/* Decorative Elements */}
-            <div className="absolute -z-10 top-4 right-4 w-full h-full bg-gradient-to-br from-blue-200/30 to-purple-200/30 dark:from-blue-900/20 dark:to-purple-900/20 rounded-3xl blur-xl"></div>
-            <div className="absolute -z-20 -top-2 -right-2 w-full h-full bg-gradient-to-br from-green-200/20 to-blue-200/20 dark:from-green-900/10 dark:to-blue-900/10 rounded-3xl blur-2xl"></div>
           </div>
         </div>
       </div>
