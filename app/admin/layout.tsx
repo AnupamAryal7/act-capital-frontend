@@ -68,7 +68,7 @@ function AdminDashboard({ children }: { children: ReactNode }) {
 
       {/* Navigation Tabs */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid w-full grid-cols-7 bg-muted p-1 rounded-lg mb-7">
+        <div className="hidden md:grid w-full grid-cols-7 bg-muted p-1 rounded-lg mb-7">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -85,6 +85,28 @@ function AdminDashboard({ children }: { children: ReactNode }) {
               {item.label}
             </Link>
           ))}
+        </div>
+
+        {/* Mobile Navigation - Horizontal scroll */}
+        <div className="md:hidden mb-7">
+          <div className="flex overflow-x-auto space-x-2 pb-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`
+                  flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors
+                  ${
+                    isActive(item.path)
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                  }
+                `}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Page-specific content */}

@@ -123,3 +123,36 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 8s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  .button-pulse {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 118, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 118, 255, 1), 0 0 50px rgba(0, 118, 255, 0.8);
+  }
+}
