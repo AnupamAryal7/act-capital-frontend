@@ -17,7 +17,6 @@ import {
 import CountUp from "../CountUp";
 import { useState, useEffect } from "react";
 
-
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -172,23 +171,23 @@ export function HeroSection() {
               </Button>
             </div>
 
-              {/* Social Proof Stats */}
-              <div
-                className={`grid grid-cols-3 gap-4 transform transition-all duration-1000 delay-800 ${
-                  isVisible
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-4 opacity-0"
-                }`}
-              >
+            {/* Social Proof Stats */}
+            <div
+              className={`grid grid-cols-3 gap-4 transform transition-all duration-1000 delay-800 ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-4 opacity-0"
+              }`}
+            >
               {[
                 { value: 500, label: "Happy Students", suffix: "+" },
                 { value: 98, label: "Pass Rate", suffix: "%" },
                 { value: 3, label: "Years Experience", suffix: "+" },
               ].map((stat, index) => (
-                  <div
-                    key={index}
-                    className="text-left p-3 bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl border border-white/20"
-                  >
+                <div
+                  key={index}
+                  className="text-left p-3 bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl border border-white/20"
+                >
                   <div className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-200 mb-1">
                     <CountUp
                       from={0}
@@ -221,7 +220,7 @@ export function HeroSection() {
               <div className="relative">
                 <div className="aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 shadow-2xl">
                   <img
-                    src="/professional-driving-instructor-teaching-student-i.jpg"
+                    src="/hero-section-image.png"
                     alt="Professional driving instructor teaching a student in a modern car"
                     className="w-full h-full object-cover"
                   />
@@ -277,7 +276,6 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-
     </section>
   );
 }
