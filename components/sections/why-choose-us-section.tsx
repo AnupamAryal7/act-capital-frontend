@@ -164,9 +164,11 @@ export function WhyChooseUsSection() {
                 <Star key={i} className="w-4 h-4 fill-white text-white" />
               ))}
             </div>
-            <span className="text-white font-semibold">
-              Trusted by 500+ Students
-            </span>
+            <a href="/testimonials">
+              <span className="text-white font-semibold">
+                Trusted by 500+ Students
+              </span>
+            </a>
           </div>
         </div>
       </div>
