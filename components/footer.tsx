@@ -1,78 +1,51 @@
 import {
-  Dribbble,
   Facebook,
-  Github,
   Instagram,
   Mail,
   MapPin,
   Phone,
-  Twitter,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
 const data = {
-  facebookLink: "https://facebook.com/mvpblocks",
-  instaLink: "https://instagram.com/mvpblocks",
-  twitterLink: "https://twitter.com/mvpblocks",
-  githubLink: "https://github.com/mvpblocks",
-  dribbbleLink: "https://dribbble.com/mvpblocks",
-  services: {
-    webdev: "/web-development",
-    webdesign: "/web-design",
-    marketing: "/marketing",
-    googleads: "/google-ads",
-  },
-  about: {
-    history: "/company-history",
-    team: "/meet-the-team",
-    handbook: "/employee-handbook",
-    careers: "/careers",
-  },
-  help: {
+  facebookLink: "https://www.facebook.com/profile.php?id=61577869336902",
+  instaLink: "https://www.instagram.com/anupamaryal7/",
+  whatsappLink: `https://wa.me/+610420991533?text=Hello!%20I%20need%20help%20with%20my%20driving%20lessons.`,
+
+  QuickLinks: {
+    About: "/about",
+    Book: "/quick_bookings",
+    View: "/courses",
+    Testimonials: "/testimonials",
     faqs: "/faqs",
-    support: "/support",
-    livechat: "/live-chat",
   },
+
   contact: {
-    email: "hello@mvpblocks.com",
-    phone: "+91 8637373116",
-    address: "Kolkata, West Bengal, India",
+    email: "Jeevan.pandey68@gmail.com",
+    phone: "++61 0420991533",
+    address: "ACT, Australia",
   },
   company: {
-    name: "Mvpblocks",
+    name: "ACT Capital driving school",
     description:
-      "Building beautiful and functional web experiences with modern technologies. We help startups and businesses create their digital presence.",
-    logo: "https://i.postimg.cc/j5dW4vFd/Mvpblocks.webp",
+      "An integreted platform for learning driving lessons and getting driving liscense. ",
   },
 };
 
 const socialLinks = [
   { icon: Facebook, label: "Facebook", href: data.facebookLink },
   { icon: Instagram, label: "Instagram", href: data.instaLink },
-  { icon: Twitter, label: "Twitter", href: data.twitterLink },
-  { icon: Github, label: "GitHub", href: data.githubLink },
-  { icon: Dribbble, label: "Dribbble", href: data.dribbbleLink },
+  { icon: MessageCircle, label: "Whatsapp", href: data.whatsappLink },
 ];
 
-const aboutLinks = [
-  { text: "Company History", href: data.about.history },
-  { text: "Meet the Team", href: data.about.team },
-  { text: "Employee Handbook", href: data.about.handbook },
-  { text: "Careers", href: data.about.careers },
-];
-
-const serviceLinks = [
-  { text: "Web Development", href: data.services.webdev },
-  { text: "Web Design", href: data.services.webdesign },
-  { text: "Marketing", href: data.services.marketing },
-  { text: "Google Ads", href: data.services.googleads },
-];
-
-const helpfulLinks = [
-  { text: "FAQs", href: data.help.faqs },
-  { text: "Support", href: data.help.support },
-  { text: "Live Chat", href: data.help.livechat, hasIndicator: true },
+const QuickLinksInfo = [
+  { text: "About Us", href: data.QuickLinks.About },
+  { text: "Book Now", href: data.QuickLinks.Book },
+  { text: "View all Courses", href: data.QuickLinks.View },
+  { text: "Testimonials", href: data.QuickLinks.Testimonials },
+  { text: "faq", href: data.QuickLinks.faqs },
 ];
 
 const contactInfo = [
@@ -83,53 +56,69 @@ const contactInfo = [
 
 export function Footer() {
   return (
-    <footer className="bg-secondary dark:bg-secondary/20 mt-16 w-full place-self-end rounded-t-xl">
-      <div className="mx-auto max-w-screen-xl px-4 pt-16 pb-6 sm:px-6 lg:px-8 lg:pt-24">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div>
-            <Link href="/" className="flex items-center group">
-              <div className="flex h-[40px] sm:h-[50px] lg:h-[60px] w-[120px] sm:w-[150px] lg:w-[180px] items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
+    <footer className="relative bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 mt-16 w-full place-self-end rounded-t-xl overflow-hidden">
+      {/* Decorative top border */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+
+      <div className="relative mx-auto max-w-screen-xl px-4 pt-16 pb-6 sm:px-6 lg:px-8 lg:pt-24">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-16">
+          {/* Company Info Section */}
+          <div className="space-y-6">
+            <Link href="/" className="inline-flex items-center group">
+              <div className="relative flex h-[50px] sm:h-[60px] lg:h-[70px] w-[150px] sm:w-[180px] lg:w-[210px] items-center justify-center overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg shadow-gray-200/50 dark:shadow-gray-900/50 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-blue-200/60 dark:group-hover:shadow-blue-800/60 group-hover:scale-105">
                 <Image
                   src="/act_capital_logo_transparent.png"
                   alt="ACT Capital Logo"
                   height={200}
                   width={200}
-                  className="h-full w-full object-contain p-1"
+                  className="h-full w-full object-contain p-2"
                   priority
                 />
               </div>
             </Link>
 
-            <p className="text-foreground/50 mt-6 max-w-md text-center leading-relaxed sm:max-w-xs sm:text-left">
+            <p className="text-gray-600 dark:text-gray-400 max-w-md text-sm sm:text-base leading-relaxed sm:max-w-xs">
               {data.company.description}
             </p>
 
-            <ul className="mt-8 flex justify-center gap-6 sm:justify-start md:gap-8">
-              {socialLinks.map(({ icon: Icon, label, href }) => (
-                <li key={label}>
-                  <Link
-                    prefetch={false}
-                    href={href}
-                    className="text-primary hover:text-primary/80 transition"
-                  >
-                    <span className="sr-only">{label}</span>
-                    <Icon className="size-6" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* Social Links */}
+            <div className="pt-2">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                Connect With Us
+              </p>
+              <ul className="flex gap-4">
+                {socialLinks.map(({ icon: Icon, label, href }) => (
+                  <li key={label}>
+                    <Link
+                      prefetch={false}
+                      href={href}
+                      className="group flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-md shadow-gray-200/50 dark:shadow-gray-900/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-200/60 dark:hover:shadow-blue-900/40 hover:scale-110 hover:-translate-y-1"
+                    >
+                      <span className="sr-only">{label}</span>
+                      <Icon className="h-5 w-5 text-gray-600 dark:text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:col-span-2">
+          {/* Links Section */}
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4 lg:col-span-2">
+            {/* Quick Links */}
             <div className="text-center sm:text-left">
-              <p className="text-lg font-medium">About Us</p>
-              <ul className="mt-8 space-y-4 text-sm">
-                {aboutLinks.map(({ text, href }) => (
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+                Quick Links
+              </h3>
+              <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full mb-6 mx-auto sm:mx-0" />
+              <ul className="space-y-3">
+                {QuickLinksInfo.map(({ text, href }) => (
                   <li key={text}>
                     <a
-                      className="text-secondary-foreground/70 transition"
+                      className="group inline-flex items-center text-sm text-gray-600 dark:text-gray-400 transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400 hover:translate-x-1"
                       href={href}
                     >
+                      <span className="mr-2 h-1.5 w-1.5 rounded-full bg-gray-400 dark:bg-gray-600 transition-all group-hover:w-6 group-hover:bg-blue-600 dark:group-hover:bg-blue-400" />
                       {text}
                     </a>
                   </li>
@@ -137,66 +126,28 @@ export function Footer() {
               </ul>
             </div>
 
+            {/* Contact Info */}
             <div className="text-center sm:text-left">
-              <p className="text-lg font-medium">Our Services</p>
-              <ul className="mt-8 space-y-4 text-sm">
-                {serviceLinks.map(({ text, href }) => (
-                  <li key={text}>
-                    <a
-                      className="text-secondary-foreground/70 transition"
-                      href={href}
-                    >
-                      {text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium">Helpful Links</p>
-              <ul className="mt-8 space-y-4 text-sm">
-                {helpfulLinks.map(({ text, href, hasIndicator }) => (
-                  <li key={text}>
-                    <a
-                      href={href}
-                      className={`${
-                        hasIndicator
-                          ? "group flex justify-center gap-1.5 sm:justify-start"
-                          : "text-secondary-foreground/70 transition"
-                      }`}
-                    >
-                      <span className="text-secondary-foreground/70 transition">
-                        {text}
-                      </span>
-                      {hasIndicator && (
-                        <span className="relative flex size-2">
-                          <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
-                          <span className="bg-primary relative inline-flex size-2 rounded-full" />
-                        </span>
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium">Contact Us</p>
-              <ul className="mt-8 space-y-4 text-sm">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+                Get In Touch
+              </h3>
+              <div className="h-1 w-12 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full mb-6 mx-auto sm:mx-0" />
+              <ul className="space-y-4">
                 {contactInfo.map(({ icon: Icon, text, isAddress }) => (
                   <li key={text}>
                     <a
-                      className="flex items-center justify-center gap-1.5 sm:justify-start"
+                      className="group flex items-start justify-center sm:justify-start gap-3 text-sm transition-all duration-200 hover:translate-x-1"
                       href="#"
                     >
-                      <Icon className="text-primary size-5 shrink-0 shadow-sm" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 transition-all duration-200 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:scale-110">
+                        <Icon className="h-4 w-4" />
+                      </div>
                       {isAddress ? (
-                        <address className="text-secondary-foreground/70 -mt-0.5 flex-1 not-italic transition">
+                        <address className="text-gray-600 dark:text-gray-400 not-italic pt-1.5 leading-relaxed transition-colors group-hover:text-gray-900 dark:group-hover:text-gray-200">
                           {text}
                         </address>
                       ) : (
-                        <span className="text-secondary-foreground/70 flex-1 transition">
+                        <span className="text-gray-600 dark:text-gray-400 pt-1.5 leading-relaxed transition-colors group-hover:text-gray-900 dark:group-hover:text-gray-200">
                           {text}
                         </span>
                       )}
@@ -208,14 +159,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t pt-6">
-          <div className="text-center sm:flex sm:justify-between sm:text-left">
-            <p className="text-sm">
-              <span className="block sm:inline">All rights reserved.</span>
+        {/* Footer Bottom */}
+        <div className="mt-16 border-t border-gray-300 dark:border-gray-700 pt-8">
+          <div className="flex flex-col-reverse gap-4 sm:flex-row sm:justify-between sm:items-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
+              &copy; 2025 {data.company.name}
             </p>
 
-            <p className="text-secondary-foreground/70 mt-4 text-sm transition sm:order-first sm:mt-0">
-              &copy; 2025 {data.company.name}
+            <p className="text-sm text-center sm:text-right">
+              <span className="text-gray-600 dark:text-gray-400">
+                All rights reserved.
+              </span>
             </p>
           </div>
         </div>
