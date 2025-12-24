@@ -17,7 +17,6 @@ import {
 import CountUp from "../CountUp";
 import { useState, useEffect } from "react";
 
-
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -34,49 +33,10 @@ export function HeroSection() {
         <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-gradient-to-bl from-orange-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
-      {/* Floating Elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 animate-float">
-          <Car className="w-8 h-8 text-blue-300 opacity-60" />
-        </div>
-        <div className="absolute top-40 right-20 animate-float-delayed">
-          <Shield className="w-6 h-6 text-green-300 opacity-50" />
-        </div>
-        <div className="absolute bottom-32 left-20 animate-float">
-          <Star className="w-5 h-5 text-yellow-300 opacity-40" />
-        </div>
-        <div className="absolute top-1/3 right-10 animate-float-delayed">
-          <Award className="w-7 h-7 text-purple-300 opacity-50" />
-        </div>
-      </div>
-
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center h-full">
           {/* Left Content */}
           <div className="lg:col-span-7 space-y-6 order-2 lg:order-1 text-left">
-            {/* Trust Badge */}
-            <div
-              className={`transform transition-all duration-1000 ${
-                isVisible
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-4 opacity-0"
-              }`}
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full border border-white/20 shadow-lg">
-                <div className="flex -space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Trusted by 500+ Students
-                </span>
-              </div>
-            </div>
-
             {/* Main Headline */}
             <div
               className={`space-y-4 transform transition-all duration-1000 delay-200 ${
@@ -172,23 +132,23 @@ export function HeroSection() {
               </Button>
             </div>
 
-              {/* Social Proof Stats */}
-              <div
-                className={`grid grid-cols-3 gap-4 transform transition-all duration-1000 delay-800 ${
-                  isVisible
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-4 opacity-0"
-                }`}
-              >
+            {/* Social Proof Stats */}
+            <div
+              className={`grid grid-cols-3 gap-4 transform transition-all duration-1000 delay-800 ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-4 opacity-0"
+              }`}
+            >
               {[
                 { value: 500, label: "Happy Students", suffix: "+" },
                 { value: 98, label: "Pass Rate", suffix: "%" },
                 { value: 3, label: "Years Experience", suffix: "+" },
               ].map((stat, index) => (
-                  <div
-                    key={index}
-                    className="text-left p-3 bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl border border-white/20"
-                  >
+                <div
+                  key={index}
+                  className="text-left p-3 bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm rounded-xl border border-white/20"
+                >
                   <div className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-200 mb-1">
                     <CountUp
                       from={0}
@@ -221,7 +181,7 @@ export function HeroSection() {
               <div className="relative">
                 <div className="aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 shadow-2xl">
                   <img
-                    src="/professional-driving-instructor-teaching-student-i.jpg"
+                    src="/hero-section-image.png"
                     alt="Professional driving instructor teaching a student in a modern car"
                     className="w-full h-full object-cover"
                   />
@@ -277,7 +237,6 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-
     </section>
   );
 }
