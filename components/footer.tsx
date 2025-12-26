@@ -1,7 +1,15 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Car, Phone, Mail, MapPin, Facebook, Instagram, Twitter } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Car,
+  Phone,
+  Mail,
+  MapPin,
+  Facebook,
+  Instagram,
+  Twitter,
+} from "lucide-react";
 
 export function Footer() {
   return (
@@ -14,11 +22,14 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
                 <Car className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold">ACT Capital Driving School</span>
+              <span className="text-lg font-bold">
+                ACT Capital Driving School
+              </span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Your journey to confident driving starts here. Professional driving instruction in Canberra with
-              experienced instructors and modern vehicles.
+              Your journey to confident driving starts here. Professional
+              driving instruction in Canberra with experienced instructors and
+              modern vehicles.
             </p>
             <div className="flex space-x-2">
               <Button variant="ghost" size="sm" asChild>
@@ -43,19 +54,34 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Quick Links</h3>
             <nav className="flex flex-col space-y-2">
-              <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              <Link
+                href="/about"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
                 About Us
               </Link>
-              <Link href="/courses" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              <Link
+                href="/courses"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
                 Our Courses
               </Link>
-              <Link href="/booking" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              <Link
+                href="/booking"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
                 Book a Lesson
               </Link>
-              <Link href="/testimonials" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              <Link
+                href="/testimonials"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
                 Testimonials
               </Link>
-              <Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              <Link
+                href="/faq"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
                 FAQ
               </Link>
             </nav>
@@ -87,7 +113,11 @@ export function Footer() {
               Subscribe to our newsletter for driving tips and special offers.
             </p>
             <div className="flex space-x-2">
-              <Input type="email" placeholder="Enter your email" className="flex-1" />
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1"
+              />
               <Button type="submit" size="sm">
                 Subscribe
               </Button>
@@ -97,12 +127,20 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-            <p className="text-sm text-muted-foreground">© 2024 ACT Capital Driving School. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              © 2024 ACT Capital Driving School. All rights reserved.
+            </p>
             <div className="flex space-x-4 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-primary transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-primary transition-colors"
+              >
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">
+              <Link
+                href="/terms"
+                className="hover:text-primary transition-colors underline"
+              >
                 Terms of Service
               </Link>
             </div>
@@ -110,5 +148,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
