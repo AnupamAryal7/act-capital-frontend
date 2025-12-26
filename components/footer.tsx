@@ -1,149 +1,156 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  Car,
-  Phone,
-  Mail,
-  MapPin,
   Facebook,
   Instagram,
-  Twitter,
+  Mail,
+  MapPin,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+
+const data = {
+  facebookLink: "https://www.facebook.com/profile.php?id=61577869336902",
+  instaLink: "https://www.instagram.com/anupamaryal7/",
+  whatsappLink: `https://wa.me/+610420991533?text=Hello!%20I%20need%20help%20with%20my%20driving%20lessons.`,
+
+  QuickLinks: {
+    About: "/about",
+    Book: "/quick_bookings",
+    View: "/courses",
+    Testimonials: "/testimonials",
+    faqs: "/faqs",
+  },
+
+  contact: {
+    email: "Jeevan.pandey68@gmail.com",
+    phone: "++61 0420991533",
+    address: "ACT, Australia",
+  },
+  company: {
+    name: "ACT Capital driving school",
+    description:
+      "An integreted platform for learning driving lessons and getting driving liscense. ",
+  },
+};
+
+const socialLinks = [
+  { icon: Facebook, label: "Facebook", href: data.facebookLink },
+  { icon: Instagram, label: "Instagram", href: data.instaLink },
+  { icon: MessageCircle, label: "Whatsapp", href: data.whatsappLink },
+];
+
+const QuickLinksInfo = [
+  { text: "About Us", href: data.QuickLinks.About },
+  { text: "Book Now", href: data.QuickLinks.Book },
+  { text: "View all Courses", href: data.QuickLinks.View },
+  { text: "Testimonials", href: data.QuickLinks.Testimonials },
+  { text: "faq", href: data.QuickLinks.faqs },
+];
+
+const contactInfo = [
+  { icon: Mail, text: data.contact.email },
+  { icon: Phone, text: data.contact.phone },
+  { icon: MapPin, text: data.contact.address, isAddress: true },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-muted/50 border-t">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                <Car className="h-5 w-5 text-primary-foreground" />
+    <footer className="bg-gray-50 dark:bg-gray-900 py-12">
+      <div className="container mx-auto px-6 lg:px-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {/* Company Info Section */}
+          <div className="space-y-6">
+            <Link href="/" className="inline-flex items-center">
+              <div className="relative flex h-[60px] w-[200px] items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-md">
+                <Image
+                  src="/act_capital_logo_transparent.png"
+                  alt="ACT Capital Logo"
+                  height={200}
+                  width={200}
+                  className="h-full w-full object-contain p-2"
+                  priority
+                />
               </div>
-              <span className="text-lg font-bold">
-                ACT Capital Driving School
-              </span>
             </Link>
-            <p className="text-sm text-muted-foreground">
-              Your journey to confident driving starts here. Professional
-              driving instruction in Canberra with experienced instructors and
-              modern vehicles.
+            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {data.company.description}
             </p>
-            <div className="flex space-x-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="#" aria-label="Facebook">
-                  <Facebook className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="#" aria-label="Instagram">
-                  <Instagram className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="#" aria-label="Twitter">
-                  <Twitter className="h-4 w-4" />
-                </Link>
-              </Button>
+            {/* Social Links */}
+            <div>
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                Connect With Us
+              </p>
+              <ul className="flex gap-4">
+                {socialLinks.map(({ icon: Icon, label, href }) => (
+                  <li key={label}>
+                    <Link
+                      href={href}
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                    >
+                      <span className="sr-only">{label}</span>
+                      <Icon className="h-5 w-5" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Quick Links</h3>
-            <nav className="flex flex-col space-y-2">
-              <Link
-                href="/about"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                About Us
-              </Link>
-              <Link
-                href="/courses"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Our Courses
-              </Link>
-              <Link
-                href="/booking"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Book a Lesson
-              </Link>
-              <Link
-                href="/testimonials"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Testimonials
-              </Link>
-              <Link
-                href="/faq"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                FAQ
-              </Link>
-            </nav>
+          {/* Quick Links Section */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {QuickLinksInfo.map(({ text, href }) => (
+                <li key={text}>
+                  <Link
+                    href={href}
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                  >
+                    {text}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contact Info</h3>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <span>+61 2 3456 7890</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <span>info@actcapitaldriving.com.au</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>Lort Place, Chisholm, ACT</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Newsletter */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Stay Updated</h3>
-            <p className="text-sm text-muted-foreground">
-              Subscribe to our newsletter for driving tips and special offers.
-            </p>
-            <div className="flex space-x-2">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1"
-              />
-              <Button type="submit" size="sm">
-                Subscribe
-              </Button>
-            </div>
+          {/* Contact Info Section */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Get In Touch
+            </h3>
+            <ul className="space-y-4">
+              {contactInfo.map(({ icon: Icon, text, isAddress }) => (
+                <li key={text} className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  {isAddress ? (
+                    <address className="text-sm text-gray-600 dark:text-gray-400 not-italic">
+                      {text}
+                    </address>
+                  ) : (
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {text}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-            <p className="text-sm text-muted-foreground">
-              © 2024 ACT Capital Driving School. All rights reserved.
+        {/* Footer Bottom */}
+        <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              &copy; 2025 {data.company.name}. All rights reserved.
             </p>
-            <div className="flex space-x-4 text-sm text-muted-foreground">
-              <Link
-                href="/privacy"
-                className="hover:text-primary transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="/terms"
-                className="hover:text-primary transition-colors underline"
-              >
-                Terms of Service
-              </Link>
-            </div>
+            <p className="text-sm text-blue-800 underline dark:text-gray-400 mt-4 md:mt-0">
+              Terms and Conditions
+            </p>
           </div>
         </div>
       </div>
