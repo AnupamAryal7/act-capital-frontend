@@ -87,7 +87,7 @@ export function WhyChooseUsSection() {
 
           <div className="grid ">
             {features_for_mobile.map((feature_for_mobile, index) => (
-              <div className="flex">
+              <div key={index} className="flex">
                 <div className="w-fit h-fit ">
                   <feature_for_mobile.icon className="h-8 w-8 text-primary" />
                 </div>
