@@ -122,8 +122,8 @@ export default function Bookings() {
             </Select>
           </div>
 
-          {/* Bookings Table - Desktop */}
-          <div className="hidden lg:block overflow-x-auto">
+          {/* Bookings Table */}
+          <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
@@ -174,68 +174,6 @@ export default function Bookings() {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          {/* Bookings Cards - Mobile */}
-          <div className="lg:hidden space-y-4">
-            {filteredBookings.map((booking) => (
-              <Card key={booking.id} className="p-4">
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-lg">
-                        {booking.studentName}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {booking.email}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {booking.phone}
-                      </p>
-                    </div>
-                    {getStatusBadge(booking.status)}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">Course:</span>
-                      <p className="text-muted-foreground">{booking.course}</p>
-                    </div>
-                    <div>
-                      <span className="font-medium">Instructor:</span>
-                      <p className="text-muted-foreground">
-                        {booking.instructor}
-                      </p>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="font-medium">Date & Time:</span>
-                      <p className="text-muted-foreground">
-                        {booking.date} at {booking.time}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end space-x-2 pt-2 border-t">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
           </div>
         </CardContent>
       </Card>
