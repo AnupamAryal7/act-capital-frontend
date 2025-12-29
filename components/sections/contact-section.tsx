@@ -86,9 +86,7 @@ export function ContactSection() {
                 </Button>
                 <Button size="lg" asChild>
                   <a
-                    href={`https://maps.google.com/?q=${encodeURIComponent(
-                      "Lort Place, Chisholm, ACT 2905"
-                    )}`}
+                    href="https://www.google.com/maps/place/ACT+Capital+Driving+School/@-35.4216776,149.1103336,2375m/data=!3m1!1e3!4m6!3m5!1s0x6b164bda5d8a8031:0x6e141b9bf6b2fdb8!8m2!3d-35.4207218!4d149.1151493!16s%2Fg%2F11zj0f3ym9?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -104,25 +102,16 @@ export function ContactSection() {
 
           {/* Map Placeholder */}
           <div className="relative">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted">
-              <img
-                src="/map-of-lort-place-chisholm-act-australia-with-loca.jpg"
-                alt="Map showing ACT Capital Driving School location in Lort Place, Chisholm, ACT"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Card className="bg-card/95 backdrop-blur-sm border shadow-lg">
-                <CardContent className="p-4 text-center">
-                  <MapPin className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <div className="font-semibold">
-                    ACT Capital Driving School
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Lort Place, Chisholm, ACT
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d149.1153875!3d-35.4208918!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b164bda5d8a8031%3A0x6e141b9bf6b2fdb8!2sACT%20Capital%20Driving%20School!5e0!3m2!1sen!2sau!4v1691234567890!5m2!1sen!2sau"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={true}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
           </div>
         </div>
