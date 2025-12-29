@@ -258,7 +258,7 @@ export function HeroSection() {
             </div>
 
             {/* Right Content - Image and Quick Booking */}
-            <div className="space-y-8 px-4 sm:px-6 lg:px-8">
+            <div className="space-y-8 px-4 sm:px-6 lg:px-8 mt-5">
               {/* Main Image */}
               <div className="relative">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted">
