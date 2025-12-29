@@ -1,3 +1,4 @@
+"use client";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Users, Award, Clock, Shield } from "lucide-react";
+import CountUp from "@/components/CountUp";
 
 export default function AboutPage() {
   return (
@@ -107,25 +109,61 @@ export default function AboutPage() {
         {/* Stats */}
         <section className="py-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { value: "500+", label: "Students Taught" },
-                { value: "95%", label: "First-Time Pass Rate" },
-                { value: "10+", label: "Years Experience" },
-                { value: "5", label: "Star Rating" },
-              ].map((stat, index) => (
-                <div
-                  key={index}
-                  className="text-center transform hover:scale-105 transition-transform duration-300"
-                >
-                  <div className="text-4xl font-extrabold text-blue-600 dark:text-blue-400 mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-gray-700 dark:text-gray-300">
-                    {stat.label}
-                  </div>
+            {/* Stats */}
+            <div className="grid grid-cols-3 -mt-5 gap-8 pt-6 mb-6 border-t border-border">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  <CountUp
+                    from={0}
+                    to={24}
+                    separator=","
+                    direction="up"
+                    duration={1}
+                    className="count-up-text"
+                  />
+                  +
                 </div>
-              ))}
+                <div className="text-sm text-muted-foreground">
+                  Students Taught
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  <CountUp
+                    from={0}
+                    to={98}
+                    separator=","
+                    direction="up"
+                    duration={1}
+                    className="count-up-text"
+                  />
+                  %
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  First Time Pass Rate
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  <CountUp
+                    from={0}
+                    to={2}
+                    separator=","
+                    direction="up"
+                    duration={1}
+                    className="count-up-text"
+                  />
+                  +
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Years Experience
+                </div>
+              </div>
+              <div className="col-span-3 sm:col-start-2 sm:col-end-3 text-center mt-4">
+                <Button className="px-6 py-2 text-center">
+                  <Link href="/testimonials">What People Say About Us</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
@@ -187,37 +225,6 @@ export default function AboutPage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-20 bg-blue-600 text-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-            <h2 className="text-3xl lg:text-4xl font-bold">
-              Ready to Start Your Journey?
-            </h2>
-            <p className="text-xl opacity-90 max-w-2xl mx-auto">
-              Join the hundreds of successful students who have learned to drive
-              with ACT Capital Driving School.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="bg-white text-blue-600 hover:bg-gray-100"
-                asChild
-              >
-                <Link href="/booking">Book Your First Lesson</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-blue-600"
-                asChild
-              >
-                <Link href="/contact">Contact Us</Link>
-              </Button>
             </div>
           </div>
         </section>
