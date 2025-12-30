@@ -267,16 +267,31 @@ export function WhatsAppChatBubble() {
 
   return (
     <>
-      {/* Dismiss Area */}
-      {showDismissArea && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
-          <div className="bg-red-700 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
-            <div className="animate-caret-blink flex items-center gap-2">
-              <X size={50} strokeWidth={3} className="flex-shrink-0" />
+      <div className="md:hidden">
+        {/* Dismiss Area */}
+        {showDismissArea && (
+          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+            <div className="bg-red-700 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
+              <div className="animate-caret-blink flex items-center gap-2">
+                <X size={50} strokeWidth={3} className="flex-shrink-0" />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      <div className="hidden md:block">
+        {/* Dismiss Area */}
+        {showDismissArea && (
+          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+            <div className="bg-red-700 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
+              <div className="animate-caret-blink flex items-center gap-2">
+                <X size={50} strokeWidth={3} className="flex-shrink-0" />
+                Dismiss Here
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* WhatsApp Chat Head */}
       <div
