@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Users, Award, Clock, Shield } from "lucide-react";
+import { Users, Award, Clock, Shield, Star } from "lucide-react";
 import CountUp from "@/components/CountUp";
 
 export default function AboutPage() {
@@ -53,6 +53,17 @@ export default function AboutPage() {
                   View all Courses
                 </Button>
               </div>
+              {/* <div className="flex -space-x-5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="w-10 h-10 fill-yellow-600 text-white"
+                  />
+                ))}
+                <span className="font-sans text-2xl ">
+                  Trusted by 24+ students
+                </span>
+              </div> */}
             </div>
           </div>
         </section>

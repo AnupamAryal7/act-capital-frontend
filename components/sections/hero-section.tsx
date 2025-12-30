@@ -19,13 +19,14 @@ export function HeroSection() {
             {/* Left Content */}
             <div className="space-y-8 px-4 sm:px-6 lg:px-6">
               <div className="space-y-4">
-                <h1 className="font-poppins text-4xl  font-bold text-balance leading-tight">
-                  Welcome to{" "}
-                  <span className="text-primary font-extrabold">
-                    ACT Capital
-                  </span>{" "}
-                  Driving School
+                <h1 className="font-poppins text-4xl sm:text-4xl font-bold leading-tight text-center">
+                  Master the Road With
+                  <br />
+                  <span className="block text-primary font-extrabold text-4xl sm:text-5xl mt-1">
+                    ACT Capital <br /> Driving School
+                  </span>
                 </h1>
+
                 <p className="font-inter font-semibold text-xl text-pretty max-w-2xl text-gray-600">
                   Learn to drive with us and build the skills you need to get
                   licensed. We offer excellent driving lessons, supportive
