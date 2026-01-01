@@ -328,7 +328,7 @@ export function Navigation() {
                         onClick={() => setIsOpen(false)}
                       >
                         <GraduationCap className="h-5 w-5" />
-                        <span>Instructor Portal</span>
+                        <span>Instructor Dashboard</span>
                       </Link>
                     )}
 
@@ -338,8 +338,7 @@ export function Navigation() {
                         className="w-full text-lg font-medium text-foreground hover:text-primary transition-colors flex flex-col items-center gap-2"
                         onClick={() => setIsOpen(false)}
                       >
-                        <BookOpen className="h-5 w-5" />
-                        <span>Student Portal</span>
+                        <span>Profile</span>
                       </Link>
                     )}
                   </>
@@ -348,10 +347,6 @@ export function Navigation() {
                 <div className="pt-4 space-y-3 w-full flex flex-col items-center">
                   {isLoggedIn ? (
                     <>
-                      <div className="px-2 py-1 text-sm text-muted-foreground text-center">
-                        Signed in as {user.full_name} ({user.role})
-                      </div>
-
                       <Button
                         variant="outline"
                         className="w-full max-w-xs mx-auto bg-transparent"
