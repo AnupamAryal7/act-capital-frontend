@@ -349,7 +349,7 @@ export function Navigation() {
                     <>
                       <Button
                         variant="outline"
-                        className="w-full max-w-xs mx-auto bg-transparent"
+                        className="w-full max-w-xs mx-auto bg-transparent border-blue-500"
                         onClick={() => {
                           handleDashboard();
                           setIsOpen(false);
@@ -361,7 +361,7 @@ export function Navigation() {
 
                       <Button
                         variant="outline"
-                        className="w-full max-w-xs mx-auto text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="w-full max-w-xs mx-auto text-red-600 hover:text-red-700 hover:bg-red-50 border-red-600"
                         onClick={() => {
                           setShowLogoutConfirm(true);
                           setIsOpen(false);
