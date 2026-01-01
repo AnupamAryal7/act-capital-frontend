@@ -206,6 +206,9 @@ export function Navigation() {
             <div className="hidden md:flex items-center space-x-4 mr-6">
               {isLoggedIn ? (
                 <div className="flex items-center space-x-2">
+                  <Button size="sm" asChild>
+                    <Link href="/booking">Book Session</Link>
+                  </Button>
                   {/* Profile Dropdown */}
                   <div className="relative" ref={dropdownRef}>
                     <button
@@ -266,10 +269,6 @@ export function Navigation() {
                       </div>
                     )}
                   </div>
-
-                  <Button size="sm" asChild>
-                    <Link href="/booking">Book Session</Link>
-                  </Button>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
@@ -315,7 +314,7 @@ export function Navigation() {
                       {isAdmin && (
                         <Link
                           href="/admin"
-                          className="w-full text-lg font-medium text-foreground hover:text-primary transition-colors flex flex-col items-center gap-2"
+                          className="w-full text-lg font-medium text-foreground hover:text-primary transition-colors flex flex-col items-center gap-2 border-blue-600"
                           onClick={() => setIsOpen(false)}
                         >
                           <Shield className="h-5 w-5" />
@@ -326,7 +325,7 @@ export function Navigation() {
                       {isInstructor && (
                         <Link
                           href="/instructor"
-                          className="w-full text-lg font-medium text-foreground hover:text-primary transition-colors flex flex-col items-center gap-2"
+                          className="w-full text-lg font-medium text-foreground hover:text-primary transition-colors flex flex-col items-center gap-2 border-blue-600"
                           onClick={() => setIsOpen(false)}
                         >
                           <GraduationCap className="h-5 w-5" />
@@ -337,11 +336,10 @@ export function Navigation() {
                       {isStudent && (
                         <Link
                           href="/dashboard"
-                          className="w-full text-lg font-medium text-foreground hover:text-primary transition-colors flex flex-col items-center gap-2"
+                          className="w-full text-lg font-medium text-foreground hover:text-primary transition-colors flex flex-col items-center gap-2 border-blue-600"
                           onClick={() => setIsOpen(false)}
                         >
-                          <BookOpen className="h-5 w-5" />
-                          <span>Student Portal</span>
+                          <span>Profile</span>
                         </Link>
                       )}
                     </>
@@ -350,13 +348,9 @@ export function Navigation() {
                   <div className="pt-4 space-y-3 w-full flex flex-col items-center">
                     {isLoggedIn ? (
                       <>
-                        <div className="px-2 py-1 text-sm text-muted-foreground text-center">
-                          Signed in as {user.full_name} ({user.role})
-                        </div>
-
                         <Button
                           variant="outline"
-                          className="w-full max-w-xs mx-auto bg-transparent"
+                          className="w-full max-w-xs mx-auto bg-transparent border-blue-500"
                           onClick={() => {
                             handleDashboard();
                             setIsOpen(false);
@@ -368,7 +362,7 @@ export function Navigation() {
 
                         <Button
                           variant="outline"
-                          className="w-full max-w-xs mx-auto text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="w-full max-w-xs mx-auto text-red-600 hover:text-red-700 hover:bg-red-50 border-red-600"
                           onClick={() => {
                             setShowLogoutConfirm(true);
                             setIsOpen(false);
@@ -385,7 +379,7 @@ export function Navigation() {
                         asChild
                       >
                         <Link href="/login" onClick={() => setIsOpen(false)}>
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-center gap-2 border-green-500">
                             <CircleUser />
                             <span>Login</span>
                           </div>
