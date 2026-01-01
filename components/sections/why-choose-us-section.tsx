@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Car, Clock, Trophy, Shield, MapPin } from "lucide-react";
 import SpotlightCard from "../SpotlightCard";
@@ -42,61 +43,76 @@ const features = [
   },
 ];
 
-const features_for_mobile = [
-  {
-    icon: Users,
-    title: "Certified & Experienced Driving Instructors",
-  },
-  {
-    icon: Car,
-    title: "Modern, Safe Cars with Dual Controls",
-  },
-  {
-    icon: Clock,
-    title: "Flexible Lesson Times That Fit Your Schedule",
-  },
-  {
-    icon: Trophy,
-    title: "Proven High Pass Rate for Driving Tests",
-  },
-  {
-    icon: Shield,
-    title: "Fully Insured Lessons for Total Safety",
-  },
-  {
-    icon: MapPin,
-    title: "Expert Knowledge of Canberra Roads & Test Routes",
-  },
-];
-
 export function WhyChooseUsSection() {
+  const [showAll, setShowAll] = React.useState(false);
+  const displayedFeatures = showAll ? features : features.slice(0, 4);
+
   return (
     <section className="py-20 bg-muted/30">
       {/* This is for Mobile View */}
-      <div className="md:hidden lg:hidden -mt-3">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-balance">
-              Why Choose US?
-            </h2>
-            <p className="text-xl text-muted-foreground text-pretty max-w-3xl mx-auto">
+      <div className="md:hidden lg:hidden">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center space-y-4 mb-12">
+            <h2 className="text-3xl font-bold text-balance">Why Choose Us?</h2>
+            <p className="text-lg text-muted-foreground text-pretty">
               We're committed to providing the highest quality driving education
               in Canberra. Here's what sets us apart from other driving schools.
             </p>
           </div>
 
-          <div className="grid ">
-            {features_for_mobile.map((feature_for_mobile, index) => (
-              <div key={index} className="flex">
-                <div className="w-fit h-fit ">
-                  <feature_for_mobile.icon className="h-8 w-8 text-primary" />
+          <div className="grid grid-cols-1 gap-6">
+            {displayedFeatures.map((feature, index) => (
+              <div
+                key={index}
+                className="group relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:bg-card/80 transition-all duration-300 hover:shadow-lg"
+              >
+                {/* Icon Container */}
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <feature.icon className="h-6 w-6 text-primary" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 space-y-2">
+                    <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed text-sm">
+                      {feature.description}
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-inter text-lg">
-                  {feature_for_mobile.title}
-                </h4>
+
+                {/* Subtle gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
               </div>
             ))}
           </div>
+
+          {/* View More Button */}
+          {!showAll && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setShowAll(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all duration-300 hover:shadow-lg"
+              >
+                View More
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
