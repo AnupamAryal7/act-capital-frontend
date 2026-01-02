@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,36 @@ import { Users, Award, Clock, Shield, Star } from "lucide-react";
 import CountUp from "@/components/CountUp";
 
 export default function AboutPage() {
+  const [showAll, setShowAll] = React.useState(false);
+
+  const values = [
+    {
+      icon: Shield,
+      title: "Safety First",
+      description:
+        "Safety is our top priority in every lesson and interaction.",
+    },
+    {
+      icon: Users,
+      title: "Student-Centered",
+      description:
+        "We adapt our teaching to each student's unique learning style.",
+    },
+    {
+      icon: Award,
+      title: "Excellence",
+      description:
+        "We strive for excellence in instruction and customer service.",
+    },
+    {
+      icon: Clock,
+      title: "Reliability",
+      description: "Punctual, professional, and dependable service every time.",
+    },
+  ];
+
+  const displayedValues = showAll ? values : values.slice(0, 2);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -28,7 +59,7 @@ export default function AboutPage() {
                 safe, confident drivers. With a great experience, we've helped
                 thousands of students achieve their driving goals.
               </p>
-              <div className="flex justify-center gap-x-[10px]">
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Button
                   className="px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
                   bg-[#0070f3]
@@ -53,17 +84,6 @@ export default function AboutPage() {
                   View all Courses
                 </Button>
               </div>
-              {/* <div className="flex -space-x-5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-10 h-10 fill-yellow-600 text-white"
-                  />
-                ))}
-                <span className="font-sans text-2xl ">
-                  Trusted by 24+ students
-                </span>
-              </div> */}
             </div>
           </div>
         </section>
@@ -73,10 +93,10 @@ export default function AboutPage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
-                <h1 className="text-5xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white">
                   Our Story
                 </h1>
-                <div className="space-y-4 text-gray-700 dark:text-gray-300 text-xl font-poppins font-medium">
+                <div className="space-y-4 text-gray-700 dark:text-gray-300 text-base lg:text-xl font-poppins font-medium">
                   <p>
                     Founded in 2025, ACT Capital Driving School was created with
                     a clear vision to deliver driving education that prioritizes
@@ -121,9 +141,9 @@ export default function AboutPage() {
         <section className="py-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {/* Stats */}
-            <div className="grid grid-cols-3 -mt-5 gap-8 pt-6 mb-6 border-t border-border">
+            <div className="grid grid-cols-3 gap-4 pt-6 mb-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">
                   <CountUp
                     from={0}
                     to={24}
@@ -134,12 +154,12 @@ export default function AboutPage() {
                   />
                   +
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs sm:text-sm lg:text-base text-muted-foreground mt-2">
                   Students Taught
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">
                   <CountUp
                     from={0}
                     to={98}
@@ -150,12 +170,12 @@ export default function AboutPage() {
                   />
                   %
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs sm:text-sm lg:text-base text-muted-foreground mt-2">
                   First Time Pass Rate
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">
                   <CountUp
                     from={0}
                     to={2}
@@ -166,15 +186,15 @@ export default function AboutPage() {
                   />
                   +
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs sm:text-sm lg:text-base text-muted-foreground mt-2">
                   Years Experience
                 </div>
               </div>
-              <div className="col-span-3 sm:col-start-2 sm:col-end-3 text-center mt-4">
-                <Button className="px-6 py-2 text-center">
-                  <Link href="/testimonials">What People Say About Us</Link>
-                </Button>
-              </div>
+            </div>
+            <div className="text-center mt-8">
+              <Button className="px-6 py-2">
+                <Link href="/testimonials">What People Say About Us</Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -186,39 +206,67 @@ export default function AboutPage() {
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
                 Our Values
               </h2>
-              <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
+              <p className="text-lg lg:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
                 These core values guide everything we do at ACT Capital Driving
                 School.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  icon: Shield,
-                  title: "Safety First",
-                  description:
-                    "Safety is our top priority in every lesson and interaction.",
-                },
-                {
-                  icon: Users,
-                  title: "Student-Centered",
-                  description:
-                    "We adapt our teaching to each student's unique learning style.",
-                },
-                {
-                  icon: Award,
-                  title: "Excellence",
-                  description:
-                    "We strive for excellence in instruction and customer service.",
-                },
-                {
-                  icon: Clock,
-                  title: "Reliability",
-                  description:
-                    "Punctual, professional, and dependable service every time.",
-                },
-              ].map((value, index) => (
+            {/* Mobile View with Show More */}
+            <div className="md:hidden">
+              <div className="grid grid-cols-1 gap-6">
+                {displayedValues.map((value, index) => (
+                  <div
+                    key={index}
+                    className="group relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:bg-card/80 transition-all duration-300 hover:shadow-lg"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+                        <value.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {value.title}
+                        </h3>
+                        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                          {value.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
+                  </div>
+                ))}
+              </div>
+
+              {/* View More Button */}
+              {!showAll && (
+                <div className="mt-8 text-center">
+                  <button
+                    onClick={() => setShowAll(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all duration-300 hover:shadow-lg"
+                  >
+                    View More
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop View - Original Grid */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {values.map((value, index) => (
                 <Card
                   key={index}
                   className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow duration-300"
