@@ -1,3 +1,4 @@
+// app/faqs/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,8 +12,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
+import Link from "next/link";
 
 interface FAQItemProps {
   question: string;
@@ -160,12 +160,168 @@ export default function DrivingSchoolFAQ() {
   if (loading) {
     return (
       <section className="bg-background relative w-full overflow-hidden py-16">
+        <style jsx>{`
+          @keyframes shimmer {
+            0% {
+              background-position: -1000px 0;
+            }
+            100% {
+              background-position: 1000px 0;
+            }
+          }
+          @keyframes fade-in {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes pulse-glow {
+            0%,
+            100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.5;
+            }
+          }
+          .animate-shimmer {
+            animation: shimmer 2s infinite;
+            background: linear-gradient(
+              to right,
+              hsl(var(--muted)) 0%,
+              hsl(var(--muted-foreground) / 0.1) 50%,
+              hsl(var(--muted)) 100%
+            );
+            background-size: 1000px 100%;
+          }
+          .animate-fade-in {
+            animation: fade-in 0.6s ease-out forwards;
+          }
+          .animate-pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+          }
+        `}</style>
+
+        {/* Decorative elements with animation */}
+        <div className="bg-primary/5 absolute top-20 -left-20 h-64 w-64 rounded-full blur-3xl animate-pulse-glow" />
+        <div
+          className="bg-primary/5 absolute -right-20 bottom-20 h-64 w-64 rounded-full blur-3xl animate-pulse-glow"
+          style={{ animationDelay: "1s" }}
+        />
+
         <div className="relative container mx-auto max-w-6xl px-4">
-          <div className="flex items-center justify-center h-64">
-            <RefreshCw className="h-8 w-8 animate-spin text-primary mr-3" />
-            <span className="text-lg text-muted-foreground">
-              Loading FAQ...
-            </span>
+          {/* Header Skeleton */}
+          <div className="mx-auto mb-12 max-w-2xl text-center animate-fade-in">
+            {/* Badge Skeleton */}
+            <div className="mx-auto mb-4 h-6 w-20 rounded-full bg-muted animate-shimmer" />
+
+            {/* Title Skeleton */}
+            <div
+              className="mx-auto mb-3 h-12 w-3/4 rounded-lg bg-muted animate-shimmer"
+              style={{ animationDelay: "0.1s" }}
+            />
+
+            {/* Subtitle Skeleton */}
+            <div
+              className="mx-auto h-7 w-full max-w-md rounded-lg bg-muted animate-shimmer"
+              style={{ animationDelay: "0.2s" }}
+            />
+          </div>
+
+          {/* FAQ Categories Skeleton */}
+          <div className="mx-auto max-w-3xl space-y-12">
+            {[1, 2, 3].map((section, sectionIndex) => (
+              <div
+                key={section}
+                className="space-y-4 animate-fade-in"
+                style={{ animationDelay: `${sectionIndex * 0.15}s` }}
+              >
+                {/* Category Title Skeleton */}
+                <div
+                  className="h-9 w-64 rounded-lg bg-muted animate-shimmer mb-6"
+                  style={{ animationDelay: `${sectionIndex * 0.15 + 0.05}s` }}
+                />
+
+                {/* FAQ Items Skeleton */}
+                <div className="space-y-2">
+                  {[1, 2, 3, 4].map((item, itemIndex) => (
+                    <div
+                      key={item}
+                      className="group border-border/60 rounded-lg border bg-card/20 animate-fade-in"
+                      style={{
+                        animationDelay: `${
+                          sectionIndex * 0.15 + itemIndex * 0.08
+                        }s`,
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-4 px-6 py-4">
+                        {/* Question Skeleton */}
+                        <div className="flex-1 space-y-2">
+                          <div
+                            className="h-7 rounded bg-muted animate-shimmer"
+                            style={{
+                              width: `${60 + Math.random() * 30}%`,
+                              animationDelay: `${
+                                sectionIndex * 0.15 + itemIndex * 0.08 + 0.05
+                              }s`,
+                            }}
+                          />
+                        </div>
+                        {/* Chevron Skeleton */}
+                        <div
+                          className="h-8 w-8 rounded-full bg-muted animate-shimmer"
+                          style={{
+                            animationDelay: `${
+                              sectionIndex * 0.15 + itemIndex * 0.08 + 0.1
+                            }s`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Contact Card Skeleton */}
+          <div
+            className="mx-auto mt-16 max-w-2xl rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-8 text-center animate-fade-in"
+            style={{ animationDelay: "0.6s" }}
+          >
+            {/* Icon Skeleton */}
+            <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-muted animate-shimmer" />
+
+            {/* Title Skeleton */}
+            <div
+              className="mx-auto mb-2 h-7 w-48 rounded-lg bg-muted animate-shimmer"
+              style={{ animationDelay: "0.65s" }}
+            />
+
+            {/* Description Skeleton */}
+            <div
+              className="mx-auto mb-2 h-5 w-full max-w-sm rounded-lg bg-muted animate-shimmer"
+              style={{ animationDelay: "0.7s" }}
+            />
+            <div
+              className="mx-auto mb-6 h-5 w-3/4 max-w-md rounded-lg bg-muted animate-shimmer"
+              style={{ animationDelay: "0.75s" }}
+            />
+
+            {/* Buttons Skeleton */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {[1, 2, 3].map((btn, idx) => (
+                <div
+                  key={btn}
+                  className="h-10 w-full sm:w-32 rounded-md bg-muted animate-shimmer"
+                  style={{ animationDelay: `${0.8 + idx * 0.1}s` }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -281,27 +437,35 @@ export default function DrivingSchoolFAQ() {
             to help you with any questions about our driving lessons.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              type="button"
-              className="rounded-md px-6 py-2.5 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 font-medium inline-flex items-center justify-center gap-2"
+            <Link
+              target="_blank"
+              href="https://www.facebook.com/profile.php?id=61577869336902"
             >
-              <Mail className="h-4 w-4" />
-              Contact Us
-            </button>
-            <button
-              type="button"
+              <button
+                type="button"
+                className="rounded-md px-6 py-2.5 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 font-medium inline-flex items-center justify-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                Contact Us
+              </button>
+            </Link>
+            <a
+              href="tel:+610420991533"
               className="rounded-md px-6 py-2.5 text-sm border border-primary/30 bg-background hover:bg-primary/5 transition-colors duration-200 font-medium inline-flex items-center justify-center gap-2"
             >
               <Phone className="h-4 w-4" />
               Call Now
-            </button>
-            <button
-              type="button"
-              className="rounded-md px-6 py-2.5 text-sm border border-primary/30 bg-background hover:bg-primary/5 transition-colors duration-200 font-medium inline-flex items-center justify-center gap-2"
-            >
-              <Calendar className="h-4 w-4" />
-              Book a Lesson
-            </button>
+            </a>
+
+            <Link href="/quick_bookings">
+              <button
+                type="button"
+                className="rounded-md px-6 py-2.5 text-sm border border-primary/30 bg-background hover:bg-primary/5 transition-colors duration-200 font-medium inline-flex items-center justify-center gap-2"
+              >
+                <Calendar className="h-4 w-4" />
+                Book a Lesson
+              </button>
+            </Link>
           </div>
         </div>
       </div>
