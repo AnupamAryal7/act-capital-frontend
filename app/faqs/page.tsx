@@ -429,10 +429,10 @@ export default function DrivingSchoolFAQ() {
           <div className="bg-primary/10 text-primary mb-4 inline-flex items-center justify-center rounded-full p-3">
             <Mail className="h-5 w-5" />
           </div>
-          <h3 className="text-foreground mb-2 text-xl font-bold">
+          <h3 className="text-foreground mb-2 text-3xl font-bold">
             Still Have Questions?
           </h3>
-          <p className="text-muted-foreground mb-6 text-sm">
+          <p className="text-muted-foreground mb-6 text-xl">
             Can't find the answer you're looking for? Our friendly team is here
             to help you with any questions about our driving lessons.
           </p>
