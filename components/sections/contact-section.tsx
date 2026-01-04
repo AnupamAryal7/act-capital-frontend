@@ -6,7 +6,7 @@ import { Phone, Mail, MapPin, Clock } from "lucide-react";
 export function ContactSection() {
   return (
     <section className="py-20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:block">
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-balance">
             Ready to Start Your Driving Journey?
@@ -21,54 +21,74 @@ export function ContactSection() {
           {/* Contact Info */}
           <div className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Call Us Card - Clickable */}
+              <a href="tel:+61420991533" className="block">
+                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <CardContent className="p-6 h-full">
+                    <div className="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-0 sm:space-y-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0 sm:mx-auto">
+                        <Phone className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1 text-left sm:text-center">
+                        <h3 className="font-semibold mb-1 sm:mb-2">Call Us</h3>
+                        <p className="text-muted-foreground text-sm sm:text-base">
+                          +61 420 991 533
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </a>
+
+              {/* Email Us Card - Clickable */}
+              <a href="mailto:Jeevan.pandey68@gmail.com" className="block">
+                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <CardContent className="p-6 h-full">
+                    <div className="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-0 sm:space-y-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0 sm:mx-auto">
+                        <Mail className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1 text-left sm:text-center">
+                        <h3 className="font-semibold mb-1 sm:mb-2">Email Us</h3>
+                        <p className="text-muted-foreground text-sm sm:text-base break-all">
+                          Jeevan.pandey68@gmail.com
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </a>
+
+              {/* Visit Us Card */}
               <Card className="border-0 shadow-sm">
-                <CardContent className="p-6 text-center space-y-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                    <Phone className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Call Us</h3>
-                    <p className="text-muted-foreground">+61 2 3456 7890</p>
+                <CardContent className="p-6">
+                  <div className="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-0 sm:space-y-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0 sm:mx-auto">
+                      <MapPin className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1 text-left sm:text-center">
+                      <h3 className="font-semibold mb-1 sm:mb-2">Visit Us</h3>
+                      <p className="text-muted-foreground text-sm sm:text-base">
+                        Lort Place, Chisholm, ACT
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
+              {/* Hours Card */}
               <Card className="border-0 shadow-sm">
-                <CardContent className="p-6 text-center space-y-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                    <Mail className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Email Us</h3>
-                    <p className="text-muted-foreground">
-                      info@actcapitaldriving.com.au
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-6 text-center space-y-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                    <MapPin className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Visit Us</h3>
-                    <p className="text-muted-foreground">
-                      Lort Place, Chisholm, ACT
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-6 text-center space-y-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                    <Clock className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Hours</h3>
-                    <p className="text-muted-foreground">Mon-Sun: 7AM-7PM</p>
+                <CardContent className="p-6">
+                  <div className="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-0 sm:space-y-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0 sm:mx-auto">
+                      <Clock className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1 text-left sm:text-center">
+                      <h3 className="font-semibold mb-1 sm:mb-2">Hours</h3>
+                      <p className="text-muted-foreground text-sm sm:text-base">
+                        Always Open
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -76,8 +96,6 @@ export function ContactSection() {
 
             <div className="text-center space-y-4">
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                {" "}
-                {/* Column on mobile, row on sm+ */}
                 <Button size="lg" className="text-lg px-8" asChild>
                   <Link href="/booking">Book Your Lesson Now</Link>
                 </Button>
@@ -100,7 +118,7 @@ export function ContactSection() {
             </div>
           </div>
 
-          {/* Map Placeholder */}
+          {/* Map */}
           <div className="relative">
             <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
               <iframe
