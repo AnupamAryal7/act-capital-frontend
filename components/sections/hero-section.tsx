@@ -19,10 +19,10 @@ export function HeroSection() {
             {/* Left Content */}
             <div className="space-y-8 px-4 sm:px-6 lg:px-6">
               <div className="space-y-4">
-                <h1 className="font-poppins text-4xl sm:text-4xl font-bold leading-tight text-center">
+                <h1 className="font-poppins text-3xl sm:text-4xl font-bold leading-tight text-center">
                   Master the Road With
                   <br />
-                  <span className="block text-primary font-extrabold text-4xl sm:text-5xl mt-1">
+                  <span className="block text-primary font-extrabold text-5xl sm:text-5xl mt-1">
                     ACT Capital <br /> Driving School
                   </span>
                 </h1>
@@ -46,7 +46,7 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   className="
-                  w-50 sm:w-auto mx-auto px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
+                  w-40 sm:w-auto mx-auto px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
                   bg-[#0070f3]
                   shadow-[0_0_10px_rgba(0,118,255,0.6)]
                   hover:shadow-[0_0_25px_rgba(0,118,255,1),0_0_50px_rgba(0,118,255,0.8)]
@@ -61,7 +61,7 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   className="
-                  w-50 sm:w-auto mx-auto sm:mx-0 px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
+                  w-40 sm:w-auto mx-auto sm:mx-0 px-8 py-2 rounded-lg text-white font-medium transition-transform duration-200 ease-linear transform hover:scale-105
                   bg-[#2da848]
                    shadow-[0_0_10px_rgba(45,168,72,0.25)]
                   hover:shadow-[0_0_25px_rgba(45,168,72,0.4),0_0_50px_rgba(45,168,72,0.25)]
