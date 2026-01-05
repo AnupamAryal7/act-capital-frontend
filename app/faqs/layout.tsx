@@ -1,4 +1,4 @@
-// app/faq/layout.tsx
+// app/faqs/layout.tsx
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 
