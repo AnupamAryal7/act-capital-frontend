@@ -257,7 +257,7 @@ export default function InstructorBookings() {
         },
         body: JSON.stringify({
           user_id: booking.student_id,
-          course_id: booking.class_id,
+          class_id: booking.class_id,
           progress_percentage: 0,
           status: "not_started",
           feedback: "not inserted yet",

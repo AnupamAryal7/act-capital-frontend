@@ -77,7 +77,7 @@ const STATIC_INSTRUCTOR = {
 
 // Default course for quick booking
 const DEFAULT_COURSE: Course = {
-  id: 1,
+  id: 8,
   course_title: "General Driving Lesson",
   description:
     "Comprehensive driving lesson covering essential skills and road safety",
