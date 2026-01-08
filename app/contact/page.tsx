@@ -223,7 +223,7 @@ export default function ContactPage() {
                         <div>
                           <div className="font-medium">Phone</div>
                           <div className="text-muted-foreground">
-                            +61 2 3456 7890
+                            +61 420 991 533
                           </div>
                         </div>
                       </div>
@@ -235,7 +235,7 @@ export default function ContactPage() {
                         <div>
                           <div className="font-medium">Email</div>
                           <div className="text-muted-foreground">
-                            info@actcapitaldriving.com.au
+                            Jeevan.pandey68@gmail.com
                           </div>
                         </div>
                       </div>
@@ -277,18 +277,12 @@ export default function ContactPage() {
                     </p>
                     <div className="flex space-x-2">
                       <Button variant="outline" size="sm" asChild>
-                        <a href="#" aria-label="Facebook">
+                        <a
+                          target="_blank"
+                          href="https://www.facebook.com/profile.php?id=61577869336902"
+                          aria-label="Facebook"
+                        >
                           <Facebook className="h-4 w-4" />
-                        </a>
-                      </Button>
-                      <Button variant="outline" size="sm" asChild>
-                        <a href="#" aria-label="Instagram">
-                          <Instagram className="h-4 w-4" />
-                        </a>
-                      </Button>
-                      <Button variant="outline" size="sm" asChild>
-                        <a href="#" aria-label="Twitter">
-                          <Twitter className="h-4 w-4" />
                         </a>
                       </Button>
                     </div>
@@ -308,7 +302,7 @@ export default function ContactPage() {
                         className="w-full justify-start bg-transparent"
                         asChild
                       >
-                        <a href="tel:+61234567890">
+                        <a href="tel:+61420991533">
                           Call for Immediate Booking
                         </a>
                       </Button>
@@ -328,18 +322,19 @@ export default function ContactPage() {
         </section>
 
         {/* Interactive Map Section */}
-        <section className="py-20 bg-muted/30">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-4 mb-12">
-              <h2 className="text-3xl font-bold">Find Us & Pickup Locations</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Located in Chisholm, ACT, with convenient pickup points across
-                Canberra. Select a location below to view details.
-              </p>
-            </div>
-
-            <div className="max-w-6xl mx-auto">
-              <InteractiveMap />
+        <section className="py-20  bg-muted/30  ">
+          {/* Map */}
+          <div>
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg h-200 w-200 flex justify-center items-center ">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d149.1153875!3d-35.4208918!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b164bda5d8a8031%3A0x6e141b9bf6b2fdb8!2sACT%20Capital%20Driving%20School!5e0!3m2!1sen!2sau!4v1691234567890!5m2!1sen!2sau"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={true}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
           </div>
         </section>
