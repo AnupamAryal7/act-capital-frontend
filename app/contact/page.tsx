@@ -223,7 +223,7 @@ export default function ContactPage() {
                         <div>
                           <div className="font-medium">Phone</div>
                           <div className="text-muted-foreground">
-                            +61 2 3456 7890
+                            +61 420 991 533
                           </div>
                         </div>
                       </div>
