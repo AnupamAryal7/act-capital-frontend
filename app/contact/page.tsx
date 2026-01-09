@@ -87,8 +87,10 @@ export default function ContactPage() {
               {/* Contact Form */}
               <Card className="border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Send us a Message</CardTitle>
-                  <p className="text-muted-foreground">
+                  <CardTitle className="text-2xl font-semibold">
+                    Send us a Message
+                  </CardTitle>
+                  <p className="text-muted-foreground font-serif text-xl">
                     Fill out the form below and we'll get back to you within 24
                     hours.
                   </p>
@@ -100,7 +102,7 @@ export default function ContactPage() {
                         <CheckCircle className="h-8 w-8 text-green-600" />
                       </div>
                       <h3 className="text-xl font-semibold">Message Sent!</h3>
-                      <p className="text-muted-foreground">
+                      <p className="text-muted-foreground font-serif">
                         Thank you for contacting us. We'll get back to you
                         within 24 hours.
                       </p>
@@ -201,10 +203,10 @@ export default function ContactPage() {
               </Card>
 
               {/* Contact Information */}
-              <div className="space-y-8">
+              <div className="">
                 {/* Contact Details */}
                 <Card className="border-0 shadow-sm">
-                  <CardContent className="p-6 space-y-6">
+                  <CardContent className=" space-y-6">
                     <h3 className="text-xl font-semibold">
                       Contact Information
                     </h3>
