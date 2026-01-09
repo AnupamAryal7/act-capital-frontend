@@ -5,7 +5,6 @@ import type React from "react";
 import { useState } from "react";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
-import { InteractiveMap } from "@/components/interactive-map";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,8 +25,6 @@ import {
   Clock,
   Send,
   Facebook,
-  Instagram,
-  Twitter,
   CheckCircle,
 } from "lucide-react";
 
@@ -69,16 +66,13 @@ export default function ContactPage() {
       <Navigation />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-background to-muted/20">
+        <section className="py-5 bg-gradient-to-br from-background to-muted/20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center space-y-6">
-              <Badge variant="secondary" className="mb-4">
-                Contact Us
-              </Badge>
-              <h1 className="text-4xl lg:text-5xl font-bold text-balance">
+              <h1 className="text-4xl lg:text-5xl font-bold font-poppins text-balance">
                 Get in Touch
               </h1>
-              <p className="text-xl text-muted-foreground text-pretty">
+              <p className="text-xl text-muted-foreground text-pretty font-serif">
                 Ready to start your driving journey? Have questions about our
                 courses? We're here to help you every step of the way.
               </p>
@@ -87,7 +81,7 @@ export default function ContactPage() {
         </section>
 
         {/* Contact Form & Info */}
-        <section className="py-20">
+        <section className="py-5">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Contact Form */}
@@ -325,7 +319,7 @@ export default function ContactPage() {
         <section className="py-20  bg-muted/30  ">
           {/* Map */}
           <div>
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg h-200 w-200 flex justify-center items-center ">
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg  flex justify-center items-center ">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d149.1153875!3d-35.4208918!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b164bda5d8a8031%3A0x6e141b9bf6b2fdb8!2sACT%20Capital%20Driving%20School!5e0!3m2!1sen!2sau!4v1691234567890!5m2!1sen!2sau"
                 width="100%"
