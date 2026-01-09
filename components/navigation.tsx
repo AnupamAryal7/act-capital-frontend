@@ -288,11 +288,10 @@ export function Navigation() {
               <SheetTrigger asChild className="md:hidden">
                 <Button
                   variant="ghost"
-                  size="sm"
                   className="transform transition-transform duration-300 hover:scale-105 active:scale-95 p-2 text-foreground"
                   aria-label="Open menu"
                 >
-                  <Menu className="h-6 w-6" strokeWidth={2} />
+                  <Menu className="h-10 w-10" strokeWidth={4} />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
