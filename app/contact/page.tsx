@@ -8,6 +8,8 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -287,28 +289,14 @@ export default function ContactPage() {
 
                 {/* Quick Actions */}
                 <Card className="border-0 shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    <h3 className="text-xl font-semibold">Quick Actions</h3>
-                    <div className="space-y-2">
-                      <Button className="w-full justify-start" asChild>
-                        <a href="/booking">Book a Lesson Online</a>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start bg-transparent"
-                        asChild
-                      >
-                        <a href="tel:+61420991533">
-                          Call for Immediate Booking
-                        </a>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start bg-transparent"
-                        asChild
-                      >
-                        <a href="/courses">View Our Courses</a>
-                      </Button>
+                  <CardContent>
+                    <div>
+                      <h1 className="font-poppins text-2xl">Quick Actions</h1>
+                      <div className="flex gap-6">
+                        <Link href="">
+                          <Image src="/contact-icons/call_icon" alt="" />
+                        </Link>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
