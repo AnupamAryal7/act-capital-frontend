@@ -293,8 +293,29 @@ export default function ContactPage() {
                     <div>
                       <h1 className="font-poppins text-2xl">Quick Actions</h1>
                       <div className="flex gap-6">
-                        <Link href="">
-                          <Image src="/contact-icons/call_icon" alt="" />
+                        <Link href="+61420991533">
+                          <Image
+                            src="/contact-icons/call_icon.png"
+                            alt="call icon"
+                            height={90}
+                            width={90}
+                          />
+                        </Link>
+                        <Link href="https://www.facebook.com/profile.php?id=61577869336902">
+                          <Image
+                            src="/contact-icons/Facebook-icon.png"
+                            alt="facebook icon"
+                            height={85}
+                            width={85}
+                          />
+                        </Link>
+                        <Link href="https://wa.me/+61420991533?text=Hello!%20I%20need%20more%20information%20about%it.">
+                          <Image
+                            src="/contact-icons/whatsapp-icon.png"
+                            alt="whatsapp icon"
+                            height={85}
+                            width={85}
+                          />
                         </Link>
                       </div>
                     </div>
