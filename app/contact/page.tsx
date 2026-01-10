@@ -5,10 +5,11 @@ import type React from "react";
 import { useState } from "react";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
-import { InteractiveMap } from "@/components/interactive-map";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -26,8 +27,6 @@ import {
   Clock,
   Send,
   Facebook,
-  Instagram,
-  Twitter,
   CheckCircle,
 } from "lucide-react";
 
@@ -69,16 +68,13 @@ export default function ContactPage() {
       <Navigation />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-background to-muted/20">
+        <section className="py-5 bg-gradient-to-br from-background to-muted/20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center space-y-6">
-              <Badge variant="secondary" className="mb-4">
-                Contact Us
-              </Badge>
-              <h1 className="text-4xl lg:text-5xl font-bold text-balance">
+              <h1 className="text-4xl lg:text-5xl font-bold font-poppins text-balance">
                 Get in Touch
               </h1>
-              <p className="text-xl text-muted-foreground text-pretty">
+              <p className="text-xl text-muted-foreground text-pretty font-serif">
                 Ready to start your driving journey? Have questions about our
                 courses? We're here to help you every step of the way.
               </p>
@@ -87,14 +83,16 @@ export default function ContactPage() {
         </section>
 
         {/* Contact Form & Info */}
-        <section className="py-20">
+        <section className="py-5">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Contact Form */}
               <Card className="border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Send us a Message</CardTitle>
-                  <p className="text-muted-foreground">
+                  <CardTitle className="text-2xl font-semibold">
+                    Send us a Message
+                  </CardTitle>
+                  <p className="text-muted-foreground font-serif text-xl">
                     Fill out the form below and we'll get back to you within 24
                     hours.
                   </p>
@@ -106,7 +104,7 @@ export default function ContactPage() {
                         <CheckCircle className="h-8 w-8 text-green-600" />
                       </div>
                       <h3 className="text-xl font-semibold">Message Sent!</h3>
-                      <p className="text-muted-foreground">
+                      <p className="text-muted-foreground font-serif">
                         Thank you for contacting us. We'll get back to you
                         within 24 hours.
                       </p>
@@ -207,10 +205,10 @@ export default function ContactPage() {
               </Card>
 
               {/* Contact Information */}
-              <div className="space-y-8">
+              <div className="">
                 {/* Contact Details */}
                 <Card className="border-0 shadow-sm">
-                  <CardContent className="p-6 space-y-6">
+                  <CardContent className=" space-y-6">
                     <h3 className="text-xl font-semibold">
                       Contact Information
                     </h3>
@@ -291,28 +289,35 @@ export default function ContactPage() {
 
                 {/* Quick Actions */}
                 <Card className="border-0 shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    <h3 className="text-xl font-semibold">Quick Actions</h3>
-                    <div className="space-y-2">
-                      <Button className="w-full justify-start" asChild>
-                        <a href="/booking">Book a Lesson Online</a>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start bg-transparent"
-                        asChild
-                      >
-                        <a href="tel:+61420991533">
-                          Call for Immediate Booking
-                        </a>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start bg-transparent"
-                        asChild
-                      >
-                        <a href="/courses">View Our Courses</a>
-                      </Button>
+                  <CardContent>
+                    <div>
+                      <h1 className="font-poppins text-2xl">Quick Actions</h1>
+                      <div className="flex gap-6">
+                        <Link href="+61420991533">
+                          <Image
+                            src="/contact-icons/call_icon.png"
+                            alt="call icon"
+                            height={90}
+                            width={90}
+                          />
+                        </Link>
+                        <Link href="https://www.facebook.com/profile.php?id=61577869336902">
+                          <Image
+                            src="/contact-icons/Facebook-icon.png"
+                            alt="facebook icon"
+                            height={85}
+                            width={85}
+                          />
+                        </Link>
+                        <Link href="https://wa.me/+61420991533?text=Hello!%20I%20need%20more%20information%20about%it.">
+                          <Image
+                            src="/contact-icons/whatsapp-icon.png"
+                            alt="whatsapp icon"
+                            height={85}
+                            width={85}
+                          />
+                        </Link>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -325,7 +330,7 @@ export default function ContactPage() {
         <section className="py-20  bg-muted/30  ">
           {/* Map */}
           <div>
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg h-200 w-200 flex justify-center items-center ">
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg  flex justify-center items-center ">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d149.1153875!3d-35.4208918!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b164bda5d8a8031%3A0x6e141b9bf6b2fdb8!2sACT%20Capital%20Driving%20School!5e0!3m2!1sen!2sau!4v1691234567890!5m2!1sen!2sau"
                 width="100%"
